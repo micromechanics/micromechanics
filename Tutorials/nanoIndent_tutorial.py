@@ -87,7 +87,8 @@ contact area A [µm2], contact depth hc [µm], Young’s modulus E [GPa], hardne
 Plotting:
 
 - ``i.plot`` would plot each test(indent) independantly with the analysis data: slope, hc, power law etc
-- ``plt.plot(i.h, i.p)`` would plot all tests(indents) together. Useful to spot outliers::
+- ``plt.plot(i.h, i.p)`` would plot all tests(indents) together. Useful to spot outliers like indentations on dirt or dust particles::
+
 
     i.plot()
     plt.plot(i.h, i.p)
