@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.abspath('../../Tutorials/'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'nanoIndent_tutorial'
+project = 'nanoIndent'
 copyright = '2021, VPY'
 author = 'VPY'
 
