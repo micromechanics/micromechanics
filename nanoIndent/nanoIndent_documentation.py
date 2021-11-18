@@ -1,8 +1,3 @@
-"""
-Introduction
-============
-This is a tutorial for using nanoIndent.py while analysing nanoindentation data
-"""
 import math, io, re, os, traceback
 from enum import Enum
 from zipfile import ZipFile
