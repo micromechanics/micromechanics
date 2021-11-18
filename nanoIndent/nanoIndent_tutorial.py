@@ -1,7 +1,7 @@
 """
 Introduction
 ============
-This is a tutorial for using nanoIndent.py while analysing nanoindentation data
+This is is a tutorial for using nanoIndent.py while analysing nanoindentation data
 
 .. note::
    The following units should be used: [mN], [µm], [GPa] because the area function is unit-dependent. Calculations are carried out by the Oliver-Pharr Method.
