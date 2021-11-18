@@ -1,7 +1,12 @@
 """
 Introduction
 ============
+This is a tutorial for using nanoIndent.py while analysing nanoindentation data
+.. note::
+   The following units should be used: [mN], [µm], [GPa] because the area function is unit-dependent. Calculations are carried out by the Oliver-Pharr Method.
+How it works:
 
+"""
 import math, io, re, os, traceback
 from enum import Enum
 from zipfile import ZipFile
@@ -2003,5 +2008,3 @@ class Indentation:
       print("Error in H:  %.3e %% between %.3e and %.3e" %(abs(H-self.hardness)*100./H, H,self.hardness) )
     return
   #@}
-
-"""
