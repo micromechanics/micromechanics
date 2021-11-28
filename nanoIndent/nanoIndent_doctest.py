@@ -1,6 +1,6 @@
 """
 
-Example for Aglient G200 file and ISO indentation test method
+Aglient G200 file and ISO indentation test method
 =================
 
 .. doctest::
@@ -85,7 +85,7 @@ Attention: error << 1% means it is small compared to the values itself
 
 
 
-Example for Hysitron file and ISO indentation test method
+Hysitron file and ISO indentation test method
 =================
 
 .. doctest::
@@ -123,7 +123,7 @@ Example for Hysitron file and ISO indentation test method
 	Error in H:  0.000e+00 % between 3.068e+01 and 3.068e+01
 	
 	
-Example for Aglient file and CSM test method
+Aglient file and CSM test method
 =================
 
 .. note::
