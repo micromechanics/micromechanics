@@ -85,7 +85,7 @@ Attention: error << 1% means it is small compared to the values itself
 Example for Hysitron file and ISO indentation test method
 =================
 
-.. doctest::
+
 
 	>>> from nanoIndent import Tip, Indentation
 	
@@ -109,7 +109,9 @@ Example for Hysitron file and ISO indentation test method
   :alt: Alternative text
 
   Indentation curve
-  
+
+.. doctest::
+
 	>>> i.verifyReadCalc()
 	Error in hc: 0.000e+00 % between 3.306e-01 and 3.306e-01
 	Error in Ac: 0.000e+00 % between 1.632e+00 and 1.632e+00
