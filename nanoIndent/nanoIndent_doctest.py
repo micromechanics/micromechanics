@@ -57,7 +57,7 @@ Example for Aglient G200 file and ISO indentation test method
 	<AxesSubplot:xlabel='depth [$\\mu m$]', ylabel='force [$mN$]'>
 
 .. _Indentation_curve:
-.. figure:: ../source/img/indentation_curve.png
+.. figure:: ../source/img/indentation_curve_G2000.png
   :width: 400
   :align: center
   :alt: Alternative text
@@ -102,6 +102,14 @@ Example for Hysitron file and ISO indentation test method
 	Number of unloading segments:1  Method:Method.ISO
 	<AxesSubplot:xlabel='depth [$\\mu m$]', ylabel='force [$mN$]'>
 	
+.. _Indentation_curve:
+.. figure:: ../source/img/indentation_curve_Hysitron.png
+  :width: 400
+  :align: center
+  :alt: Alternative text
+
+  Indentation curve
+  
 	>>> i.verifyReadCalc()
 	Error in hc: 0.000e+00 % between 3.306e-01 and 3.306e-01
 	Error in Ac: 0.000e+00 % between 1.632e+00 and 1.632e+00
