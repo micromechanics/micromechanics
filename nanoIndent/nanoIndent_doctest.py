@@ -185,6 +185,8 @@ Example for Aglient file and CSM test method
   
   Indentation curve
   
+  .. doctest::
+  
 	>>> i.calibrateStiffness(critForce = 0.5) # Calibration by first frame-stiffness from K^2/P of individual measurement
 	Start compliance fitting
 	fit f(x)= 0.01888 *x+ 5e-05
