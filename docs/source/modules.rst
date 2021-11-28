@@ -6,3 +6,4 @@ nanoIndent
 
    nanoIndent_tutorial
    nanoIndent_documentation
+   nanoIndent_doctest
