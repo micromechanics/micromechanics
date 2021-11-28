@@ -85,7 +85,7 @@ Attention: error << 1% means it is small compared to the values itself
 Example for Hysitron file and ISO indentation test method
 =================
 
-
+.. doctest::
 
 	>>> from nanoIndent import Tip, Indentation
 	
