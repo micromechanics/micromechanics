@@ -41,7 +41,7 @@ Example for Aglient G200 file and ISO indentation test method:
 	>>> i.plotTestingMethod() # Plot testing method
 
 .. _Test_Method:
-.. figure:: ../source/test_method.png
+.. figure:: ../source/img/test_method.png
   :width: 400
   :align: center
   :alt: Alternative text
@@ -58,7 +58,7 @@ Example for Aglient G200 file and ISO indentation test method:
 	<AxesSubplot:xlabel='depth [$\\mu m$]', ylabel='force [$mN$]'>
 
 .. _Indentation_curve:
-.. figure:: ../source/indentation_curve.png
+.. figure:: ../source/img/indentation_curve.png
   :width: 400
   :align: center
   :alt: Alternative text
