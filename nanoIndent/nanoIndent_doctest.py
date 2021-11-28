@@ -1,8 +1,7 @@
 """
-Doctest
-=================
 
-Example for Aglient G200 file and ISO indentation test method: 
+Example for Aglient G200 file and ISO indentation test method
+=================
 
 .. doctest::
 
@@ -82,4 +81,31 @@ Example for Aglient G200 file and ISO indentation test method:
 
 Attention: error << 1% means it is small compared to the values itself
 
+
+Example for Hysitron file and ISO indentation test method
+=================
+
+.. doctest::
+
+	>>> from nanoIndent import Tip, Indentation
+	
+	>>> i = Indentation("....../ExperimentalMicromechanics-master/Examples/Hysitron/Exp-50mN_0000.hld")
+	Open Hysitron file: ....../ExperimentalMicromechanics-master/Examples/Hysitron/Exp-50mN_0000.hld
+	
+	>>> i.analyse()
+	Number of unloading segments:1  Method:Method.ISO
+
+	>>> i.plot()
+	Stiffness:153.3mN/um   hMax:0.5755um    pMax:50.07mN
+	E*:       106.4GPa     A:   1.6318um2    hc: 0.3306um
+	E:        106.7GPa     H:   30.7GPa
+	Number of unloading segments:1  Method:Method.ISO
+	<AxesSubplot:xlabel='depth [$\\mu m$]', ylabel='force [$mN$]'>
+	
+	>>> i.verifyReadCalc()
+	Error in hc: 0.000e+00 % between 3.306e-01 and 3.306e-01
+	Error in Ac: 0.000e+00 % between 1.632e+00 and 1.632e+00
+	Error in E*: 0.000e+00 % between 1.064e+02 and 1.064e+02
+	Error in E:  0.000e+00 % between 1.067e+02 and 1.067e+02
+	Error in H:  0.000e+00 % between 3.068e+01 and 3.068e+01
 """
