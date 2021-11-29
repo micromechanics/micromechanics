@@ -185,12 +185,12 @@ Aglient file and CSM test method
   
   Indentation curve
   
-  .. doctest::
+.. doctest::
   
 	>>> i.calibrateStiffness(critForce = 0.5) # Calibration by first frame-stiffness from K^2/P of individual measurement
 	Start compliance fitting
 	fit f(x)= 0.01888 *x+ 5e-05
-  	frame compliance: 4.8772e-05 um/mN = 4.8772e-08 m/N
+        frame compliance: 4.8772e-05 um/mN = 4.8772e-08 m/N
   	compliance and stiffness standard error in %: 11.08
   	frame stiffness:  20504 mN/um = 2.05e+07 N/m
 	[4.877152394512203e-05, {'Stiffness and error in %': [20503.767754421722, 11.075342394591695]}]
