@@ -172,6 +172,8 @@ Aglient file and CSM test method
 
   Test method
 
+.. doctest::
+
 	>>> i.verifyReadCalc()
 	
 	>>> i.plot()
