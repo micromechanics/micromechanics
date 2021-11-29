@@ -19,8 +19,8 @@ How it works:
     - E [GPa]: Young’s modulus
 3. Plot
 
-Example code:
-=============
+Example:
+========
 
 This is an example code analysing the data from a Fischer nanoindenter::
 
@@ -44,8 +44,8 @@ This is an example code analysing the data from a Fischer nanoindenter::
     print(df)
     plt.show()
 
-Explanation of the code
-=======================
+Explanation
+===========
 Import necessary libraries::
     
     import matplotlib.pyplot as plt
@@ -63,13 +63,13 @@ Introduce tip::
     ourTip = Tip()  #µm/mN
 
 Initialization: Start cycle to open and read through all hdf files.
-One can navigate through the hdf files using ``startswith("...")`` and ``endswith("...")`` like in the example::
+Navigate through the hdf files using ``startswith("...")`` and ``endswith("...")`` like in the example::
 
     for fileName in os.listdir('.'):
         if fileName.endswith('100mN_10s.hdf5'):
             i = Indentation(fileName, nuMat=0.3, tip=ourTip)
 
-Run through all indentations (Test 1, Test 2, etc) in the hdf file with ``while True`` cycle to make sure the code will run through all of them::
+Run through all indentations (Test 1, Test 2, etc) in the hdf file with ``while True`` cycle::
 
     while True:
         <body>
@@ -87,7 +87,7 @@ contact area A [µm2], contact depth hc [µm], Young’s modulus E [GPa], hardne
 Plotting:
 
 - ``i.plot`` would plot each test(indent) independantly with the analysis data: slope, hc, power law etc
-- ``plt.plot(i.h, i.p)`` would plot all tests(indents) together. Useful to spot outliers like indentations on dirt or dust particles::
+- ``plt.plot(i.h, i.p)`` would plot all tests(indents) together. Useful to spot outliers::
 
 
     i.plot()
@@ -104,49 +104,5 @@ Show the plots, print the dataframe if needed::
 
     print(df)
     plt.show()
-
-Doctest
-=======
-
-.. doctest::
-
-   >>> from nanoIndent import Indentation, Tip
-   >>> import os
-   >>> import matplotlib.pyplot as plt
-   >>> import pandas as pd
-   >>> import numpy as np
-   >>> from nanoIndent import Indentation, Tip
-   >>> ourTip = Tip()  #um/mN
-   >>> df = pd.DataFrame()
-   >>> fileName = "polymer_100mN_10s.hdf5"
-   >>> i = Indentation(fileName, nuMat=0.3, tip=ourTip)
-   Open hdf5-file: polymer_100mN_10s.hdf5
-   Number Unloading segments 1
-   >>> while True:
-   ...   #print("Test list",i.testList)
-   ...   i.analyse()
-   ...   #i.plot()
-   ...   #plt.plot(i.h, i.p)
-   ...   meta = i.metaUser
-   ...   meta["test name"]=i.testName
-   ...   meta["file name"]=fileName
-   ...   df = df.append(meta, ignore_index=True)
-   ...   if len(i.testList)==0:
-   ...     break
-   ...   _ = i.nextTest()
-   ...
-    Number of unloading segments:1  Method:Method.ISO
-    Number Unloading segments 1
-    Number of unloading segments:1  Method:Method.ISO
-    Number Unloading segments 1
-    Number of unloading segments:1  Method:Method.ISO
-    Number Unloading segments 1
-    Number of unloading segments:1  Method:Method.ISO
-   >>> print(df.shape)
-   (4, 13)
-   >>> #plt.show()
-     
-
-   
 
 """
