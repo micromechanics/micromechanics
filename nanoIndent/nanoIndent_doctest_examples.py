@@ -197,5 +197,39 @@ Aglient file and CSM test method
   	frame stiffness:  20504 mN/um = 2.05e+07 N/m
 	[4.877152394512203e-05, {'Stiffness and error in %': [20503.767754421722, 11.075342394591695]}]
 
+Fischer file
+============
+
+.. doctest::
+
+   >>> from nanoIndent import Indentation, Tip
+   >>> import numpy as np
+   >>> ourTip = Tip()  #um/mN
+   >>> fileName = "steel_300_20_5.hdf5"
+   >>> i = Indentation(fileName, nuMat=0.3, tip=ourTip)
+   Open hdf5-file: steel_300_20_5.hdf5
+   Number Unloading segments 1
+   >>> while True:
+   ...   i.analyse()
+   ...   #i.plot()
+   ...   #plt.plot(i.h, i.p)
+   ...   meta = i.metaUser
+   ...   meta["test name"]=i.testName
+   ...   meta["file name"]=fileName
+   ...   if len(i.testList)==0:
+   ...     break
+   ...   _ = i.nextTest()
+   ...
+    Number of unloading segments:1  Method:Method.ISO
+    Number Unloading segments 1
+    Number of unloading segments:1  Method:Method.ISO
+    Number Unloading segments 1
+    Number of unloading segments:1  Method:Method.ISO
+    Number Unloading segments 1
+    Number of unloading segments:1  Method:Method.ISO
+    Number Unloading segments 1
+    Number of unloading segments:1  Method:Method.ISO
+    Number Unloading segments 1
+    Number of unloading segments:1  Method:Method.ISO
 
 """
