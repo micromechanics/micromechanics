@@ -1,5 +1,5 @@
 nanoIndent_doctest_examples
-=================
+===========================
 
 .. automodule:: nanoIndent_doctest_examples
    :members:

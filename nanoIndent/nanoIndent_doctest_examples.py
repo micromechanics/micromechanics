@@ -1,7 +1,7 @@
 """
 
 Aglient G200 file and ISO indentation test method
-=================
+=================================================
 
 .. doctest::
 
@@ -9,29 +9,29 @@ Aglient G200 file and ISO indentation test method
 
 	>>> i = Indentation(".../ExperimentalMicromechanics-master/Examples/Agilent/CSM.xls")
 	=============  .../ExperimentalMicromechanics-master/Examples/Agilent/CSM.xls  ============
-     	Displacement Into Surface      : h                    
-     	Load On Sample                 : p                    
-     	Time On Sample                 : t                    
-     	Harmonic Contact Stiffness     : slope                
-     	Hardness                       : hardness             
-     	Modulus                        : modulus              
-     	Contact Area                   : A_c                  
-     	Contact Depth                  : h_c                  
+     	Displacement Into Surface      : h
+     	Load On Sample                 : p
+     	Time On Sample                 : t
+     	Harmonic Contact Stiffness     : slope
+     	Hardness                       : hardness
+     	Modulus                        : modulus
+     	Contact Area                   : A_c
+     	Contact Depth                  : h_c
  	*** CSM Status                     NOT USED
-     	Harmonic Displacement          : hHarmonic            
+     	Harmonic Displacement          : hHarmonic
  	*** Harmonic Frequency             NOT USED
-     	Harmonic Load                  : pHarmonic            
-     	Harmonic Stiffness             : slopeInvalid         
-     	Load vs Disp Slope             : pVsHSlope            
-     	Phase Angle                    : phaseAngle           
-     	Raw Displacement               : hRaw                 
-     	Raw Load                       : pRaw                 
-     	Reduced Modulus                : modulusRed           
-     	Stiffness Squared Over Load    : k2p                  
-     	Support Spring Stiffness       : slopeSupport         
-     	Time                           : tTotal               
-     	X Position                     : xCoarse              
-     	Y Position                     : yCoarse              
+     	Harmonic Load                  : pHarmonic
+     	Harmonic Stiffness             : slopeInvalid
+     	Load vs Disp Slope             : pVsHSlope
+     	Phase Angle                    : phaseAngle
+     	Raw Displacement               : hRaw
+     	Raw Load                       : pRaw
+     	Reduced Modulus                : modulusRed
+     	Stiffness Squared Over Load    : k2p
+     	Support Spring Stiffness       : slopeSupport
+     	Time                           : tTotal
+     	X Position                     : xCoarse
+     	Y Position                     : yCoarse
 	*WARNING* identifyLoadHoldUnload: cut two from end of unloadIdx: UNDESIRED
 	Number Unloading segments 1
 
@@ -76,25 +76,21 @@ Aglient G200 file and ISO indentation test method
 	>>> S = i.stiffnessFromUnloading(i.p, i.h, plot = False) # Calculate single stiffness according to unloading data
 	Number of unloading segments:1  Method:Method.ISO
 
-	>>> print("Error in stiffness: %.2e"%((i.slope[0] - S[0])/S[0])) 
+	>>> print("Error in stiffness: %.2e"%((i.slope[0] - S[0])/S[0]))
 	Error: -3.23e-04
-
-.. note::
-
-Attention: error << 1% means it is small compared to the values itself
 
 
 
 Hysitron file and ISO indentation test method
-=================
+=============================================
 
 .. doctest::
 
 	>>> from nanoIndent import Tip, Indentation
-	
+
 	>>> i = Indentation("....../ExperimentalMicromechanics-master/Examples/Hysitron/Exp-50mN_0000.hld")
 	Open Hysitron file: ....../ExperimentalMicromechanics-master/Examples/Hysitron/Exp-50mN_0000.hld
-	
+
 	>>> i.analyse()
 	Number of unloading segments:1  Method:Method.ISO
 
@@ -103,15 +99,6 @@ Hysitron file and ISO indentation test method
 	E*:       106.4GPa     A:   1.6318um2    hc: 0.3306um
 	E:        106.7GPa     H:   30.7GPa
 	Number of unloading segments:1  Method:Method.ISO
-	<AxesSubplot:xlabel='depth [$\\mu m$]', ylabel='force [$mN$]'>
-	
-.. _Indentation_curve:
-.. figure:: ../source/img/indentation_curve_Hysitron.png
-  :width: 400
-  :align: center
-  :alt: Alternative text
-
-  Indentation curve
 
 .. doctest::
 
@@ -121,74 +108,57 @@ Hysitron file and ISO indentation test method
 	Error in E*: 0.000e+00 % between 1.064e+02 and 1.064e+02
 	Error in E:  0.000e+00 % between 1.067e+02 and 1.067e+02
 	Error in H:  0.000e+00 % between 3.068e+01 and 3.068e+01
-	
-	
+
+
 Aglient file and CSM test method
-=================
+================================
 
 .. note::
 
-	Shape function of indenter is unknown 
-	
+	Shape function of indenter is unknown
+
 .. doctest::
 	>>> from nanoIndent import Tip, Indentation
 
 	>>> i = Indentation("....../ExperimentalMicromechanics-master/Examples/Agilent/CSM.xls")
 	=============  ....../ExperimentalMicromechanics-master/Examples/Agilent/CSM.xls  ============
-    	 Displacement Into Surface      : h                    
-     	Load On Sample                 : p                    
-     	Time On Sample                 : t                    
-     	Harmonic Contact Stiffness     : slope                
-     	Hardness                       : hardness             
-     	Modulus                        : modulus              
-     	Contact Area                   : A_c                  
-     	Contact Depth                  : h_c                  
+    	 Displacement Into Surface      : h
+     	Load On Sample                 : p
+     	Time On Sample                 : t
+     	Harmonic Contact Stiffness     : slope
+     	Hardness                       : hardness
+     	Modulus                        : modulus
+     	Contact Area                   : A_c
+     	Contact Depth                  : h_c
  	*** CSM Status                     NOT USED
-     	Harmonic Displacement          : hHarmonic            
+     	Harmonic Displacement          : hHarmonic
 	*** Harmonic Frequency             NOT USED
-     	Harmonic Load                  : pHarmonic            
-     	Harmonic Stiffness             : slopeInvalid         
-     	Load vs Disp Slope             : pVsHSlope            
-     	Phase Angle                    : phaseAngle           
-     	Raw Displacement               : hRaw                 
-     	Raw Load                       : pRaw                 
-     	Reduced Modulus                : modulusRed           
-     	Stiffness Squared Over Load    : k2p                  
-     	Support Spring Stiffness       : slopeSupport         
-     	Time                           : tTotal               
-     	X Position                     : xCoarse              
-     	Y Position                     : yCoarse              
+     	Harmonic Load                  : pHarmonic
+     	Harmonic Stiffness             : slopeInvalid
+     	Load vs Disp Slope             : pVsHSlope
+     	Phase Angle                    : phaseAngle
+     	Raw Displacement               : hRaw
+     	Raw Load                       : pRaw
+     	Reduced Modulus                : modulusRed
+     	Stiffness Squared Over Load    : k2p
+     	Support Spring Stiffness       : slopeSupport
+     	Time                           : tTotal
+     	X Position                     : xCoarse
+     	Y Position                     : yCoarse
 	Tagged  ['Test 025 Tagged']
-	
-	>>> i.nuMat = 0.3
-	
-	>>> i.plotTestingMethod()
-	
-.. _Test_Method:
-.. figure:: ../source/img/test_method_CSM.png
-  :width: 400
-  :align: center
-  :alt: Alternative text
 
-  Test method
+	>>> i.nuMat = 0.3
+
+	>>> i.plotTestingMethod()
 
 .. doctest::
 
 	>>> i.verifyReadCalc()
-	
-	>>> i.plot()
-	<AxesSubplot:xlabel='depth [$\\mu m$]', ylabel='force [$mN$]'>
 
-.. _Indentation_curve:
-.. figure:: ../source/img/indentation_curve_CSM.png
-  :width: 400
-  :align: center
-  :alt: Alternative text
-  
-  Indentation curve
-  
+	>>> i.plot()
+
 .. doctest::
-  
+
 	>>> i.calibrateStiffness(critForce = 0.5) # Calibration by first frame-stiffness from K^2/P of individual measurement
 	Start compliance fitting
 	fit f(x)= 0.01888 *x+ 5e-05
