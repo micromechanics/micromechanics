@@ -1,7 +1,7 @@
-Code Documentation module
+Documentation
 ================================
 
-.. automodule:: Code Documentation
+.. automodule:: nanoindent_documentation
    :members:
    :undoc-members:
    :show-inheritance:
