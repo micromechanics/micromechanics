@@ -1,15 +1,17 @@
 """
 
-Aglient G200 file and ISO indentation test method
+Aglient G200 file with ISO indentation test method
 =================================================
 .. note::
 	ISO method can have multiple unloading segments
 .. doctest::
 
 	>>> from nanoIndent import Tip, Indentation
+	
+	>>> tip = Tip([2.4725e+001,4.7739e+002,-3.2229e+003,3.5580e+003,"iso" ], 1000.0/9176606.1886)
 
-	>>> i = Indentation(".../ExperimentalMicromechanics-master/Examples/Agilent/CSM.xls")
-	=============  .../ExperimentalMicromechanics-master/Examples/Agilent/CSM.xls  ============
+	>>> i = Indentation(".../ExperimentalMicromechanics-master/Examples/Agilent/ISO.xls", tip = tip)
+	=============  .../ExperimentalMicromechanics-master/Examples/Agilent/ISO.xls  ============
      	Displacement Into Surface      : h
      	Load On Sample                 : p
      	Time On Sample                 : t
@@ -80,9 +82,15 @@ Aglient G200 file and ISO indentation test method
 	>>> print("Error in stiffness: %.2e"%((i.slope[0] - S[0])/S[0]))
 	Error: -3.23e-04
 
+	>>> i.tareDepthForce(compareRead=True) 
+	# Calculate offset depth,force,time by identifying surface, drift-rate, and compare new results with file data 
+	Drift rate: -0.396 nm/s
+	Error in h: 1.86%
+	Error in p: 0.01%
+	Error in t: 0.01%
 
 
-Hysitron file and ISO indentation test method
+Hysitron file with ISO indentation test method
 =============================================
 
 .. doctest::
@@ -111,7 +119,7 @@ Hysitron file and ISO indentation test method
 	Error in H:  0.000e+00 % between 3.068e+01 and 3.068e+01
 
 
-Aglient file and CSM test method
+Default Aglient file with CSM test method
 ================================
 
 .. note::
@@ -152,7 +160,10 @@ Aglient file and CSM test method
 
 	>>> i.plot()   # CSM: no unloading is plotted (doctest: +SKIP)
 
-	>>> i.calibrateStiffness(critForce = 0.5) # Calibration by first frame-stiffness from K^2/P of individual measurement
+	>>> i.calibrateStiffness(critForce = 0.5) 
+	# Calibration by first frame-stiffness from K^2/P of individual measurement
+	# CalibrateStiffness allows to adjust stiffness 
+	
 	Start compliance fitting
 	fit f(x)= 0.01888 *x+ 5e-05
         frame compliance: 4.8772e-05 um/mN = 4.8772e-08 m/N
@@ -160,12 +171,13 @@ Aglient file and CSM test method
   	frame stiffness:  20504 mN/um = 2.05e+07 N/m
 
 
+
 Fischer file
 ============
 
 .. doctest::
 
-   >>> from nanoIndent import Indentation, Tip
+   >>> from nanoIndent import Tip, Indentation
    >>> import numpy as np
    >>> ourTip = Tip()  #um/mN
    >>> fileName = "steel_300_20_5.hdf5"
