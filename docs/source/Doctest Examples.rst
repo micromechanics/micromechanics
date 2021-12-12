@@ -1,4 +1,4 @@
-nanoIndent_doctest_examples
+Doctest Examples
 ===========================
 
 .. automodule:: Doctest Examples
