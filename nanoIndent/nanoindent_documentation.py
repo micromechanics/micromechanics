@@ -2053,12 +2053,15 @@ class Tip:
 
   def areaFunction(self, h):
     """
-    AREA FUNCTION: from contact depth h_c calculate area
+    AREA FUNCTION: from contact depth (h_c) to calculate area
 
-    all functions inside are using [nm]; the outside of this function uses [um]; hence at the start and end there is conversion
+    Note: all functions inside are using [nm]; the outside of this function uses [um]; 
+    
+    Hence, there is conversion at the start and the end 
 
     prefactors:
-    - "iso" type area function A=ax^2+bx^1+cx^0.5..., requires !!nm!! units
+    
+    - "ISO" type area function A=ax^2+bx^1+cx^0.5..., requires !!nm!! units
     
     - "perfect" type area function of a perfect Berkovich A=3*sqrt(3)*tan(65.27)^2 h_c^2 = 24.494 h_c^2
     
@@ -2118,6 +2121,7 @@ class Tip:
     using Newton iteration with initial guess contact depth h_c0<br>
 
     prefactors:
+    
     -  "iso" type area function A=ax^2+bx^1+cx^0.5..., requires !!nm!! units
     
     -  "perfect" type area function of a perfect Berkovich A=3*sqrt(3)*tan(65.27)^2 h_c^2 = 24.494 h_c^2
