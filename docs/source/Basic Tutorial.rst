@@ -1,7 +1,7 @@
 Basic Tutorial module
 ===========================
 
-.. automodule:: Basic Tutorial
+.. automodule:: nanoindent_tutorial
    :members:
    :undoc-members:
    :show-inheritance:
