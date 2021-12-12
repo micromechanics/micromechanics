@@ -4,7 +4,12 @@ Introduction
 This is a tutorial for using nanoIndent.py while analysing nanoindentation data
 
 .. note::
-   The following units should be used: [mN], [µm], [GPa] because the area function is unit-dependent. Calculations are carried out by the Oliver-Pharr Method.
+   The following units should be used: [mN], [µm], [GPa] because the area function is unit-dependent. 
+   Calculations are carried out by the Oliver-Pharr Method.
+   Data in indentation experiment includes Method, Vendor, Indenter tip
+   - Method: ISO, CSM
+   - Vendor: Agilent, Hysitron, FischerScope
+   - Indenter Tip: shape of indenter tip and stiffness of gantry
 
 How it works:
 
