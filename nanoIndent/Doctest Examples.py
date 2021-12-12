@@ -165,7 +165,6 @@ Aglient file and CSM test method
         frame compliance: 4.8772e-05 um/mN = 4.8772e-08 m/N
   	compliance and stiffness standard error in %: 11.08
   	frame stiffness:  20504 mN/um = 2.05e+07 N/m
-	[4.877152394512203e-05, {'Stiffness and error in %': [20503.767754421722, 11.075342394591695]}]
 
 Fischer file
 ============
