@@ -2,7 +2,8 @@
 
 Aglient G200 file and ISO indentation test method
 =================================================
-
+.. note::
+	ISO method can have multiple unloading segments
 .. doctest::
 
 	>>> from nanoIndent import Tip, Indentation
