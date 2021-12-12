@@ -2000,8 +2000,8 @@ class Indentation:
     return
   #@}
   
-  
-  class Tip:
+ 
+class Tip:
   def __init__(self, shape="perfect", interpFunction=None, compliance=0.0, plot=False, verbose=0):
     """
     Initialize indenter shape
