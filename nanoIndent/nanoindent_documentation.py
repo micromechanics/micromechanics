@@ -1999,3 +1999,174 @@ class Indentation:
       print("Error in H:  %.3e %% between %.3e and %.3e" %(abs(H-self.hardness)*100./H, H,self.hardness) )
     return
   #@}
+  
+  
+  class Tip:
+  def __init__(self, shape="perfect", interpFunction=None, compliance=0.0, plot=False, verbose=0):
+    """
+    Initialize indenter shape
+    Args:
+       shape: list of prefactors, default="perfect"
+       interpFunction: interpolation function A_c(h_c): if given superseeds other information
+       compliance: additional compliance in um/mN. sensible values: 0.0001..0.01
+       plot: plot indenter shape
+       verbose: how much output
+    """
+    #define indenter shape: could be overwritten
+    if callable(interpFunction):
+      self.prefactors = None
+      self.interpFunction = interpFunction
+    elif shape[-1]=="sphere" or shape[-1]=="iso":
+      self.prefactors = shape
+    elif type(shape)==list:  #assume iso
+      self.prefactors = shape
+      self.prefactors.append("iso")
+    else:
+      self.prefactors = ["perfect"]
+    self.compliance = compliance
+
+    #verify and set default values
+    if self.compliance > 0.01 or self.compliance < 0.0000001:
+      if compliance == 0:
+        if verbose>1:
+          print("*WARNING*: stiffness outside domain 1e5...1e10 N/m: infinite")
+      else:
+        if verbose>1:
+          print("*WARNING*: stiffness outside domain 1e5...1e10 N/m:",round(1000./self.compliance) )
+    if plot:
+      self.plotIndenterShape()
+    return
+
+  def __repr__(self):
+    outString = 'compliance: '+str(self.compliance)+';   '
+    if self.prefactors is None:
+      outString+= 'with interpolation function with '+str(len(self.interpFunction.x))+' points'
+    else:
+      outString+= 'prefactors: '+str(self.prefactors)
+    return outString
+
+
+  def setInterpolationFunction(self,interpFunction):
+    self.interpFunction = interpFunction
+    self.prefactors = None
+    return
+
+  def areaFunction(self, h):
+    """
+    AREA FUNCTION: from contact depth h_c calculate area
+
+    all functions inside are using [nm]; the outside of this function uses [um]; hence at the start and end there is conversion
+
+    prefactors:
+    - "iso" type area function A=ax^2+bx^1+cx^0.5..., requires !!nm!! units
+    - "perfect" type area function of a perfect Berkovich A=3*sqrt(3)*tan(65.27)^2 h_c^2 = 24.494 h_c^2
+    - "sphere" type: A=pi(2Rh-h^2) h=depth, R indenter radius; for small h-> h^2=0<br>
+    prefactors [-pi, 2piR] R in nm<br> does not account for cone at top; hence here other approach<br>
+
+   Args:
+       h [array]: contact depth in um
+
+    Returns:
+       area projected contact area in [um2]
+    """
+    h = h* 1000.   #starting here: all is in nm
+    threshH = 1.e-3 #1pm
+    h[h< threshH] = threshH
+    area = np.zeros_like(h)
+    if self.prefactors is None:
+      self.interpFunction.bounds_error=False
+      self.interpFunction.fill_value='extrapolate'
+      return self.interpFunction(h/1000.)
+    elif self.prefactors[-1]=='iso':
+      for i in range(0, len(self.prefactors)-1):
+        exponent = 2./math.pow(2,i)
+        area += self.prefactors[i]*np.power(h,exponent)
+        #print(i, self.prefactors[i], h,exponent, area)
+    elif self.prefactors[-1]=='isoPlusConstant':
+      h += self.prefactors[-2]
+      for i in range(0, len(self.prefactors)-2):
+        exponent = 2./math.pow(2,i)
+        area += self.prefactors[i]*np.power(h,exponent)
+    elif self.prefactors[-1]=='perfect':
+      area = 24.494*np.power(h,2)
+    elif self.prefactors[-1]=='sphere':
+      radius = self.prefactors[0]*1000.
+      openingAngle = self.prefactors[1]
+      cos      = math.cos(openingAngle/180.0*math.pi)
+      sin      = math.sin(openingAngle/180.0*math.pi)
+      tan      = math.tan(openingAngle/180.0*math.pi)
+      mask     = radius-h > radius*sin
+      rA       = np.zeros_like(h)
+      rA[mask] = np.sqrt(radius**2 - (radius-h[mask])**2 )  #spherical section
+      deltaY = radius / cos			 #tapered section
+      deltaX = radius-h[~mask]
+      rA[~mask] = deltaY - tan*deltaX
+      area = math.pi * rA * rA
+    else:
+      print("*ERROR*: prefactors last value does not contain type")
+    area[area<0] = 0.0
+    return area/1.e6
+
+
+  def areaFunctionInverse(self, area, h_c0=70):
+    """
+    INVERSE AREA FUNCTION: from area calculate contact depth h_c
+
+    using Newton iteration with initial guess contact depth h_c0<br>
+
+    prefactors:
+    -  "iso" type area function A=ax^2+bx^1+cx^0.5..., requires !!nm!! units
+    -  "perfect" type area function of a perfect Berkovich A=3*sqrt(3)*tan(65.27)^2 h_c^2 = 24.494 h_c^2
+
+    Args:
+       area: projected contact area
+       h_c0: initial guess contact depth
+
+    Returns:
+       h depth
+    """
+    ## define function in form f(x)-y=0
+    def function(height):
+      return self.areaFunction(np.array([height]))-area
+    ## solve
+    if self.prefactors[-1]=="iso":
+      h = newton(function, h_c0)
+    elif self.prefactors[-1]=="perfect":
+      h = math.sqrt(area / 24.494)
+    else:
+      print("*ERROR*: prefactors last value does not contain type")
+    return h
+
+
+  def plotIndenterShape(self, maxDepth=1, steps=2000, show=True, tipLabel=None, fileName=None):
+    """
+    check indenter shape: plot shape function against perfect Berkovich
+
+    analytical: perfect shape is 2.792254*x
+
+    Args:
+       maxDepth: maximum depth [um] to plot; default=10um
+       steps: number of steps for plotting
+       show: show figure
+       tipLabel: label for this tip
+       fileName: if given, save to file
+    """
+    zoom = 0.5
+    h_c = np.linspace(0, maxDepth, steps)
+    rNonPerfect = np.sqrt( self.areaFunction(h_c)/math.pi)
+    rPerfect  = 2.792254*h_c
+    if tipLabel is None:  tipLabel = 'this tip'
+    plt.plot(rNonPerfect, h_c, '-', label=tipLabel)
+    plt.plot(rPerfect,h_c, '-k', label='Berkovich')
+    plt.plot(np.tan(np.radians(60.0))*h_c,h_c, '--k', label='$60^o$')
+    plt.legend(loc="best")
+    plt.ylabel(r'contact depth [$\mu m$]')
+    plt.xlabel(r'contact radius [$\mu m$]')
+    plt.xlim([0,maxDepth*4./3./zoom])
+    plt.ylim([0,maxDepth/zoom])
+    if show:
+      plt.grid()
+      if fileName is not None:
+        plt.savefig(fileName, dpi=150, bbox_inches='tight')
+      plt.show()
+    return
