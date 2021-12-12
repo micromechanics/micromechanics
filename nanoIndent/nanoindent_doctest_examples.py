@@ -150,15 +150,7 @@ Aglient file and CSM test method
 
 	>>> i.nuMat = 0.3
 
-	>>> i.plotTestingMethod()
-
-.. doctest::
-
-	>>> i.verifyReadCalc()
-
-	>>> i.plot()
-
-.. doctest::
+	>>> i.plot()   # CSM: no unloading is plotted (doctest: +SKIP)
 
 	>>> i.calibrateStiffness(critForce = 0.5) # Calibration by first frame-stiffness from K^2/P of individual measurement
 	Start compliance fitting
