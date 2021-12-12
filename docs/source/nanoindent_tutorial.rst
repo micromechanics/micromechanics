@@ -1,4 +1,4 @@
-Basic Tutorial module
+Basic Tutorial
 ===========================
 
 .. automodule:: nanoindent_tutorial
