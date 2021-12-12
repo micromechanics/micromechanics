@@ -2059,8 +2059,11 @@ class Tip:
 
     prefactors:
     - "iso" type area function A=ax^2+bx^1+cx^0.5..., requires !!nm!! units
+    
     - "perfect" type area function of a perfect Berkovich A=3*sqrt(3)*tan(65.27)^2 h_c^2 = 24.494 h_c^2
+    
     - "sphere" type: A=pi(2Rh-h^2) h=depth, R indenter radius; for small h-> h^2=0<br>
+    
     prefactors [-pi, 2piR] R in nm<br> does not account for cone at top; hence here other approach<br>
 
    Args:
@@ -2116,10 +2119,12 @@ class Tip:
 
     prefactors:
     -  "iso" type area function A=ax^2+bx^1+cx^0.5..., requires !!nm!! units
+    
     -  "perfect" type area function of a perfect Berkovich A=3*sqrt(3)*tan(65.27)^2 h_c^2 = 24.494 h_c^2
 
     Args:
        area: projected contact area
+      
        h_c0: initial guess contact depth
 
     Returns:
@@ -2146,9 +2151,13 @@ class Tip:
 
     Args:
        maxDepth: maximum depth [um] to plot; default=10um
+       
        steps: number of steps for plotting
+       
        show: show figure
+       
        tipLabel: label for this tip
+       
        fileName: if given, save to file
     """
     zoom = 0.5
