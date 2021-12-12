@@ -2055,25 +2055,27 @@ class Tip:
     """
     AREA FUNCTION: from contact depth (h_c) to calculate area
 
-    Note: all functions inside are using [nm]; the outside of this function uses [um]; 
+    Note: there is conversion at the start and the end 
     
-    Hence, there is conversion at the start and the end 
+    - inside of all functions are using [nm];
+    
+    - outside of this function uses [um];
 
     prefactors:
     
-    - "ISO" type area function A=ax^2+bx^1+cx^0.5..., requires !!nm!! units
+    - "ISO" type area function A=ax^2+bx^1+cx^0.5... (unit:nm)
     
-    - "perfect" type area function of a perfect Berkovich A=3*sqrt(3)*tan(65.27)^2 h_c^2 = 24.494 h_c^2
+    - "perfect" type area function of a perfect Berkovich: A=3*sqrt(3)*tan(65.27)^2 h_c^2 = 24.494 h_c^2
     
     - "sphere" type: A=pi(2Rh-h^2) h=depth, R indenter radius; for small h-> h^2=0<br>
     
     prefactors [-pi, 2piR] R in nm<br> does not account for cone at top; hence here other approach<br>
 
    Args:
-       h [array]: contact depth in um
+       h [array]: contact depth [um]
 
     Returns:
-       area projected contact area in [um2]
+       area projected contact area [um^2]
     """
     h = h* 1000.   #starting here: all is in nm
     threshH = 1.e-3 #1pm
@@ -2122,16 +2124,18 @@ class Tip:
 
     prefactors:
     
-    -  "iso" type area function A=ax^2+bx^1+cx^0.5..., requires !!nm!! units
+    -  "ISO" type area function: A=ax^2+bx^1+cx^0.5... (unit: nm)
     
-    -  "perfect" type area function of a perfect Berkovich A=3*sqrt(3)*tan(65.27)^2 h_c^2 = 24.494 h_c^2
+    -  "perfect" type area function of a perfect Berkovich: A=3*sqrt(3)*tan(65.27)^2 h_c^2 = 24.494 h_c^2
 
     Args:
+    
        area: projected contact area
       
        h_c0: initial guess contact depth
 
     Returns:
+    
        h depth
     """
     ## define function in form f(x)-y=0
@@ -2154,7 +2158,8 @@ class Tip:
     analytical: perfect shape is 2.792254*x
 
     Args:
-       maxDepth: maximum depth [um] to plot; default=10um
+    
+       maxDepth: maximum depth [um] to plot (default=10um)
        
        steps: number of steps for plotting
        
