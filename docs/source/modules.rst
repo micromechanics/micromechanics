@@ -4,6 +4,6 @@ nanoIndent
 .. toctree::
    :maxdepth: 4
 
-   Basic Tutorial
+   nanoindent_tutorial
    Code documentation
    Doctest Examples
