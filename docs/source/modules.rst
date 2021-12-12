@@ -1,6 +1,3 @@
-nanoIndent
-==========
-
 .. toctree::
    :maxdepth: 4
 
