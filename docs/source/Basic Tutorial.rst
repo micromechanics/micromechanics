@@ -1,7 +1,7 @@
-nanoIndent\_tutorial module
+Basic Tutorial module
 ===========================
 
-.. automodule:: nanoIndent_tutorial
+.. automodule:: Basic Tutorial
    :members:
    :undoc-members:
    :show-inheritance:
