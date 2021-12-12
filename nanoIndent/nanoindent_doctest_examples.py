@@ -82,8 +82,7 @@ Aglient G200 file with ISO indentation test method
 	>>> print("Error in stiffness: %.2e"%((i.slope[0] - S[0])/S[0]))
 	Error: -3.23e-04
 
-	>>> i.tareDepthForce(compareRead=True) 
-	# Calculate offset depth,force,time by identifying surface, drift-rate, and compare new results with file data 
+	>>> i.tareDepthForce(compareRead=True) # Calculate offset depth,force,time by identifying surface, drift-rate, and compare new results with file data 
 	Drift rate: -0.396 nm/s
 	Error in h: 1.86%
 	Error in p: 0.01%
@@ -160,9 +159,7 @@ Default Aglient file with CSM test method
 
 	>>> i.plot()   # CSM: no unloading is plotted (doctest: +SKIP)
 
-	>>> i.calibrateStiffness(critForce = 0.5) 
-	# Calibration by first frame-stiffness from K^2/P of individual measurement
-	# CalibrateStiffness allows to adjust stiffness 
+	>>> i.calibrateStiffness(critForce = 0.5) # Calibration by first frame-stiffness from K^2/P of individual measurement and it allows to adjust stiffness 
 	
 	Start compliance fitting
 	fit f(x)= 0.01888 *x+ 5e-05
