@@ -5,5 +5,5 @@ nanoIndent
    :maxdepth: 4
 
    nanoindent_tutorial
-   Code documentation
-   Doctest Examples
+   nanoindent_documentation
+   nanoindent_doctest_examples
