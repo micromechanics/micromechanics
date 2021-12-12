@@ -1,4 +1,4 @@
-nanoIndent\_documentation module
+Code Documentation module
 ================================
 
 .. automodule:: Code Documentation
