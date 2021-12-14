@@ -1,3 +1,27 @@
+##
+# @file
+# @brief Classes to evaluate indentation data and indenter tip
+#
+# Indentation data: indentation experiment
+# - Methods: iso (can have multiple unloading segments), csm
+# - Vendor: Agilent, Hysitron
+#
+# Indenter tip: shape of indenter tip and gantry stiffness (that what you calibrate)
+#
+# UNITS: one should use mSB units in this code, since Agilent area function is unit-dependent
+# mSB: [mN], [um], [GPa] (force, length, stress)
+#
+##### Variables: differentiate different length ########
+# array of full length: force, time, depth, validMask, ...  [used for plotting]
+# array of valid length: E,H,Ac,hc, ... [only has the length where these values are valid]
+#    force[validMask] = pMax
+#    all these are vectors: OliverPharr et al methods are only vector functions
+#
+# Coding rules:
+# - Change all variables: do not keep original-depth as can be reread and makes code less readable
+
+# 2. clean frame stiffness, additional compilance  : differentiate between both
+#    - fitting unloading curve: assume as intial guess m=1.5
 import math, io, re, os, traceback
 from enum import Enum
 from zipfile import ZipFile
@@ -8,6 +32,34 @@ import matplotlib.pyplot as plt
 from scipy.optimize import differential_evolution, fmin_tnc, fmin_l_bfgs_b, curve_fit, OptimizeResult, newton
 from scipy import ndimage, interpolate
 from scipy.signal import savgol_filter
+
+
+# enum classes: make code more readable
+class Method(Enum):
+  """
+  Nanoindentation method: e.g. one unloading, multiple,...
+  """
+  ISO = 1    #one unloading
+  MULTI = 2  #multiple ISO unloadings in one loading curve
+  CSM = 3    #CSM method: number of unloadings ~ all data-points
+
+class Vendor(Enum):
+  """
+  HDF5 files are converted
+  TXT, XLS files are exported
+  """
+  Agilent        = 1 #Agilent, KLA, MTS: XLS file format
+  Hysitron       = 2 #Hysitron HLD or TXT file format
+  Micromaterials = 3 #Micromaterials TXT, ZIP of TXT, HDF5 file format
+  FischerScope   = 4 #FischerScope TXT file format
+  CommonHDF5     = 5 #This hdf5 should work for all indenters
+
+class FileType(Enum):
+  """
+  Type of file: containing one or multiple tests
+  """
+  Single = 1  #single test in file
+  Multi  = 2  #multiple tests in file
 
 
 class Indentation:
@@ -2000,7 +2052,15 @@ class Indentation:
     return
   #@}
   
- 
+
+def isfloat(value):
+  try:
+    float(value)
+    return True
+  except ValueError:
+    return False
+
+
 class Tip:
   def __init__(self, shape="perfect", interpFunction=None, compliance=0.0, plot=False, verbose=0):
     """
