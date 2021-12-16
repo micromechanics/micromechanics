@@ -238,13 +238,13 @@ class Indentation:
     A = math.pow( S / (2.0*E/math.sqrt(math.pi))  ,2)
     h_cGuess = math.sqrt(A / 24.494) # first guess: perfect Berkovich
     # print("  DEBUG A,self.beta,P,S,h_c0", A, self.beta, P, S, h_cGuess)
-    h_c = self.tip.areaFunctionInverse(A, h_c0=h_cGuess)
-    h = h_c + self.beta*P/S
+    h_c = self.tip.areaFunctionInverse(A, h_c0=h_cGuess)    #vy: What is the difference between h_c0 and h_cGuess? 
+    h = h_c + self.beta*P/S                                 #vy: why I there both OliverPharr and inverseOliver-Pharr? Does it use both at once, does it choose between them, based on what, do they complement each other, how 
     return h.flatten()
 
 
   @staticmethod
-  def UnloadingPowerFunc(h_,B,hf,m):
+  def UnloadingPowerFunc(h_,B,hf,m): #vy: Those are the fitting parameters for the powerlaw function right? What is what exactly, may be we should have somewhere additionally mentioned all used parameters?
     """
     internal function describing the unloading regime
     """
@@ -279,7 +279,7 @@ class Indentation:
     S, mask, opt, powerlawFit = [], None, None, []
     maxDeltaP = -0.01
     t = self.t - np.min(self.t)  #undo resetting zero during init
-    validMask = np.zeros_like(P, dtype=bool)
+    validMask = np.zeros_like(P, dtype=bool)          #vy: How is validMask defined again?
     if plot:
       plt.plot(h,P,'-k')
     for cycleNum, cycle in enumerate(self.iLHU):
@@ -293,7 +293,7 @@ class Indentation:
       if plot:
         plt.plot(h[mask],P[mask],'ob')
       hf0 = (h[-1]+h[mask][-1])/2.0
-      m0  = 2
+      m0  = 2                                         #vy: Ah, here are the fitting parameters, changing m0 doesn’t help with the poor fitting however :?
       B0  = P[0] / np.power(h[0]-hf0,m0)
       # Old linear assumptions
       # B0  = (P[mask][-1]-P[mask][0])/(h[mask][-1]-h[mask][0])
@@ -1353,7 +1353,7 @@ class Indentation:
       if re.match(r'Test \d+',key):
         self.testList.append(key)
     if len(self.testList)==0:
-      print("ERROR USE LATEST CONVERTER THAT PRODUCES 'TEST' and not 'indent'")
+      print("ERROR USE LATEST CONVERTER THAT PRODUCES 'TEST' and not 'indent'")       #vy: I guess we don’t need that line anymore?
     self.fileName = fileName
     self.metaVendor = {}
     for key in self.datafile['metadata'].attrs:
@@ -2176,7 +2176,7 @@ class Tip:
     return area/1.e6
 
 
-  def areaFunctionInverse(self, area, h_c0=70):
+  def areaFunctionInverse(self, area, h_c0=70):               #vy: is h_c0 the same as h_cGuess from somewhere above?
     """
     INVERSE AREA FUNCTION: from area calculate contact depth h_c
 
