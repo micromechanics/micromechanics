@@ -2066,11 +2066,16 @@ class Tip:
   The main class to define indenter shape and other default values.
   
   Initialize indenter shape
+  
   Args:
     shape: list of prefactors (defualt = "perfect");
+    
     interpFunction: tip-shape function A_C = f(h_c), when it is given, other information are superseeded;
+    
     compliance: additional compliance in test [um/mN] (sensible values: 0.0001..0.01);
+    
     plot: plot indenter shape;
+    
     verbose: output;
   """
   def __init__(self, shape="perfect", interpFunction=None, compliance=0.0, plot=False, verbose=0):
@@ -2217,7 +2222,6 @@ class Tip:
     analytical: perfect shape is 2.792254*x
 
     Args:
-    
        maxDepth: maximum depth [um] to plot (default = 10um)
        
        steps: number of steps for plotting
