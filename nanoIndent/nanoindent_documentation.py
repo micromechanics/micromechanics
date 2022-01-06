@@ -2062,16 +2062,19 @@ def isfloat(value):
 
 
 class Tip:
+  """
+  The main class to define indenter shape and other default values.
+  
+  Initialize indenter shape
+  Args:
+    shape: list of prefactors (defualt = "perfect");
+    interpFunction: tip-shape function A_C = f(h_c), when it is given, other information are superseeded;
+    compliance: additional compliance in test [um/mN] (sensible values: 0.0001..0.01);
+    plot: plot indenter shape;
+    verbose: output;
+  """
   def __init__(self, shape="perfect", interpFunction=None, compliance=0.0, plot=False, verbose=0):
-    """
-    Initialize indenter shape
-    Args:
-       shape: list of prefactors, default="perfect"
-       interpFunction: interpolation function A_c(h_c): if given superseeds other information
-       compliance: additional compliance in um/mN. sensible values: 0.0001..0.01
-       plot: plot indenter shape
-       verbose: how much output
-    """
+
     #define indenter shape: could be overwritten
     if callable(interpFunction):
       self.prefactors = None
@@ -2107,35 +2110,35 @@ class Tip:
 
 
   def setInterpolationFunction(self,interpFunction):
+    """
+    The interpolation of tip-shape function A_c = f(h_c).
+    
+    From Oliver-Pharr Method, projected area of contact A_c can be obtained by measuring contact depth h_c.
+    When the interpolation function is given, other information are superseeded.
+    """
     self.interpFunction = interpFunction
     self.prefactors = None
     return
 
   def areaFunction(self, h):
     """
-    AREA FUNCTION: from contact depth (h_c) to calculate area
+    AREA FUNCTION: calculation of area from contact depth h_c.
 
-    Note: there is conversion at the start and the end 
-    
-    - inside of all functions are using [nm];
-    
-    - outside of this function uses [um];
+    Note: there is conversion for unit as [nm] is used in AREA FUNCTION, while outside of this function uses [um].
 
     prefactors:
     
-    - "ISO" type area function A=ax^2+bx^1+cx^0.5... (unit:nm)
+    - "ISO" type area function: A=ax^2+bx^1+cx^0.5... [nm]
     
     - "perfect" type area function of a perfect Berkovich: A=3*sqrt(3)*tan(65.27)^2 h_c^2 = 24.494 h_c^2
     
-    - "sphere" type: A=pi(2Rh-h^2) h=depth, R indenter radius; for small h-> h^2=0<br>
-    
-    prefactors [-pi, 2piR] R in nm<br> does not account for cone at top; hence here other approach<br>
+    - "sphere" type: A=pi(2Rh-h^2) (h=depth, when h is small, h^2 =0; R:indenter radius [nm])
 
    Args:
        h [array]: contact depth [um]
 
     Returns:
-       area projected contact area [um^2]
+       area: projected contact area [um^2]
     """
     h = h* 1000.   #starting here: all is in nm
     threshH = 1.e-3 #1pm
@@ -2173,30 +2176,26 @@ class Tip:
     else:
       print("*ERROR*: prefactors last value does not contain type")
     area[area<0] = 0.0
-    return area/1.e6
+    return area/1.e6 # conversion of unit from nm^2 to um^2
 
 
   def areaFunctionInverse(self, area, h_c0=70):               #vy: is h_c0 the same as h_cGuess from somewhere above?
     """
-    INVERSE AREA FUNCTION: from area calculate contact depth h_c
-
-    using Newton iteration with initial guess contact depth h_c0<br>
+    INVERSE AREA FUNCTION: calculation of contact depth h_c from projected area, using Newton iteration with initial Guess contact depth h_c0
 
     prefactors:
     
-    -  "ISO" type area function: A=ax^2+bx^1+cx^0.5... (unit: nm)
+    -  "ISO" type area function: A=ax^2+bx^1+cx^0.5... [unit: nm]
     
     -  "perfect" type area function of a perfect Berkovich: A=3*sqrt(3)*tan(65.27)^2 h_c^2 = 24.494 h_c^2
 
     Args:
-    
        area: projected contact area
       
-       h_c0: initial guess contact depth
+       h_c0: initial Guess contact depth
 
     Returns:
-    
-       h depth
+       h: depth
     """
     ## define function in form f(x)-y=0
     def function(height):
@@ -2219,7 +2218,7 @@ class Tip:
 
     Args:
     
-       maxDepth: maximum depth [um] to plot (default=10um)
+       maxDepth: maximum depth [um] to plot (default = 10um)
        
        steps: number of steps for plotting
        
