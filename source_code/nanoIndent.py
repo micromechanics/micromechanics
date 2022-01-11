@@ -159,6 +159,7 @@ class Indentation:
 
     Args:
        redE (float): reduced Youngs modulus [GPa]
+
        nuThis (float): use a non-standard Poission's ratio
 
     Returns:
@@ -177,6 +178,7 @@ class Indentation:
 
     Args:
        E (float): Youngs modulus [GPa]
+
        nuThis (float): use a non-standard Young's modulus
 
     Returns:
@@ -193,15 +195,21 @@ class Indentation:
     """
     Conventional Oliver-Pharr indentation method to calculate reduced Modulus E*
 
-    The following equations are used in that order:<br>
-      h_c = h-beta P/S<br>
-      A = h_c(prefactors)<br>
-      S = 2/sqrt(pi) sqrt(A) E*<br>
-      A the contact area, h_c the contact depth<br>
+    The following equations are used in that order:
 
+      h_c = h-beta P/S
+
+      A = h_c(prefactors)
+
+      S = 2/sqrt(pi) sqrt(A) E*
+
+      A the contact area, h_c the contact depth
+      
     Args:
        S (float): stiffness = slope dP/dh
+
        P (float): maximal force
+
        h (float): total penetration depth
 
     Returns:
@@ -214,22 +222,29 @@ class Indentation:
     E   = S / (2.0*np.sqrt(A)/np.sqrt(np.pi))
     return [E, A, h_c]
 
-
   def inverseOliverPharrMethod(self, S, P, E):
     """
     Inverse Oliver-Pharr indentation method to calculate contact area A
+
+    equations and variable definitions given above; order in reverse order
     - equations and variable definitions given above; order in reverse order
     - only used for verification of the Oliver-Pharr Method
 
     Args:
        S (float): slope dP/dh
+
        P (float): maximal force
+
        E (float): reducedModulus E*
 
     Returns:
        float: h penetration depth
     """
     A = math.pow( S / (2.0*E/math.sqrt(math.pi))  ,2)
+    h_cGuess = math.sqrt(A / 24.494) # first guess: perfect Berkovich
+    # print("  DEBUG A,self.beta,P,S,h_c0", A, self.beta, P, S, h_cGuess)
+    h_c = self.tip.areaFunctionInverse(A, h_c0=h_cGuess)    #vy: What is the difference between h_c0 and h_cGuess? 
+    h = h_c + self.beta*P/S                                 #vy: why I there both OliverPharr and inverseOliver-Pharr? Does it use both at once, does it choose between them, based on what, do they complement each other, how 
     h_c0 = math.sqrt(A / 24.494)           # first guess: perfect Berkovich
     h_c = self.tip.areaFunctionInverse(A, h_c0=h_c0)
     h = h_c + self.beta*P/S
@@ -245,6 +260,7 @@ class Indentation:
     - m:  exponent       (no physical meaning)
     - hf: final depth = depth where force becomes 0
     """
+
     mask = (h_-hf)>=0
     value = np.zeros_like(h_)
     value = B*np.power(h_-hf,m)
@@ -258,12 +274,15 @@ class Indentation:
 
     Args:
        P (np.array): vector of forces
+
        h (np.array): vector of depth
+
        plot (bool): plot results
 
     Returns:
        list: stiffness, validMask [values of P,h where stiffness is determined], mask, optimalVariables, powerlawFit-success
     """
+    debug = False
     if self.method== Method.CSM:
       print("*ERROR* Should not land here: CSM method")
       return None,None,None,None
@@ -483,7 +502,9 @@ class Indentation:
 
     Args:
        minDepth: minimum depth for fitting line
+
        plot: plot curve and slope
+       
        calibrate: calibrate additional stiffness and save value
     """
     compliance0 = self.compliance
@@ -530,12 +551,15 @@ class Indentation:
     and offset depth,force,time by the surface
 
     Future improvements:
+
     - surface identification in future
     - handle more cases
 
     Args:
        slopeThreshold: threshold slope in P-h curve for contact: 200,300
+
        compareRead: compare new results to the ones from the file
+
        plot: plot comparison new data and data from file
     """
     if self.vendor!=Vendor.Agilent or self.method==Method.CSM:
@@ -585,6 +609,7 @@ class Indentation:
   def analyse(self):
     """
     update slopes/stiffness, Young's modulus and hardness after displacement correction by:
+
     - compliance change
 
     ONLY DO ONCE AFTER LOADING FILE: if this causes issues introduce flag analysed which is toggled during loading and analysing
@@ -605,11 +630,13 @@ class Indentation:
   def analyseDrift(self, plot=True, fraction=None, timeStart=None):
     """
     Analyse drift segment by:
+
     - Hysitron before the test
     - Micromaterials after the test
 
     Args:
        plot: plot drift data
+
        fraction: fraction of data used for fitting (Micromaterials uses last 0.6)
        timeStart: initial timestamp used for drift analysis; e.g. after 20sec;
                   this superseeds fraction
@@ -969,6 +996,7 @@ class Indentation:
 
     Args:
        fileName: file name
+
        plotContact: plot intial contact identification (use this method for access)
     """
     from io import StringIO
@@ -1689,7 +1717,9 @@ class Indentation:
     Args:
        critDepth: frame stiffness: what is the minimum depth of data used
        critForce: frame stiffness: what is the minimum force used for fitting
+
        plotStiffness: plot stiffness graph with compliance
+
        returnAxis: return axis of plot
     """
     print("Start compliance fitting")
@@ -1773,6 +1803,7 @@ class Indentation:
 
     Args:
       bounds: min,max boundaries to determine if K2P,E,H are correct
+      
       numPoints: number of points plotted in depth, used for interpolation
     """
     value      = ['k2p',      'modulus',   'hardness']
@@ -2023,17 +2054,24 @@ def isfloat(value):
 
 
 class Tip:
+  """
+  The main class to define indenter shape and other default values.
+  
+  Initialize indenter shape
+  
+  Args:
+    shape: list of prefactors (defualt = "perfect");
+    
+    interpFunction: tip-shape function A_C = f(h_c), when it is given, other information are superseeded;
+    
+    compliance: additional compliance in test [um/mN] (sensible values: 0.0001..0.01);
+    
+    plot: plot indenter shape;
+    
+    verbose: output;
+  """
   def __init__(self, shape="perfect", interpFunction=None, compliance=0.0, plot=False, verbose=0):
-    """
-    Initialize indenter shape
 
-    Args:
-       shape: list of prefactors, default="perfect"
-       interpFunction: interpolation function A_c(h_c): if given superseeds other information
-       compliance: additional compliance in um/mN. sensible values: 0.0001..0.01
-       plot: plot indenter shape
-       verbose: how much output
-    """
     #define indenter shape: could be overwritten
     if callable(interpFunction):
       self.prefactors = None
@@ -2069,6 +2107,12 @@ class Tip:
 
 
   def setInterpolationFunction(self,interpFunction):
+    """
+    The interpolation of tip-shape function A_c = f(h_c).
+    
+    From Oliver-Pharr Method, projected area of contact A_c can be obtained by measuring contact depth h_c.
+    When the interpolation function is given, other information are superseeded.
+    """
     self.interpFunction = interpFunction
     self.prefactors = None
     return
@@ -2090,7 +2134,7 @@ class Tip:
        h [array]: contact depth in um
 
     Returns:
-       area projected contact area in [um2]
+       area: projected contact area [um^2]
     """
     h = h* 1000.   #starting here: all is in nm
     threshH = 1.e-3 #1pm
@@ -2128,7 +2172,7 @@ class Tip:
     else:
       print("*ERROR*: prefactors last value does not contain type")
     area[area<0] = 0.0
-    return area/1.e6
+    return area/1.e6 # conversion of unit from nm^2 to um^2
 
 
   def areaFunctionInverse(self, area, h_c0=70):
@@ -2143,6 +2187,8 @@ class Tip:
 
     Args:
        area: projected contact area
+      
+       h_c0: initial Guess contact depth
        h_c0: initial guess contact depth
 
     Returns:
