@@ -1,7 +1,7 @@
 Documentation
 ================================
 
-.. automodule:: nanoindent_documentation
+.. automodule:: nanoIndent
    :members:
    :undoc-members:
    :show-inheritance:
