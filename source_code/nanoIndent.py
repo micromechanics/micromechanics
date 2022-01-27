@@ -242,8 +242,8 @@ class Indentation:
     A = math.pow( S / (2.0*E/math.sqrt(math.pi))  ,2)
     h_cGuess = math.sqrt(A / 24.494) # first guess: perfect Berkovich #Nicole: explain about h_cGuess in documentation is better
     # print("  DEBUG A,self.beta,P,S,h_c0", A, self.beta, P, S, h_cGuess)
-    h_c = self.tip.areaFunctionInverse(A, h_c0=h_cGuess)    #vy: What is the difference between h_c0 and h_cGuess? 
-    h = h_c + self.beta*P/S                                 #vy: why I there both OliverPharr and inverseOliver-Pharr? Does it use both at once, does it choose between them, based on what, do they complement each other, how 
+    h_c = self.tip.areaFunctionInverse(A, h_c0=h_cGuess)     
+    h = h_c + self.beta*P/S                                  
     h_c0 = math.sqrt(A / 24.494)           # first guess: perfect Berkovich
     h_c = self.tip.areaFunctionInverse(A, h_c0=h_c0)
     h = h_c + self.beta*P/S
