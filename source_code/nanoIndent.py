@@ -78,7 +78,7 @@ class Indentation:
        nuMat: material's Poisson ratio.
        tip:  tip class to use; None=perfect
        verbose: the higher, the more information printed: 2=default, 1=minimal, 0=print nothing
-       filterFunction: callback function to filter
+       filterFunction: callback function to filter              #vy: function to filter what, how?
     """
     self.nuMat = nuMat
     self.nuIndent = 0.07
@@ -545,7 +545,7 @@ class Indentation:
     return prefactors
 
 
-  def tareDepthForce(self, slopeThreshold=100, compareRead=False, plot=False):      #vy: How can I make this work? Changing slopeThreshold doesn’t seem to do the work
+  def tareDepthForce(self, slopeThreshold=100, compareRead=False, plot=False):      #vy: I don’t understand this. How can I make it work? Changing slopeThreshold doesn’t work
     """
     Calculate surface contact (by slope being larger than threshold)
     and offset depth,force,time by the surface
@@ -2062,15 +2062,15 @@ class Tip:
   Args:
     shape: list of prefactors (defualt = "perfect");
     
-    interpFunction: tip-shape function A_C = f(h_c), when it is given, other information are superseeded;
+    interpFunction: tip-shape function A_C = f(h_c), when it is given, other information are superseeded;     #vy: can interpFunction be used to calibrate the tip shape? Or how to use it?
     
-    compliance: additional compliance in test [um/mN] (sensible values: 0.0001..0.01);
+    compliance: additional compliance in test [um/mN] (sensible values: 0.0001..0.01);                        #vy: is this the compliance measured during calibration in FischerScope?
     
     plot: plot indenter shape;
     
     verbose: output;
   """
-  def __init__(self, shape="perfect", interpFunction=None, compliance=0.0, plot=False, verbose=0):
+  def __init__(self, shape="perfect", interpFunction=None, compliance=0.0, plot=False, verbose=0):            #vy: it’s not plotting the "this tip" function. I thought if I include the areaFunction it will calculate it automatically. What am I doing wrong and how can I use this?
 
     #define indenter shape: could be overwritten
     if callable(interpFunction):
