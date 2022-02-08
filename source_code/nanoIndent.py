@@ -100,7 +100,7 @@ class Indentation:
     self.h, self.t, self.p, self.valid       = [],[],[],[]
     self.hRaw = []
     self.slope, self.k2p, self.h_c, self.A_c = [],[],[],[]
-    self.modulus, self.modulusRed, self.hardness = [],[],[]
+    self.modulus, self.modulusRed, self.hardness = [],[],[]             #vy: what is the difference between "Ered", "E*" and "modulusRed"? And "modulus" and "E"?
 
     #initialize and load first data set
     #set default parameters
