@@ -261,7 +261,7 @@ class Indentation:
     - hf: final depth = depth where force becomes 0
     """
 
-    mask = (h_-hf)>=0    # Nicole: mask seems no use here, should thers is error for load is neagtive?
+    mask = (h_-hf)>=0    # Nicole: mask seems no use here, should thers is an error when load is neagtive?
     value = np.zeros_like(h_)
     value = B*np.power(h_-hf,m)
     return value
