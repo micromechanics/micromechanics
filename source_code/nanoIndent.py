@@ -429,8 +429,8 @@ class Indentation:
   # @name Calculate YoungsModulus, Hardess and deterimine area function
   # Access to class variables
   #@{
-  def calcYoungsModulus(self, minDepth=-1, plot=False):
-    """
+  def calcYoungsModulus(self, minDepth=-1, plot=False):                             #vy: If I try to plot, it gives an error in line 455: "plt.plot(self.h[self.h>minDepth], self.modulus[self.h>minDepth], '-r', lw=3, label='read'"
+    """                                                                             #vy: IndexError: boolean index did not match indexed array along dimension 0; dimension is 1 but corresponding boolean dimension is 410.
     Calculate and plot Young's modulus as a function of the depth
     -  use corrected h, s (do not recalculate)
 
@@ -496,7 +496,7 @@ class Indentation:
     return
 
 
-  def calcStiffness2Force(self, minDepth=0.01, plot=True, calibrate=False):
+  def calcStiffness2Force(self, minDepth=0.01, plot=True, calibrate=False):             #vy:Error in line 510: "compliance0 = self.compliance": AttributeError: 'Indentation' object has no attribute 'compliance'
     """
     Calculate and plot stiffness squared over force as a function of the depth
 
@@ -545,7 +545,7 @@ class Indentation:
     return prefactors
 
 
-  def tareDepthForce(self, slopeThreshold=100, compareRead=False, plot=False):      #vy: I don’t understand this. How can I make it work? Changing slopeThreshold doesn’t work
+  def tareDepthForce(self, slopeThreshold=100, compareRead=False, plot=False):      #vy: Oh, this actually said it’s only valid for ISO method of Agilent right now and nothing broke :)
     """
     Calculate surface contact (by slope being larger than threshold)
     and offset depth,force,time by the surface
