@@ -100,7 +100,7 @@ class Indentation:
     self.h, self.t, self.p, self.valid       = [],[],[],[]
     self.hRaw = []
     self.slope, self.k2p, self.h_c, self.A_c = [],[],[],[]
-    self.modulus, self.modulusRed, self.hardness = [],[],[]             #vy: what is the difference between "Ered", "E*" and "modulusRed"? And "modulus" and "E"?
+    self.modulus, self.modulusRed, self.hardness = [],[],[]             #vy: Difference between "Ered", "E*" and "modulusRed"? And "modulus" and "E"?
 
     #initialize and load first data set
     #set default parameters
@@ -545,7 +545,7 @@ class Indentation:
     return prefactors
 
 
-  def tareDepthForce(self, slopeThreshold=100, compareRead=False, plot=False):      #vy: Oh, this actually said it’s only valid for ISO method of Agilent right now and nothing broke :)
+  def tareDepthForce(self, slopeThreshold=100, compareRead=False, plot=False):      #vy:
     """
     Calculate surface contact (by slope being larger than threshold)
     and offset depth,force,time by the surface
@@ -2062,7 +2062,7 @@ class Tip:
   Args:
     shape: list of prefactors (defualt = "perfect");
     
-    interpFunction: tip-shape function A_C = f(h_c), when it is given, other information are superseeded;     #vy: can interpFunction be used to calibrate the tip shape? Or how to use it?
+    interpFunction: tip-shape function A_C = f(h_c), when it is given, other information are superseeded;     #vy: confused: how to get interpFunction? From setInterpolationFunction(), from areaFunction(), or do i need a whole different calibration measurement in the indenter to get such coefficients?
     
     compliance: additional compliance in test [um/mN] (sensible values: 0.0001..0.01);                        #vy: is this the compliance measured during calibration in FischerScope?
     
@@ -2070,7 +2070,7 @@ class Tip:
     
     verbose: output;
   """
-  def __init__(self, shape="perfect", interpFunction=None, compliance=0.0, plot=False, verbose=0):            #vy: it’s not plotting the "this tip" function. I thought if I include the areaFunction it will calculate it automatically. What am I doing wrong and how can I use this?
+  def __init__(self, shape="perfect", interpFunction=None, compliance=0.0, plot=False, verbose=0):            
 
     #define indenter shape: could be overwritten
     if callable(interpFunction):
