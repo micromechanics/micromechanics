@@ -545,7 +545,7 @@ class Indentation:
     return prefactors
 
 
-  def tareDepthForce(self, slopeThreshold=100, compareRead=False, plot=False):      #vy:
+  def tareDepthForce(self, slopeThreshold=100, compareRead=False, plot=False):
     """
     Calculate surface contact (by slope being larger than threshold)
     and offset depth,force,time by the surface
