@@ -69,7 +69,7 @@ class Indentation:
   """
   Main class
   """
-  def __init__(self, fileName, nuMat= 0.3, tip=None, verbose=2, filterFunction=None):
+  def __init__(self, fileName, nuMat= 0.3, tip=None, verbose=2):
     """
     Initialize indentation experiment data
 
@@ -78,7 +78,6 @@ class Indentation:
        nuMat: material's Poisson ratio.
        tip:  tip class to use; None=perfect
        verbose: the higher, the more information printed: 2=default, 1=minimal, 0=print nothing
-       filterFunction: callback function to filter              #vy: function to filter what, how?
     """
     self.nuMat = nuMat
     self.nuIndent = 0.07
@@ -87,7 +86,7 @@ class Indentation:
     self.verbose = verbose
     self.method    = Method.ISO                             #iso default: csm uses different methods
     self.onlyLoadingSegment = False                         #use all data by default
-    self.filterFunction = filterFunction
+    
     if tip is None:
       tip = Tip()
     self.tip = tip
@@ -100,7 +99,7 @@ class Indentation:
     self.h, self.t, self.p, self.valid       = [],[],[],[]
     self.hRaw = []
     self.slope, self.k2p, self.h_c, self.A_c = [],[],[],[]
-    self.modulus, self.modulusRed, self.hardness = [],[],[]             #vy: Difference between "Ered", "E*" and "modulusRed"? And "modulus" and "E"?
+    self.modulus, self.modulusRed, self.hardness = [],[],[]
 
     #initialize and load first data set
     #set default parameters
@@ -153,12 +152,12 @@ class Indentation:
   # @name CONVENTIONAL NANOINDENTATION FUNCTIONS: area, E,.
   # only area prefactors and stiffness are class variables
   #@{
-  def YoungsModulus(self, redE, nuThis=-1):
+  def YoungsModulus(self, modulusRed, nuThis=-1):
     """
     Calculate the Youngs modulus from the reduced Youngs modulus
 
     Args:
-       redE (float): reduced Youngs modulus [GPa]
+       modulusRed (float): reduced Youngs modulus [GPa]
 
        nuThis (float): use a non-standard Poission's ratio
 
@@ -168,7 +167,7 @@ class Indentation:
     nu = self.nuMat
     if nuThis>0:
       nu = nuThis
-    E = (1.0-nu*nu) / ( 1.0/redE - (1.0-self.nuIndent*self.nuIndent)/self.EIndent )
+    E = (1.0-nu*nu) / ( 1.0/modulusRed - (1.0-self.nuIndent*self.nuIndent)/self.EIndent )
     return E
 
 
@@ -187,13 +186,13 @@ class Indentation:
     nu = self.nuMat
     if nuThis>0:
       nu = nuThis
-    Ered =  1.0/(  (1.0-nu*nu)/E + (1.0-self.nuIndent*self.nuIndent)/self.EIndent )
-    return Ered
+    modulusRed =  1.0/(  (1.0-nu*nu)/E + (1.0-self.nuIndent*self.nuIndent)/self.EIndent )
+    return modulusRed
 
 
   def OliverPharrMethod(self, S, P, h):
     """
-    Conventional Oliver-Pharr indentation method to calculate reduced Modulus E*
+    Conventional Oliver-Pharr indentation method to calculate reduced Modulus modulusRed
 
     The following equations are used in that order:
 
@@ -201,7 +200,7 @@ class Indentation:
 
       A = h_c(prefactors)   
 
-      S = 2/sqrt(pi) sqrt(A) E*
+      S = 2/sqrt(pi) sqrt(A) modulusRed
 
       A the contact area, h_c the contact depth
       
@@ -213,7 +212,7 @@ class Indentation:
        h (float): total penetration depth
 
     Returns:
-       list: reducedModulus E*, A, h_c
+       list: modulusRed, A, h_c
     """
     threshA = 1.e-12  #units in um: threshold = 1pm^2
     h_c = h - self.beta*P/S
@@ -234,21 +233,16 @@ class Indentation:
 
        P (float): maximal force
 
-       E (float): reducedModulus E*
+       E (float): modulusRed
 
     Returns:
        float: h penetration depth
     """
     A = math.pow( S / (2.0*E/math.sqrt(math.pi))  ,2)
-    h_cGuess = math.sqrt(A / 24.494) # first guess: perfect Berkovich 
-    # print("  DEBUG A,self.beta,P,S,h_c0", A, self.beta, P, S, h_cGuess)
-    h_c = self.tip.areaFunctionInverse(A, h_c0=h_cGuess)     
-    h = h_c + self.beta*P/S                                  
-    h_c0 = math.sqrt(A / 24.494)           # first guess: perfect Berkovich # Nicole: difference between h_c0 and h_cGuess? since they have same value
+    h_c0 = math.sqrt(A / 24.494)           # first guess: perfect Berkovich
     h_c = self.tip.areaFunctionInverse(A, h_c0=h_c0)
     h = h_c + self.beta*P/S
     return h.flatten() 
-
 
 
   @staticmethod
@@ -260,8 +254,6 @@ class Indentation:
     - m:  exponent       (no physical meaning)
     - hf: final depth = depth where force becomes 0
     """
-
-    mask = (h_-hf)>=0    # Nicole: mask seems no use here, should thers is an error when load is neagtive?
     value = np.zeros_like(h_)
     value = B*np.power(h_-hf,m)
     return value
@@ -282,7 +274,6 @@ class Indentation:
     Returns:
        list: stiffness, validMask [values of P,h where stiffness is determined], mask, optimalVariables, powerlawFit-success
     """
-    debug = False
     if self.method== Method.CSM:
       print("*ERROR* Should not land here: CSM method")
       return None,None,None,None
@@ -366,7 +357,7 @@ class Indentation:
     Args:
        correctH: correct depth such that curves aligned
        plot: plot pop-in curve
-       removeInitialNM: remove initial nm from data as they have large scatter  #Nicole: don't understand this parameter
+       removeInitialNM: remove initial nm from data as they have large scatter
 
     Returns:
        pop-in force, dictionary of certainty
@@ -496,7 +487,7 @@ class Indentation:
     return
 
 
-  def calcStiffness2Force(self, minDepth=0.01, plot=True, calibrate=False):             #vy:Error in line 510: "compliance0 = self.compliance": AttributeError: 'Indentation' object has no attribute 'compliance'
+  def calcStiffness2Force(self, minDepth=0.01, plot=True, calibrate=False):
     """
     Calculate and plot stiffness squared over force as a function of the depth
 
@@ -507,7 +498,7 @@ class Indentation:
        
        calibrate: calibrate additional stiffness and save value
     """
-    compliance0 = self.compliance  
+    compliance0 = self.tip.compliance  
     prefactors = None
     def errorFunction(compliance):
       s   = 1./(1./self.sRaw-compliance)
@@ -955,9 +946,7 @@ class Indentation:
       mask = np.isfinite(data)
       mask[mask] = data[mask]<1e99
       self.valid = np.logical_and(self.valid, mask)                       #adopt/reduce mask continously
-    if self.filterFunction:
-      self.valid = self.filterFunction(self.valid,h,np.array(df[self.indicies['p']][1:-1], dtype=np.float),slope)
-
+    
     #Run through all items again and crop to only valid data
     for index in self.indicies:
       data = np.array(df[self.indicies[index]][1:-1], dtype=np.float)
@@ -1426,12 +1415,12 @@ class Indentation:
     if self.method == Method.CSM or len(self.slope)==1:
       i = -1 # only last value is saved
       meta = {"S_mN/um":self.slope[i], "hMax_um":self.h[self.valid][i], "pMax_mN":self.p[self.valid][i],\
-                "redE_GPa":self.modulusRed[i], "A_um2":self.A_c[i], "hc_um":self.h_c[i], "E_GPa":self.modulus[i],\
+                "modulusRed_GPa":self.modulusRed[i], "A_um2":self.A_c[i], "hc_um":self.h_c[i], "E_GPa":self.modulus[i],\
                 "H_GPa":self.hardness[i],"segment":str(i+1)}
     else:
       segments = [str(i+1) for i in range(len(self.slope))]
       meta = {"S_mN/um":self.slope, "hMax_um":self.h[self.valid], "pMax_mN":self.p[self.valid],\
-              "redE_GPa":self.modulusRed, "A_um2":self.A_c, "hc_um":self.h_c, "E_GPa":self.modulus,\
+              "modulusRed_GPa":self.modulusRed, "A_um2":self.A_c, "hc_um":self.h_c, "E_GPa":self.modulus,\
               "H_GPa":self.hardness,"segment":segments}
     self.metaUser.update(meta)
     self.metaUser['code'] = __file__.split('/')[-1]
@@ -1517,18 +1506,18 @@ class Indentation:
     stiffnessSquaredForce, ContactDepth, Contact Area, reducedModulus
 
     Args:
-      property: what to plot on y-axis [E,H,K,K2P,h_c,A_c,Ered]
+      property: what to plot on y-axis [E,H,K,K2P,h_c,A_c,modulusRed]
       saveFig: save plot to file [use known filename plus extension png]
     """
     if not isinstance(property, str):
-      print("**ERROR plotAsDepth: property=[E,H,K,K2P,h_c,A_c,Ered]")
+      print("**ERROR plotAsDepth: property=[E,H,K,K2P,h_c,A_c,modulusRed]")
       return
     if hvline is not None:
       plt.axhline(hvline, c='k')
     if   property == "E":
       plt.plot(self.h[self.valid], self.modulus, "o")
       plt.ylabel("Young's modulus [GPa]")
-    elif property == "Ered":
+    elif property == "modulusRed":
       plt.plot(self.h[self.valid], self.modulusRed, "o")
       plt.ylabel("reduced Young's modulus [GPa]")
     elif property == "H":
@@ -1620,8 +1609,8 @@ class Indentation:
 
     ## fit shape function
     #reverse OliverPharrMethod to determine area function
-    EredGoal = self.ReducedModulus(eTarget, self.nuMat)
-    A = np.array( np.power( slope  / (2.0*EredGoal/np.sqrt(np.pi))  ,2))
+    modulusRedGoal = self.ReducedModulus(eTarget, self.nuMat)
+    A = np.array( np.power( slope  / (2.0*modulusRedGoal/np.sqrt(np.pi))  ,2))
     h_c = np.array( h - self.beta*p/slope )
     #calculate shape function as interpolation of 30 points (log-spacing)
     #  first calculate the  savgol-average using a adaptive window-size
@@ -1703,7 +1692,7 @@ class Indentation:
       res['End A_c: ave,stderr']=[      dfAll['A_um2'][maskPrint].mean(),  dfAll['A_um2'][maskPrint].std()/  dfAll['A_um2'][maskPrint].count()]
       res['End h_c: ave,stderr']=[      dfAll['hc_um'][maskPrint].mean(),  dfAll['hc_um'][maskPrint].std()/  dfAll['hc_um'][maskPrint].count()]
       res['End E: ave,stderr']=[  dfAll['E_GPa'].mean(),   dfAll['E_GPa'].std()/   dfAll['E_GPa'].count()]
-      res['End E_r: ave,stderr']=[dfAll['redE_GPa'].mean(),dfAll['redE_GPa'].std()/dfAll['redE_GPa'].count()]
+      res['End E_r: ave,stderr']=[dfAll['modulusRed_GPa'].mean(),dfAll['modulusRed_GPa'].std()/dfAll['modulusRed_GPa'].count()]
       res['End H: ave,stderr']=[  dfAll['H_GPa'].mean(),   dfAll['H_GPa'].std()/   dfAll['H_GPa'].count()]
     if numPolynomial is None:
       return res, interpolationFunct
@@ -1930,16 +1919,16 @@ class Indentation:
     print("      totalDepth  = 111.901346020458 nm")
     print("      H           = 0.82150309678705 GPa")
     print("      E           = 190.257729329881 GPa")
-    print("      redE        = 182.338858733495 GPa")
+    print("      modulusRed  = 182.338858733495 GPa")
     print("      Stiffness Squared Over Load=51529.9093101531 GPa")
     print("      ContactArea = 598047.490101769 nm^2")
-    [redE, A_c, _]  = self.OliverPharrMethod(np.array([harmStiff]), np.array([load]), np.array([totalDepth]))
+    [modulusRed, A_c, _]  = self.OliverPharrMethod(np.array([harmStiff]), np.array([load]), np.array([totalDepth]))
     print("   Evaluated by this python method")
-    print("      reducedModulus [GPa] =",round(redE[0],4),"  with error=", round((redE[0]-182.338858733495)*100/182.338858733495,4),'%')
+    print("      reducedModulus [GPa] =",round(modulusRed[0],4),"  with error=", round((modulusRed[0]-182.338858733495)*100/182.338858733495,4),'%')
     print("      ContactArea    [um2] =",round(A_c[0],4),"  with error=", round((A_c[0]-598047.490101769/1.e6)*100/598047.490101769/1.e6,4),'%')
-    E = self.YoungsModulus(redE)
+    E = self.YoungsModulus(modulusRed)
     print("      Youngs Modulus [GPa] =",round(E[0],4),"  with error=", round((E[0]-190.257729329881)*100/190.257729329881,4),'%')
-    totalDepth2 = self.inverseOliverPharrMethod(np.array([harmStiff]), np.array([load]), redE)
+    totalDepth2 = self.inverseOliverPharrMethod(np.array([harmStiff]), np.array([load]), modulusRed)
     print("      By using inverse methods: total depth h=",totalDepth2[0], "[um]  with error=", round((totalDepth2[0]-totalDepth)*100/totalDepth,4),'%')
     print("End Test")
     return
@@ -1964,17 +1953,17 @@ class Indentation:
     print("      H           = 10.0514655820034 GPa")
     print("      E           = 75.1620054287519 GPa")
     print("      Stiffness Squared Over Load=670.424429535749 GPa")
-    [redE, _, _]  = self.OliverPharrMethod(np.array([harmStiff]), np.array([load]), np.array([totalDepth]))
-    E = self.YoungsModulus(redE)
+    [modulusRed, _, _]  = self.OliverPharrMethod(np.array([harmStiff]), np.array([load]), np.array([totalDepth]))
+    E = self.YoungsModulus(modulusRed)
     print("      Youngs Modulus [GPa] =",E[0],"  with error=", round((E[0]-75.1620054287519)*100/75.1620054287519,4),'%'  )
-    totalDepth2 = self.inverseOliverPharrMethod(np.array([harmStiff]), np.array([load]), redE)
+    totalDepth2 = self.inverseOliverPharrMethod(np.array([harmStiff]), np.array([load]), modulusRed)
     print("      By using inverse methods: total depth h=",totalDepth2[0], "[um]  with error=", round((totalDepth2[0]-totalDepth)*100/totalDepth,4), '%')
     print("End Test")
     return
 
   def verifyReadCalc(self, plot=True):
-    redE,A_c,h_c = self.OliverPharrMethod(self.slope, self.p[self.valid], self.h[self.valid])
-    E = self.YoungsModulus(redE)
+    modulusRed,A_c,h_c = self.OliverPharrMethod(self.slope, self.p[self.valid], self.h[self.valid])
+    E = self.YoungsModulus(modulusRed)
     H = self.p[self.valid] / A_c
     if self.method==Method.CSM:
       if plot:
@@ -2005,16 +1994,16 @@ class Indentation:
     if self.method==Method.CSM:
       if plot:
         plt.plot(self.t[self.valid],self.modulusRed,'o',label='read')
-        plt.plot(self.t[self.valid],redE,label='calc')
+        plt.plot(self.t[self.valid],modulusRed,label='calc')
         plt.legend(loc=0)
         plt.xlim(left=0)
         plt.ylim([0,np.max(self.modulusRed)])
-        plt.title("Error in E*: {0:.2e}".format(np.linalg.norm((redE-self.modulusRed))) )
+        plt.title("Error in modulusRed: {0:.2e}".format(np.linalg.norm((modulusRed-self.modulusRed))) )
         plt.show()
       else:
-        print("Error in E*: {0:.2e}".format(np.linalg.norm((redE-self.modulusRed))))
+        print("Error in modulusRed: {0:.2e}".format(np.linalg.norm((modulusRed-self.modulusRed))))
     else:
-      print("Error in E*: %.3e %% between %.3e and %.3e" %(abs(redE-self.modulusRed)*100./redE,redE,self.modulusRed) )
+      print("Error in modulusRed: %.3e %% between %.3e and %.3e" %(abs(modulusRed-self.modulusRed)*100./modulusRed,modulusRed,self.modulusRed) )
     if self.method==Method.CSM:
       if plot:
         plt.plot(self.t[self.valid],self.modulus,'o',label='read')
@@ -2062,9 +2051,9 @@ class Tip:
   Args:
     shape: list of prefactors (defualt = "perfect");
     
-    interpFunction: tip-shape function A_C = f(h_c), when it is given, other information are superseeded;     #vy: confused: how to get interpFunction? From setInterpolationFunction(), from areaFunction(), or do i need a whole different calibration measurement in the indenter to get such coefficients?
+    interpFunction: tip-shape function A_C = f(h_c), when it is given, other information are superseeded;     
     
-    compliance: additional compliance in test [um/mN] (sensible values: 0.0001..0.01);                        #vy: is this the compliance measured during calibration in FischerScope?
+    compliance: additional compliance in test [um/mN] (sensible values: 0.0001..0.01);
     
     plot: plot indenter shape;
     
