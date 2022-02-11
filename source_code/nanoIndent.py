@@ -198,7 +198,7 @@ class Indentation:
 
       h_c = h-beta P/S
 
-      A = h_c(prefactors)   
+      A = h_c(prefactors)
 
       S = 2/sqrt(pi) sqrt(A) modulusRed
 
@@ -442,9 +442,11 @@ class Indentation:
     else:
       eAve, eStd = -1, 0
     if plot:
+      h = self.h[self.valid]
+      mark = '-' if len(E)>1 else 'o'
       if not self.modulus is None:
-        plt.plot(self.h[self.h>minDepth], self.modulus[self.h>minDepth], '-r', lw=3, label='read')
-      plt.plot(self.h[self.h>minDepth], E[self.h>minDepth], '-b', label='calc')
+        plt.plot(h[h>minDepth], self.modulus[h>minDepth], mark+'r', lw=3, label='read')
+      plt.plot(  h[h>minDepth], E[h>minDepth], mark+'b', label='calc')
       if minDepth>0:
         plt.axhline(eAve, color='k')
         plt.axhline(eAve+eStd, color='k', linestyle='dashed')
@@ -469,17 +471,18 @@ class Indentation:
     """
     H = self.p[self.valid] / self.OliverPharrMethod(self.slope, self.p[self.valid] , self.h[self.valid])[1] #use area function
     if plot:
-      plt.plot(self.h, H, '-b', label='calc') #Nicole: H only have one value, while h is a multi-dimensional array ??
+      mark = '-' if len(H)>1 else 'o'
+      plt.plot(self.h[self.valid], H, mark+'b', label='calc') #Nicole: H only have one value, while h is a multi-dimensional array ??
       if not self.hardness is None:
-        plt.plot(self.h, self.hardness, '-r', label='readFromFile')
+        plt.plot(self.h[self.valid], self.hardness, mark+'r', label='readFromFile')
       if minDepth>0:
-        HAve = np.average( H[  np.bitwise_and(H>0, self.h>minDepth) ] )
-        HStd = np.std(     H[  np.bitwise_and(H>0, self.h>minDepth) ] )
+        HAve = np.average( H[  np.bitwise_and(H>0, self.h[self.valid]>minDepth) ] )
+        HStd = np.std(     H[  np.bitwise_and(H>0, self.h[self.valid]>minDepth) ] )
         print("Average and StandardDeviation of Hardness",round(HAve,1) ,round(HStd,1) ,' [GPa]')
         plt.axhline(HAve, color='b')
         plt.axhline(HAve+HStd, color='b', linestyle='dashed')
         plt.axhline(HAve-HStd, color='b', linestyle='dashed')
-      plt.xlabel(r'depth \mathrm{\mu m}$]')
+      plt.xlabel(r'depth [$\mathrm{\mu m}]$]')
       plt.ylabel(r'hardness [$\mathrm{GPa}$]')
       plt.legend(loc=0)
       plt.show()
@@ -487,7 +490,7 @@ class Indentation:
     return
 
 
-  def calcStiffness2Force(self, minDepth=0.01, plot=True, calibrate=False):
+  def calcStiffness2Force(self, minDepth=0.01, plot=True, calibrate=False):             #vy:Error in line 510: "compliance0 = self.compliance": AttributeError: 'Indentation' object has no attribute 'compliance'
     """
     Calculate and plot stiffness squared over force as a function of the depth
 
