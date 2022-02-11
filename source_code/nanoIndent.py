@@ -254,12 +254,16 @@ class Indentation:
     - m:  exponent       (no physical meaning)
     - hf: final depth = depth where force becomes 0
     """
+<<<<<<< HEAD
+=======
+    
+>>>>>>> add0fbdcbef78d3e04458e3206d2c251d3321ee6
     value = np.zeros_like(h_)
     value = B*np.power(h_-hf,m)
     return value
 
 
-  def stiffnessFromUnloading(self, P, h, plot=False): #Nicole: how to use this fuction, it shows fitting failed when verbose =2
+  def stiffnessFromUnloading(self, P, h, plot=False): 
     """
     Calculate single unloading stiffness from Unloading
     see G200 manual, p7-6
@@ -274,6 +278,10 @@ class Indentation:
     Returns:
        list: stiffness, validMask [values of P,h where stiffness is determined], mask, optimalVariables, powerlawFit-success
     """
+<<<<<<< HEAD
+=======
+    
+>>>>>>> add0fbdcbef78d3e04458e3206d2c251d3321ee6
     if self.method== Method.CSM:
       print("*ERROR* Should not land here: CSM method")
       return None,None,None,None
