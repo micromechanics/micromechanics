@@ -167,16 +167,16 @@ class Indentation:
     nu = self.nuMat
     if nuThis>0:
       nu = nuThis
-    E = (1.0-nu*nu) / ( 1.0/modulusRed - (1.0-self.nuIndent*self.nuIndent)/self.EIndent )
-    return E
+    modulus = (1.0-nu*nu) / ( 1.0/modulusRed - (1.0-self.nuIndent*self.nuIndent)/self.EIndent )
+    return modulus
 
 
-  def ReducedModulus(self, E, nuThis=-1):
+  def ReducedModulus(self, modulus, nuThis=-1):
     """
     Calculate the reduced modulus from the Youngs modulus
 
     Args:
-       E (float): Youngs modulus [GPa]
+       modulus (float): Youngs modulus [GPa]
 
        nuThis (float): use a non-standard Young's modulus
 
@@ -186,7 +186,7 @@ class Indentation:
     nu = self.nuMat
     if nuThis>0:
       nu = nuThis
-    modulusRed =  1.0/(  (1.0-nu*nu)/E + (1.0-self.nuIndent*self.nuIndent)/self.EIndent )
+    modulusRed =  1.0/(  (1.0-nu*nu)/modulus + (1.0-self.nuIndent*self.nuIndent)/self.EIndent )
     return modulusRed
 
 
@@ -218,10 +218,10 @@ class Indentation:
     h_c = h - self.beta*P/S
     A   = self.tip.areaFunction(h_c)
     A[A< threshA] = threshA  # prevent zero or negative area that might lock sqrt
-    E   = S / (2.0*np.sqrt(A)/np.sqrt(np.pi))
-    return [E, A, h_c]
+    modulus   = S / (2.0*np.sqrt(A)/np.sqrt(np.pi))
+    return [modulus, A, h_c]
 
-  def inverseOliverPharrMethod(self, S, P, E):
+  def inverseOliverPharrMethod(self, S, P, modulusRed):
     """
     Inverse Oliver-Pharr indentation method to calculate contact area A
 
@@ -233,12 +233,12 @@ class Indentation:
 
        P (float): maximal force
 
-       E (float): modulusRed
+       modulusRed (float): modulusRed
 
     Returns:
        float: h penetration depth
     """
-    A = math.pow( S / (2.0*E/math.sqrt(math.pi))  ,2)
+    A = math.pow( S / (2.0*modulusRed/math.sqrt(math.pi))  ,2)
     h_c0 = math.sqrt(A / 24.494)           # first guess: perfect Berkovich
     h_c = self.tip.areaFunctionInverse(A, h_c0=h_c0)
     h = h_c + self.beta*P/S
@@ -420,8 +420,8 @@ class Indentation:
   # @name Calculate YoungsModulus, Hardess and deterimine area function
   # Access to class variables
   #@{
-  def calcYoungsModulus(self, minDepth=-1, plot=False):                             #vy: If I try to plot, it gives an error in line 455: "plt.plot(self.h[self.h>minDepth], self.modulus[self.h>minDepth], '-r', lw=3, label='read'"
-    """                                                                             #vy: IndexError: boolean index did not match indexed array along dimension 0; dimension is 1 but corresponding boolean dimension is 410.
+  def calcYoungsModulus(self, minDepth=-1, plot=False):
+    """
     Calculate and plot Young's modulus as a function of the depth
     -  use corrected h, s (do not recalculate)
 
@@ -461,7 +461,7 @@ class Indentation:
     return eAve
 
 
-  def calcHardness(self, minDepth=-1, plot=False): #Nicole: how to use this function, when i use there is error that depth and hardness can't match.
+  def calcHardness(self, minDepth=-1, plot=False):
     """
     Calculate and plot Hardness as a function of the depth
 
@@ -469,28 +469,28 @@ class Indentation:
        minDepth: minimum depth for fitting horizontal; if negative: no line is fitted
        plot: plot comparison this calculation to data read from file
     """
-    H = self.p[self.valid] / self.OliverPharrMethod(self.slope, self.p[self.valid] , self.h[self.valid])[1] #use area function
+    hardness = self.p[self.valid] / self.OliverPharrMethod(self.slope, self.p[self.valid] , self.h[self.valid])[1] #use area function
     if plot:
-      mark = '-' if len(H)>1 else 'o'
-      plt.plot(self.h[self.valid], H, mark+'b', label='calc') #Nicole: H only have one value, while h is a multi-dimensional array ??
+      mark = '-' if len(hardness)>1 else 'o'
+      plt.plot(self.h[self.valid], hardness, mark+'b', label='calc')
       if not self.hardness is None:
         plt.plot(self.h[self.valid], self.hardness, mark+'r', label='readFromFile')
       if minDepth>0:
-        HAve = np.average( H[  np.bitwise_and(H>0, self.h[self.valid]>minDepth) ] )
-        HStd = np.std(     H[  np.bitwise_and(H>0, self.h[self.valid]>minDepth) ] )
-        print("Average and StandardDeviation of Hardness",round(HAve,1) ,round(HStd,1) ,' [GPa]')
-        plt.axhline(HAve, color='b')
-        plt.axhline(HAve+HStd, color='b', linestyle='dashed')
-        plt.axhline(HAve-HStd, color='b', linestyle='dashed')
+        hardnessAve = np.average( hardness[  np.bitwise_and(hardness>0, self.h[self.valid]>minDepth) ] )
+        hardnessStd = np.std(     hardness[  np.bitwise_and(hardness>0, self.h[self.valid]>minDepth) ] )
+        print("Average and StandardDeviation of hardness",round(hardnessAve,1) ,round(hardnessStd,1) ,' [GPa]')
+        plt.axhline(hardnessAve, color='b')
+        plt.axhline(hardnessAve+hardnessStd, color='b', linestyle='dashed')
+        plt.axhline(hardnessAve-hardnessStd, color='b', linestyle='dashed')
       plt.xlabel(r'depth [$\mathrm{\mu m}]$]')
       plt.ylabel(r'hardness [$\mathrm{GPa}$]')
       plt.legend(loc=0)
       plt.show()
-    self.hardness = H
+    self.hardness = hardness
     return
 
 
-  def calcStiffness2Force(self, minDepth=0.01, plot=True, calibrate=False):             #vy:Error in line 510: "compliance0 = self.compliance": AttributeError: 'Indentation' object has no attribute 'compliance'
+  def calcStiffness2Force(self, minDepth=0.01, plot=True, calibrate=False):
     """
     Calculate and plot stiffness squared over force as a function of the depth
 
@@ -1957,8 +1957,8 @@ class Indentation:
     print("      E           = 75.1620054287519 GPa")
     print("      Stiffness Squared Over Load=670.424429535749 GPa")
     [modulusRed, _, _]  = self.OliverPharrMethod(np.array([harmStiff]), np.array([load]), np.array([totalDepth]))
-    E = self.YoungsModulus(modulusRed)
-    print("      Youngs Modulus [GPa] =",E[0],"  with error=", round((E[0]-75.1620054287519)*100/75.1620054287519,4),'%'  )
+    modulus = self.YoungsModulus(modulusRed)
+    print("      Youngs Modulus [GPa] =",modulus[0],"  with error=", round((modulus[0]-75.1620054287519)*100/75.1620054287519,4),'%'  )
     totalDepth2 = self.inverseOliverPharrMethod(np.array([harmStiff]), np.array([load]), modulusRed)
     print("      By using inverse methods: total depth h=",totalDepth2[0], "[um]  with error=", round((totalDepth2[0]-totalDepth)*100/totalDepth,4), '%')
     print("End Test")
@@ -1966,8 +1966,8 @@ class Indentation:
 
   def verifyReadCalc(self, plot=True):
     modulusRed,A_c,h_c = self.OliverPharrMethod(self.slope, self.p[self.valid], self.h[self.valid])
-    E = self.YoungsModulus(modulusRed)
-    H = self.p[self.valid] / A_c
+    modulus = self.YoungsModulus(modulusRed)
+    hardness = self.p[self.valid] / A_c
     if self.method==Method.CSM:
       if plot:
         plt.plot(self.t[self.valid],self.h_c,'o',label='read')
@@ -2010,29 +2010,29 @@ class Indentation:
     if self.method==Method.CSM:
       if plot:
         plt.plot(self.t[self.valid],self.modulus,'o',label='read')
-        plt.plot(self.t[self.valid],E,label='calc')
+        plt.plot(self.t[self.valid],modulus,label='calc')
         plt.legend(loc=0)
         plt.xlim(left=0)
         plt.ylim([0,np.max(self.modulus)])
-        plt.title("Error in E: {0:.2e}".format(np.linalg.norm((E-self.modulus))) )
+        plt.title("Error in modulus: {0:.2e}".format(np.linalg.norm((modulus-self.modulus))) )
         plt.show()
       else:
-        print("Error in E: {0:.2e}".format(np.linalg.norm((E-self.modulus))))
+        print("Error in modulus: {0:.2e}".format(np.linalg.norm((modulus-self.modulus))))
     else:
-      print("Error in E:  %.3e %% between %.3e and %.3e" %(abs(E-self.modulus)*100./E, E,self.modulus) )
+      print("Error in modulus:  %.3e %% between %.3e and %.3e" %(abs(modulus-self.modulus)*100./modulus, modulus,self.modulus) )
     if self.method==Method.CSM:
       if plot:
         plt.plot(self.t[self.valid],self.hardness,'o',label='read')
-        plt.plot(self.t[self.valid],H,label='calc')
+        plt.plot(self.t[self.valid],hardness,label='calc')
         plt.legend(loc=0)
         plt.xlim(left=0)
         plt.ylim([0,np.max(self.hardness)])
-        plt.title("Error in H: {0:.2e}".format(np.linalg.norm((H-self.hardness))) )
+        plt.title("Error in hardness: {0:.2e}".format(np.linalg.norm((hardness-self.hardness))) )
         plt.show()
       else:
-        print("Error in H: {0:.2e}".format(np.linalg.norm((H-self.hardness))))
+        print("Error in hardness: {0:.2e}".format(np.linalg.norm((hardness-self.hardness))))
     else:
-      print("Error in H:  %.3e %% between %.3e and %.3e" %(abs(H-self.hardness)*100./H, H,self.hardness) )
+      print("Error in hardness:  %.3e %% between %.3e and %.3e" %(abs(hardness-self.hardness)*100./hardness, hardness,self.hardness) )
     return
   #@}
 
