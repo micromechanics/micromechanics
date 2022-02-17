@@ -16,10 +16,9 @@ This is a tutorial for using nanoIndent.py while analysing nanoindentation data
    
    - Indenter Tip: shape of indenter tip and stiffness of gantry
 
-
 How it works:
 
-1. Measure maximum force (Pmax) and depth (hmax), obtain loading and unloading data through nanoindentation
+1. Obtain loading and unloading data through nanoindentation, measuring force (p) and depth (h)
 2. Calculate:
 
     - S [mN/µm]: Slope of unloading part (stiffness)
@@ -29,6 +28,15 @@ How it works:
     - Er [GPa]: reduced Young’s modulus
     - E [GPa]: Young’s modulus
 3. Plot
+
+Installation
+============
+1. Requirements: numpy, matplotlib, scipy ... ::
+
+    pip3 install .....
+2. Download "nanoIndent.py" from the sorce_code folder and use as described in the tutorial or clone this github repository::
+
+    git clone ....
 
 Getting started
 ===============
