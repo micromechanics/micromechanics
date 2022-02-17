@@ -95,6 +95,7 @@ Example:
 ========
 
 This is an example code analysing the hdf5 files from FischerScope nanoindenter::
+
     import matplotlib.pyplot as plt
     import pandas as pd
     from nanoIndent import Indentation, Tip
