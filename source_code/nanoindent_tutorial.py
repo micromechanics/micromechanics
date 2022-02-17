@@ -50,7 +50,7 @@ Introduce tip::
 
     ourTip = Tip()  #µm/mN
 
-Initialization: Files containing the experimental data are in hdf format::
+Initialization: Files containing the experimental data are in hdf5, txt or xls format::
 
     fileName = 'FileName.hdf5'
 
@@ -58,7 +58,7 @@ Introduce class Indentation, where nuMat is material’s Poisson’s ratio::
 
     i = Indentation(fileName, nuMat=0.3, tip=ourTip)
 
-Run through all indentations (Test 1, Test 2, etc) in the hdf file with ``while True`` cycle::
+Run through all indentations (Test 1, Test 2, etc) in the file with ``while True`` cycle::
 
     while True:
         <body>
@@ -94,26 +94,26 @@ Show plots::
 Example:
 ========
 
-This is an example code analysing the data from a Fischer nanoindenter::
+This is an example code analysing the hdf5 files from FischerScope nanoindenter::
+    import matplotlib.pyplot as plt
+    import pandas as pd
+    from nanoIndent import Indentation, Tip
 
-    df = pd.DataFrame()
+    fileName = "N1_1.hdf5"
     ourTip = Tip()  #um/mN
-    for fileName in os.listdir('.'):
-        if fileName.endswith('100mN_10s.hdf5'):
-            i = Indentation(fileName, nuMat=0.3, tip=ourTip)
-            while True:
-                #print("Test list",i.testList)
-                i.analyse()
-                #i.plot()
-                plt.plot(i.h, i.p)
-                meta = i.metaUser
-                meta["test name"]=i.testName
-                meta["file name"]=fileName
-                df = df.append(meta, ignore_index=True)
-                if len(i.testList)==0:
-                    break
-                i.nextTest()
+    i = Indentation(fileName, nuMat=0.5, tip=ourTip)
+    df = pd.DataFrame()
+
+    while True:
+        i.analyse()
+        #i.plot()
+        plt.plot(i.h, i.p)
+        meta = i.metaUser
+        df = df.append(meta, ignore_index=True)
+        if len(i.testList)==0:
+            break
+        i.nextTest()
+
     print(df)
     plt.show()
-
 """
