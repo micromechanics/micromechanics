@@ -117,4 +117,30 @@ This is an example code analysing the hdf5 files from FischerScope nanoindenter:
 
     print(df)
     plt.show()
+
+Tip calibration:
+================
+
+from nanoIndent import Indentation, Tip
+
+Initialize the datafile containing the calibration measurements, using nuMat=0.18 as the tip’s Poisson’s ratio.
+``i.plotAsDepth("K2P")`` plots \frac{ \sqrt{stiffness} }{load} and should resemble horizontal line::
+
+    i = Indentation("FS_Calibration.xls", nuMat=0.18)
+    while True:
+        i.plotAsDepth("K2P")
+        if len(i.testList)==0:
+            break
+        i.nextTest()
+
+.. figure:: ../source/img/plotAsDepth_k2p.png
+  :width: 400
+  :align: center
+  :alt: Alternative text
+
+  Graph Title
+
+i.calibration(plotStiffness=True, plotTip=True)
+print(i.tip)
+i.tip.plotIndenterShape(maxDepth=0.25)
 """
