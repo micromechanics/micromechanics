@@ -121,11 +121,9 @@ This is an example code analysing the hdf5 files from FischerScope nanoindenter:
 Tip calibration:
 ================
 
-from nanoIndent import Indentation, Tip
+Initialize the datafile containing the calibration measurements, using nuMat=0.18 as the tip’s Poisson’s ratio::
 
-Initialize the datafile containing the calibration measurements, using nuMat=0.18 as the tip’s Poisson’s ratio.
-``i.plotAsDepth("K2P")`` plots :math:`a^(0.5)/P` \\frac{ \\sqrt{stiffness} }{load} and should resemble horizontal line::
-
+    from nanoIndent import Indentation, Tip
     i = Indentation("FS_Calibration.xls", nuMat=0.18)
     while True:
         i.plotAsDepth("K2P")
@@ -137,6 +135,8 @@ Initialize the datafile containing the calibration measurements, using nuMat=0.1
   :width: 400
   :align: center
   :alt: Alternative text
+
+``i.plotAsDepth("K2P")`` plots :math:`S^2/P` as a function of the depth and should follow the horizontal line.
 
 Perform the calibration. Specify "True" for plotStiffness and plotTip  to check the plotted compliance and shape of the tip::
 
@@ -166,11 +166,14 @@ The datapoints at larger forces are used for the fitting.
   Error in tip shape calibration
 
 The blue points represent the experimental data. The blunting of the used tip is easily noticable at the very beginning of the orange line. A relative error of 5-10% is typical.
-(To zoom in the blunted part of the tip, use plotIndenterShape() at e.g. maxDepth 0.25)::
+
+(To zoom in the blunted part of the tip, use ``plotIndenterShape()`` at e.g. maxDepth 0.25)::
 
     i.tip.plotIndenterShape(maxDepth=0.25)
 
 Finally, initialize the measurement data, specifying the tip as the just calibrated one::
     
     j = Indentation("fileName.xls", tip = i.tip)
+
+Continue the analysis with the calibrated tip as described in the "Getting started" secion.
 """
