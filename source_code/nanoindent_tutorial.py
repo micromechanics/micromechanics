@@ -124,7 +124,7 @@ Tip calibration:
 from nanoIndent import Indentation, Tip
 
 Initialize the datafile containing the calibration measurements, using nuMat=0.18 as the tip’s Poisson’s ratio.
-``i.plotAsDepth("K2P")`` plots \frac{ \sqrt{stiffness} }{load} and should resemble horizontal line::
+``i.plotAsDepth("K2P")`` plots :math:`a^(0.5)/P` \\frac{ \\sqrt{stiffness} }{load} and should resemble horizontal line::
 
     i = Indentation("FS_Calibration.xls", nuMat=0.18)
     while True:
@@ -138,9 +138,39 @@ Initialize the datafile containing the calibration measurements, using nuMat=0.1
   :align: center
   :alt: Alternative text
 
-  Graph Title
+Perform the calibration. Specify "True" for plotStiffness and plotTip  to check the plotted compliance and shape of the tip::
 
-i.calibration(plotStiffness=True, plotTip=True)
-print(i.tip)
-i.tip.plotIndenterShape(maxDepth=0.25)
+    i.calibration(plotStiffness=True, plotTip=True)
+
+.. figure:: ../source/img/calibrate_plotStiffness.png
+  :width: 400
+  :align: center
+  :alt: Alternative text
+
+  Stiffness
+
+The datapoints at larger forces are used for the fitting.
+
+.. figure:: ../source/img/calibrate_plotTip.png
+  :width: 400
+  :align: center
+  :alt: Alternative text
+
+  Tip Shape
+
+.. figure:: ../source/img/plotIndenterShape_error.png
+  :width: 400
+  :align: center
+  :alt: Alternative text
+
+  Error in tip shape calibration
+
+The blue points represent the experimental data. The blunting of the used tip is easily noticable at the very beginning of the orange line. A relative error of 5-10% is typical.
+(To zoom in the blunted part of the tip, use plotIndenterShape() at e.g. maxDepth 0.25)::
+
+    i.tip.plotIndenterShape(maxDepth=0.25)
+
+Finally, initialize the measurement data, specifying the tip as the just calibrated one::
+    
+    j = Indentation("fileName.xls", tip = i.tip)
 """
