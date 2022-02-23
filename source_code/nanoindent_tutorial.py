@@ -136,7 +136,7 @@ Initialize the datafile containing the calibration measurements, using nuMat=0.1
   :align: center
   :alt: Alternative text
 
-``i.plotAsDepth("K2P")`` plots :math:`S^2/P` as a function of the depth and should follow the horizontal line.
+``i.plotAsDepth("K2P")`` plots :math:`stiffness^2/load` as a function of the depth and the orange line should be horizontal.
 
 Perform the calibration. Specify "True" for plotStiffness and plotTip  to check the plotted compliance and shape of the tip::
 
@@ -149,7 +149,7 @@ Perform the calibration. Specify "True" for plotStiffness and plotTip  to check 
 
   Stiffness
 
-The datapoints at larger forces are used for the fitting.
+The datapoints at larger forces (smaller values on the diagram) are used for the fitting.
 
 .. figure:: ../source/img/calibrate_plotTip.png
   :width: 400

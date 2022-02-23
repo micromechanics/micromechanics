@@ -524,7 +524,7 @@ class Indentation:
       compliance0 = self.compliance
       #self.correct_H_S()
     if plot:
-      s = 1./(1./self.sRaw-self.compliance)
+      s = 1./(1./self.sRaw-self.compliance)             #vy: AttributeError: 'Indentation' object has no attribute 'sRaw'
       s2f = np.divide(np.multiply(s,s),self.p)
       h   = self.hRaw-compliance0*self.p
       h_ = h[ h>minDepth ]
