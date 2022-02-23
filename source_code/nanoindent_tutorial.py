@@ -151,19 +151,21 @@ Perform the calibration. Specify "True" for plotStiffness and plotTip  to check 
 
 The datapoints at larger forces (smaller values on the diagram) are used for the fitting.
 
-.. figure:: ../source/img/calibrate_plotTip.png
-  :width: 400
-  :align: center
-  :alt: Alternative text
+.. list-table::
 
-  Tip Shape
+    .. figure:: ../source/img/calibrate_plotTip.png
+    :width: 49%
+    :align: left
+    :alt: Alternative text
 
-.. figure:: ../source/img/plotIndenterShape_error.png
-  :width: 400
-  :align: center
-  :alt: Alternative text
+    Tip Shape
 
-  Error in tip shape calibration
+    .. figure:: ../source/img/plotIndenterShape_error.png
+    :width: 49%
+    :align: right
+    :alt: Alternative text
+
+    Error in tip shape calibration
 
 The blue points represent the experimental data. The blunting of the used tip is easily noticable at the very beginning of the orange line. A relative error of 5-10% is typical.
 
