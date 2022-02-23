@@ -38,8 +38,8 @@ Installation
 
     git clone git@github.com:micromechanics/main.git
 
-Getting started
-===============
+Initialization
+==============
 Import necessary libraries::
 
     import matplotlib.pyplot as plt
