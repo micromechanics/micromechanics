@@ -6,4 +6,3 @@ NanoIndentation Data Analysis
 
    nanoindent_tutorial
    nanoindent_documentation
-   nanoindent_doctest_examples
