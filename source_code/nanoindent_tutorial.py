@@ -152,15 +152,15 @@ Perform the calibration. Specify "True" for plotStiffness and plotTip  to check 
 The datapoints at larger forces (smaller values on the diagram) are used for the fitting.
 
 .. figure:: ../source/img/calibrate_plotTip.png
-  :width: 400
-  :align: center
+  :width: 49%
+  :align: left
   :alt: Alternative text
 
   Tip Shape
 
 .. figure:: ../source/img/plotIndenterShape_error.png
-  :width: 400
-  :align: center
+  :width: 49%
+  :align: right
   :alt: Alternative text
 
   Error in tip shape calibration
