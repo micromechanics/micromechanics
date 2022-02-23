@@ -4,16 +4,16 @@ Introduction
 This is a tutorial for using nanoIndent.py while analysing nanoindentation data
 
 .. note::
-   The following units should be used: [mN], [µm], [GPa] because the area function is unit-dependent. 
-   
+   The following units should be used: [mN], [µm], [GPa] because the area function is unit-dependent.
+
    Calculations are carried out by the Oliver-Pharr Method.
-   
+
    Data in indentation experiment includes Method, Vendor, Indenter tip
-   
+
    - Method: ISO, CSM
-   
+
    - Vendor: Agilent, Hysitron, FischerScope
-   
+
    - Indenter Tip: shape of indenter tip and stiffness of gantry
 
 How it works:
@@ -33,15 +33,15 @@ Installation
 ============
 1. Requirements: numpy, matplotlib, scipy ... ::
 
-    pip3 install .....
+    pip3 install -r requirements.txt
 2. Download "nanoIndent.py" from the sorce_code folder and use as described in the tutorial or clone this github repository::
 
-    git clone ....
+    git clone git@github.com:micromechanics/main.git
 
 Getting started
 ===============
 Import necessary libraries::
-    
+
     import matplotlib.pyplot as plt
     import numpy as np
     from nanoIndent import Indentation, Tip
@@ -70,7 +70,7 @@ In the ``<body>`` one can analyse the data and create the plots to be viewed lik
 
 Calculate all the relevent data from the indent: stiffness S [mN/µm], maximum depth hMax [µm], maximum force pMax [mN], reduced Young’s modulus redE [GPa],
 contact area A [µm2], contact depth hc [µm], Young’s modulus E [GPa], hardness H [GPa]::
-                
+
     i.analyse()
 
 Plotting:
@@ -172,7 +172,7 @@ The blue points represent the experimental data. The blunting of the used tip is
     i.tip.plotIndenterShape(maxDepth=0.25)
 
 Finally, initialize the measurement data, specifying the tip as the just calibrated one::
-    
+
     j = Indentation("fileName.xls", tip = i.tip)
 
 Continue the analysis with the calibrated tip as described in the "Getting started" secion.
