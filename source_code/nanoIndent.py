@@ -25,14 +25,14 @@
 # G200X hdf5: units seem not correct
 # 2. clean frame stiffness, additional compilance  : differentiate between both
 #    - fitting unloading curve: assume as intial guess m=1.5
-import math, io, re, os, traceback
+import math, io, re, os
 from enum import Enum
 from zipfile import ZipFile
 import numpy as np
 import pandas as pd
 import h5py, lmfit
 import matplotlib.pyplot as plt
-from scipy.optimize import differential_evolution, fmin_tnc, fmin_l_bfgs_b, curve_fit, OptimizeResult, newton
+from scipy.optimize import fmin_l_bfgs_b, curve_fit, newton
 from scipy import ndimage, interpolate
 from scipy.signal import savgol_filter
 
@@ -86,7 +86,7 @@ class Indentation:
     self.verbose = verbose
     self.method    = Method.ISO                             #iso default: csm uses different methods
     self.onlyLoadingSegment = False                         #use all data by default
-    
+
     if tip is None:
       tip = Tip()
     self.tip = tip
@@ -203,7 +203,7 @@ class Indentation:
       S = 2/sqrt(pi) sqrt(A) modulusRed
 
       A the contact area, h_c the contact depth
-      
+
     Args:
        S (float): stiffness = slope dP/dh
 
@@ -242,7 +242,7 @@ class Indentation:
     h_c0 = math.sqrt(A / 24.494)           # first guess: perfect Berkovich
     h_c = self.tip.areaFunctionInverse(A, h_c0=h_c0)
     h = h_c + self.beta*P/S
-    return h.flatten() 
+    return h.flatten()
 
 
   @staticmethod
@@ -259,7 +259,7 @@ class Indentation:
     return value
 
 
-  def stiffnessFromUnloading(self, P, h, plot=False): 
+  def stiffnessFromUnloading(self, P, h, plot=False):
     """
     Calculate single unloading stiffness from Unloading
     see G200 manual, p7-6
@@ -498,10 +498,10 @@ class Indentation:
        minDepth: minimum depth for fitting line
 
        plot: plot curve and slope
-       
+
        calibrate: calibrate additional stiffness and save value
     """
-    compliance0 = self.tip.compliance  
+    compliance0 = self.tip.compliance
     prefactors = None
     def errorFunction(compliance):
       s   = 1./(1./self.sRaw-compliance)
@@ -949,7 +949,7 @@ class Indentation:
       mask = np.isfinite(data)
       mask[mask] = data[mask]<1e99
       self.valid = np.logical_and(self.valid, mask)                       #adopt/reduce mask continously
-    
+
     #Run through all items again and crop to only valid data
     for index in self.indicies:
       data = np.array(df[self.indicies[index]][1:-1], dtype=np.float)
@@ -1795,7 +1795,7 @@ class Indentation:
 
     Args:
       bounds: min,max boundaries to determine if K2P,E,H are correct
-      
+
       numPoints: number of points plotted in depth, used for interpolation
     """
     value      = ['k2p',      'modulus',   'hardness']
@@ -2048,21 +2048,21 @@ def isfloat(value):
 class Tip:
   """
   The main class to define indenter shape and other default values.
-  
+
   Initialize indenter shape
-  
+
   Args:
     shape: list of prefactors (defualt = "perfect");
-    
-    interpFunction: tip-shape function A_C = f(h_c), when it is given, other information are superseeded;     
-    
+
+    interpFunction: tip-shape function A_C = f(h_c), when it is given, other information are superseeded;
+
     compliance: additional compliance in test [um/mN] (sensible values: 0.0001..0.01);
-    
+
     plot: plot indenter shape;
-    
+
     verbose: output;
   """
-  def __init__(self, shape="perfect", interpFunction=None, compliance=0.0, plot=False, verbose=0):            
+  def __init__(self, shape="perfect", interpFunction=None, compliance=0.0, plot=False, verbose=0):
 
     #define indenter shape: could be overwritten
     if callable(interpFunction):
@@ -2101,9 +2101,9 @@ class Tip:
   def setInterpolationFunction(self,interpFunction):
     """
     The interpolation of tip-shape function A_c = f(h_c).
-    
+
     From Oliver-Pharr Method, projected area of contact A_c can be obtained by measuring contact depth h_c.
-    
+
     When the interpolation function is given, other information are superseeded.
     """
     self.interpFunction = interpFunction
@@ -2114,8 +2114,8 @@ class Tip:
     """
     AREA FUNCTION: from contact depth h_c calculate area
 
-    all functions inside are using [nm]; the outside of this function uses [um]; 
-    
+    all functions inside are using [nm]; the outside of this function uses [um];
+
     hence at the start and end there is conversion
 
     prefactors:
@@ -2182,7 +2182,7 @@ class Tip:
 
     Args:
        area: projected contact area
-       
+
        h_c0: initial Guess contact depth
 
     Returns:
@@ -2209,13 +2209,13 @@ class Tip:
 
     Args:
        maxDepth: maximum depth [um] to plot; default=10um
-       
+
        steps: number of steps for plotting
-       
+
        show: show figure
-       
+
        tipLabel: label for this tip
-       
+
        fileName: if given, save to file
     """
     zoom = 0.5
