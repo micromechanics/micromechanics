@@ -1,5 +1,5 @@
-tutorialAdvanced module
-=======================
+Tip calibration (advanced)
+==========================
 
 .. automodule:: tutorialAdvanced
    :members:
