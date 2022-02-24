@@ -39,7 +39,7 @@ Installation
     
 Files from clone for nanoindentation calculation::
     
-    - Examples[folder]: experimental data for Agilent, FisherScope, Hysitron and Micromaterials
+    - Examples[folder]: experimental data for vendor Agilent, FisherScope, Hysitron ...
     - Source_code[folder]: contains functional codes for nanoindentation calcultation (nanoIndent.py)
     - requirements[txt]: packages are required in nanaindentation
 
