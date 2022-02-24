@@ -37,13 +37,13 @@ Installation
     
     - Or download "main.zip" from github directily 
     
-files from clone for nanoindentation calculation::
+Files from clone for nanoindentation calculation::
     
     - Examples[folder]: experimental data for Agilent, FisherScope, Hysitron and Micromaterials
     - Source_code[folder]: contains functional codes for nanoindentation calcultation (nanoIndent.py)
     - requirements[txt]: packages are required in nanaindentation
 
-2. Requirements: numpy, matplotlib, scipy ... ::
+2. Install packages using requirements (contains numpy, matplotlib, scipy ...) ::
 
     pip3 install -r requirements.txt
     
