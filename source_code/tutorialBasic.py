@@ -31,13 +31,22 @@ How it works:
 
 Installation
 ============
-1. Requirements: numpy, matplotlib, scipy ... ::
-
-    pip3 install -r requirements.txt
-2. Download "nanoIndent.py" from the sorce_code folder and use as described in the tutorial or clone this github repository::
+1. Download "nanoIndent.py" from the sorce_code folder and use as described in the tutorial or clone this github repository::
 
     git clone git@github.com:micromechanics/main.git
+    
+    - Or download "main.zip" from github directily 
+    
+    files from clone for nanoindentation calculation
+    
+    - Examples[folder]: experimental data for Agilent, FisherScope, Hysitron and Micromaterials
+    - Source_code[folder]: contains functional codes for nanoindentation calcultation (nanoIndent.py)
+    - requirements[txt]: packages are required in nanaindentation
 
+2. Requirements: numpy, matplotlib, scipy ... ::
+
+    pip3 install -r requirements.txt
+    
 Initialization
 ==============
 Import necessary libraries::
