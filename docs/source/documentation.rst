@@ -1,5 +1,5 @@
 Documentation
-================================
+=============
 
 .. automodule:: nanoIndent
    :members:
