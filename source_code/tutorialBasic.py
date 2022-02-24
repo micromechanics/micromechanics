@@ -35,7 +35,7 @@ Installation
 
     git clone git@github.com:micromechanics/main.git
     
-    - Or download "main.zip" from github directily 
+Or download "main.zip" from github directily ::
     
 Files from clone for nanoindentation calculation::
     
