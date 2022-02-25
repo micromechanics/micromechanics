@@ -37,7 +37,7 @@ Installation
     
 Or download "main.zip" from github directily ::
     
-Files from clone for nanoindentation calculation::
+Files from clone for nanoindentation calculation:
     
     - Examples[folder]: experimental data for vendor Agilent, FisherScope, Hysitron ...
     - Source_code[folder]: contains functional codes for nanoindentation calcultation (nanoIndent.py)
