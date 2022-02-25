@@ -31,15 +31,33 @@ How it works:
 
 Installation
 ============
-1. Requirements: numpy, matplotlib, scipy ... ::
-
-    pip3 install -r requirements.txt
-2. Download "nanoIndent.py" from the sorce_code folder and use as described in the tutorial or clone this github repository::
+1. Download "nanoIndent.py" from the sorce_code folder and use as described in the tutorial or clone this github repository::
 
     git clone git@github.com:micromechanics/main.git
+    
+Or download "main.zip" from github directily ::
+    
+Files from clone for nanoindentation calculation:
+    
+    - Examples[folder]: experimental data for vendor Agilent, FisherScope, Hysitron ...
+    - Source_code[folder]: contains functional codes for nanoindentation calcultation (nanoIndent.py)
+    - requirements[txt]: packages are required in nanaindentation
 
-Getting started
-===============
+2. Install packages using requirements (contains numpy, matplotlib, scipy ...) ::
+
+    pip3 install -r requirements.txt
+
+In case the pip hasn't installed::
+
+   curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py   # download pip script
+   sudo python3 get-pip.py
+
+Make sure the latest pip version to install requirements::
+   
+   \......\python.exe -m pip install --upgrade pip
+   
+Initialization
+==============
 Import necessary libraries::
 
     import matplotlib.pyplot as plt
@@ -93,7 +111,6 @@ Show plots::
 
 Example:
 ========
-
 This is an example code analysing the hdf5 files from FischerScope nanoindenter::
 
     import matplotlib.pyplot as plt
@@ -117,63 +134,4 @@ This is an example code analysing the hdf5 files from FischerScope nanoindenter:
 
     print(df)
     plt.show()
-
-Tip calibration:
-================
-
-Initialize the datafile containing the calibration measurements, using nuMat=0.18 as the tip’s Poisson’s ratio::
-
-    from nanoIndent import Indentation, Tip
-    i = Indentation("FS_Calibration.xls", nuMat=0.18)
-    while True:
-        i.plotAsDepth("K2P")
-        if len(i.testList)==0:
-            break
-        i.nextTest()
-
-.. figure:: ../source/img/plotAsDepth_k2p.png
-  :width: 400
-  :align: center
-  :alt: Alternative text
-
-``i.plotAsDepth("K2P")`` plots :math:`stiffness^2/load` as a function of the depth and the orange line should be horizontal.
-
-Perform the calibration. Specify "True" for plotStiffness and plotTip  to check the plotted compliance and shape of the tip::
-
-    i.calibration(plotStiffness=True, plotTip=True)
-
-.. figure:: ../source/img/calibrate_plotStiffness.png
-  :width: 400
-  :align: center
-  :alt: Alternative text
-
-  Stiffness
-
-The datapoints at larger forces (smaller values on the diagram) are used for the fitting.
-
-.. figure:: ../source/img/calibrate_plotTip.png
-  :width: 400
-  :align: center
-  :alt: Alternative text
-
-  Tip Shape
-
-.. figure:: ../source/img/plotIndenterShape_error.png
-  :width: 400
-  :align: center
-  :alt: Alternative text
-
-  Error in tip shape calibration
-
-The blue points represent the experimental data. The blunting of the used tip is easily noticable at the very beginning of the orange line. A relative error of 5-10% is typical.
-
-(To zoom in the blunted part of the tip, use ``plotIndenterShape()`` at e.g. maxDepth 0.25)::
-
-    i.tip.plotIndenterShape(maxDepth=0.25)
-
-Finally, initialize the measurement data, specifying the tip as the just calibrated one::
-
-    j = Indentation("fileName.xls", tip = i.tip)
-
-Continue the analysis with the calibrated tip as described in the "Getting started" secion.
 """
