@@ -46,7 +46,17 @@ Files from clone for nanoindentation calculation:
 2. Install packages using requirements (contains numpy, matplotlib, scipy ...) ::
 
     pip3 install -r requirements.txt
-    
+
+.. note::
+In case the pip hasn't installed::
+
+   curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py   # download pip script
+   sudo python3 get-pip.py
+
+Make sure the latest pip version to install requirements::
+   
+   \......\python.exe -m pip install --upgrade pip
+   
 Initialization
 ==============
 Import necessary libraries::
