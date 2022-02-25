@@ -47,7 +47,6 @@ Files from clone for nanoindentation calculation:
 
     pip3 install -r requirements.txt
 
-.. note::
 In case the pip hasn't installed::
 
    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py   # download pip script
