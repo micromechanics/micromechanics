@@ -708,6 +708,8 @@ class Indentation:
     zeroPeaks = np.where(zeroPeaks)[0]
     firstZero = np.argmin(np.abs(zeroValue-binCenter[zeroPeaks]))
     zeroDelta = abs(binCenter[zeroPeaks][firstZero]-zeroValue)
+    if self.vendor==Vendor.Hysitron and self.method==Method.ISO:
+      zeroDelta *= 2  #data is noisy, more safety to prevent wrong identification
     rate      = self.p[1:]-self.p[:-1]
     loadMask  = rate>(zeroValue+zeroDelta)
     unloadMask= rate<(zeroValue-zeroDelta)
