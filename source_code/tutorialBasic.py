@@ -70,7 +70,7 @@ Introduce tip::
 
 Initialization: Files containing the experimental data are in hdf5, txt or xls format::
 
-    fileName = 'FileName.hdf5'
+    fileName = 'Nafion_15_100_5.hdf5'
 
 Introduce class Indentation, where nuMat is material’s Poisson’s ratio::
 
@@ -117,7 +117,7 @@ This is an example code analysing the hdf5 files from FischerScope nanoindenter:
     import pandas as pd
     from nanoIndent import Indentation, Tip
 
-    fileName = "N1_1.hdf5"
+    fileName = "Nafion_15_100_5.hdf5"
     ourTip = Tip()  #um/mN
     i = Indentation(fileName, nuMat=0.5, tip=ourTip)
     df = pd.DataFrame()

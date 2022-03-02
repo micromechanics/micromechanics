@@ -54,7 +54,7 @@ The blue points represent the experimental data. The blunting of the used tip is
 
 Finally, initialize the measurement data, specifying the tip as the just calibrated one::
 
-    j = Indentation("fileName.xls", tip = i.tip)
+    j = Indentation("NiAl_250nm_TUIL_max_depth_1000nm_GM3_SM_previousGM1.xls", tip = i.tip)
 
 Continue the analysis with the calibrated tip as described in the "Getting started" secion.
 """
