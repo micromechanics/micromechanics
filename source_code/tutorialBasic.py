@@ -34,11 +34,11 @@ Installation
 1. Download "nanoIndent.py" from the sorce_code folder and use as described in the tutorial or clone this github repository::
 
     git clone git@github.com:micromechanics/main.git
-    
+
 Or download "main.zip" from github directily ::
-    
+
 Files from clone for nanoindentation calculation:
-    
+
     - Examples[folder]: experimental data for vendor Agilent, FisherScope, Hysitron ...
     - Source_code[folder]: contains functional codes for nanoindentation calcultation (nanoIndent.py)
     - requirements[txt]: packages are required in nanaindentation
@@ -53,9 +53,9 @@ In case the pip hasn't installed::
    sudo python3 get-pip.py
 
 Make sure the latest pip version to install requirements::
-   
+
    \......\python.exe -m pip install --upgrade pip
-   
+
 Initialization
 ==============
 Import necessary libraries::
@@ -86,7 +86,7 @@ Run through all indentations (Test 1, Test 2, etc) in the file with ``while True
 
 In the ``<body>`` one can analyse the data and create the plots to be viewed like following:
 
-Calculate all the relevent data from the indent: stiffness S [mN/µm], maximum depth hMax [µm], maximum force pMax [mN], reduced Young’s modulus redE [GPa],
+Calculate all the relevent data from the indent: stiffness S [mN/µm], maximum depth hMax [µm], maximum force pMax [mN], reduced Young’s modulus redE [GPa], # pylint: disable=line-too-long
 contact area A [µm2], contact depth hc [µm], Young’s modulus E [GPa], hardness H [GPa]::
 
     i.analyse()

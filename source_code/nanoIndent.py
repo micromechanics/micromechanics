@@ -615,6 +615,7 @@ class Indentation:
       self.slope, self.valid, _, _ , _= self.stiffnessFromUnloading(self.p, self.h)
       self.slope = np.array(self.slope)
     self.k2p = self.slope*self.slope/self.p[self.valid]
+    #Calculate Young's modulus
     self.calcYoungsModulus()
     self.calcHardness()
     self.saveToUserMeta()
