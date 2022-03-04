@@ -939,23 +939,23 @@ class Indentation:
 
     #read data and identify valid data points
     df     = self.datafile.get(self.testName)
-    h       = np.array(df[self.indicies['h'    ]][1:-1], dtype=np.float)
+    h       = np.array(df[self.indicies['h'    ]][1:-1], dtype=np.float64)
     self.validFull = np.isfinite(h)
     if 'slope' in self.indicies:
-      slope   = np.array(df[self.indicies['slope']][1:-1], dtype=np.float)
+      slope   = np.array(df[self.indicies['slope']][1:-1], dtype=np.float64)
       self.valid =  np.isfinite(slope)
       self.valid[self.valid] = slope[self.valid] > 0.0  #only valid points if stiffness is positiv
     else:
       self.valid = self.validFull
     for index in self.indicies:
-      data = np.array(df[self.indicies[index]][1:-1], dtype=np.float)
+      data = np.array(df[self.indicies[index]][1:-1], dtype=np.float64)
       mask = np.isfinite(data)
       mask[mask] = data[mask]<1e99
       self.valid = np.logical_and(self.valid, mask)                       #adopt/reduce mask continously
 
     #Run through all items again and crop to only valid data
     for index in self.indicies:
-      data = np.array(df[self.indicies[index]][1:-1], dtype=np.float)
+      data = np.array(df[self.indicies[index]][1:-1], dtype=np.float64)
       if not index in self.fullData:
         data = data[self.valid]
       else:
