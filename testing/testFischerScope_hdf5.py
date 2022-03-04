@@ -10,7 +10,6 @@ class TestStringMethods(unittest.TestCase):
 			### MAIN ###
 			i = Indentation('examples/FischerScope/Nafion_15_100_5.hdf5')
 			i.analyse()
-			print(np.sum(i.modulus))
 			self.assertTrue((np.sum(i.modulus)==0.45085650501100577)<1e-12,'Calculation of modulus changed')
 			### END OF MAIN ###
 			print('\n*** DONE WITH VERIFY ***')
