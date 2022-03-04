@@ -8,7 +8,7 @@ class TestStringMethods(unittest.TestCase):
   def test_main(self):
     try:
       ### MAIN ###
-      i = Indentation('Examples/FischerScope/Nafion_15_100_5.hdf5')
+      i = Indentation('examples/FischerScope/Nafion_15_100_5.hdf5')
       i.analyse()
       self.assertTrue(np.sum(i.modulus)==0.45085650501100577,'Calculation of h changed')
       ### END OF MAIN ###

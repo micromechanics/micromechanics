@@ -39,7 +39,7 @@ Or download "main.zip" from github directily ::
 
 Files from clone for nanoindentation calculation:
 
-    - Examples[folder]: experimental data for vendor Agilent, FisherScope, Hysitron ...
+    - examples[folder]: experimental data for vendor Agilent, FisherScope, Hysitron ...
     - Source_code[folder]: contains functional codes for nanoindentation calcultation (nanoIndent.py)
     - requirements[txt]: packages are required in nanaindentation
 
