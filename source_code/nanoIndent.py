@@ -21,11 +21,9 @@
 # - Change all variables: do not keep original-depth as can be reread and makes code less readable
 
 # TODO:
-# rename self.slope -> self.k
-# G200X hdf5: units seem not correct
 # 2. clean frame stiffness, additional compilance  : differentiate between both
 #    - fitting unloading curve: assume as intial guess m=1.5
-import math, io, re, os
+import math, io, re, os, json, traceback
 from enum import Enum
 from zipfile import ZipFile
 import numpy as np
@@ -246,7 +244,7 @@ class Indentation:
 
 
   @staticmethod
-  def UnloadingPowerFunc(h_,B,hf,m):
+  def UnloadingPowerFunc(h,B,hf,m):
     """
     internal function describing the unloading regime
     - function: p = B*(h-hf)^m
@@ -254,8 +252,7 @@ class Indentation:
     - m:  exponent       (no physical meaning)
     - hf: final depth = depth where force becomes 0
     """
-    value = np.zeros_like(h_)
-    value = B*np.power(h_-hf,m)
+    value = B*np.power(h-hf,m)
     return value
 
 
@@ -277,7 +274,7 @@ class Indentation:
     if self.method== Method.CSM:
       print("*ERROR* Should not land here: CSM method")
       return None,None,None,None
-    if self.verbose>1:
+    if self.verbose>2:
       print("Number of unloading segments:"+str(len(self.iLHU))+"  Method:"+str(self.method))
     S, mask, opt, powerlawFit = [], None, None, []
     validMask = np.zeros_like(P, dtype=bool)
@@ -291,23 +288,27 @@ class Indentation:
       maskSegment[unloadStart:unloadEnd+1] = True
       maskForce   = np.logical_and(P<P[loadEnd]*self.unloadPMax, P>P[loadEnd]*self.unloadPMin)
       mask        = np.logical_and(maskSegment,maskForce)
+      if len(mask[mask])==0:
+        print('*ERROR* mask of unloading is empty. Cannot fit\n')
+        return None, None, None, None, None
       if plot:
         plt.plot(h[mask],P[mask],'ob')
       #initial values of fitting
-      hf0    = (h[-1]+h[mask][-1])/2.0
+      hf0    = h[mask][-1]/2.0
       m0     = 2
-      B0     = P[0] / np.power(h[0]-hf0,m0)
-      bounds = [[0,0,1],[np.inf, np.min(h[mask]), 10]]
+      B0     = max(abs(P[0] / np.power(h[0]-hf0,m0)), 0.001)  #prevent neg. or zero
+      bounds = [[0,0,1],[np.inf, max(np.min(h[mask]),hf0), 10]]
       if self.verbose>2:
         print("Initial fitting values", hf0, m0, B0)
+        print("Bounds", bounds)
       # Old linear assumptions
       # B0  = (P[mask][-1]-P[mask][0])/(h[mask][-1]-h[mask][0])
       # hf0 = h[mask][0] - P[mask][0]/B0
       # m0  = 1.5 #to get of axis
       try:
         opt, _ = curve_fit(self.UnloadingPowerFunc, h[mask],P[mask],
-                           p0=[B0,hf0,m0], bounds=bounds,
-                           ftol=1e-4, maxfev=1000 )#set ftol to 1e-4 if accept more and fail less
+                            p0=[B0,hf0,m0], bounds=bounds,
+                            ftol=1e-4, maxfev=1000 )#set ftol to 1e-4 if accept more and fail less
         if self.verbose>2:
           print("Bounds for fitting",bounds)
           print("Optimal values", opt)
@@ -316,6 +317,8 @@ class Indentation:
           raise ValueError("NAN after fitting")
         powerlawFit.append(True)
       except:
+        #if fitting fails: often the initial bounds and initial values do not match
+        print(traceback.format_exc())
         if self.verbose>0:
           print("stiffnessFrommasking: #",cycleNum," Fitting failed. use linear")
         B  = (P[mask][-1]-P[mask][0])/(h[mask][-1]-h[mask][0])
@@ -337,7 +340,7 @@ class Indentation:
       plt.xlabel(r'depth [$\mathrm{\mu m}$]')
       plt.ylabel(r'force [$\mathrm{mN}$]')
       plt.show()
-    return S,validMask, mask, opt, powerlawFit
+    return S, validMask, mask, opt, powerlawFit
 
 
   def popIn(self, correctH=True, plot=True, removeInitialNM=2.):
@@ -692,7 +695,9 @@ class Indentation:
     maxZone  = self.p > 0.98*maxValue
     rate = self.p[maxZone][1:]-self.p[maxZone][:-1]
     #using histogram, define masks for loading and unloading
-    hist, bins= np.histogram(rate , bins=100)
+    hist, bins= np.histogram(rate , bins=200) #TODO this 200 and zeroDelta below need must dependent on vendor
+    # ... can user change them, commonHDF blocks automatic identification
+    # .... or better algorithm
     binCenter = (bins[1:]+bins[:-1])/2
 
     peaks = np.where(hist>5)[0]                  #peaks with more than 10 items
@@ -705,15 +710,19 @@ class Indentation:
       self.iLHU = []
       return False
     ## Better algorithm: look for closest zero historgram-peak to zeroValue; take that to calculate delta
-    zeroPeaks = np.logical_and(hist<0.3, binCenter<zeroValue)
-    zeroPeaks = np.where(zeroPeaks)[0]
-    firstZero = np.argmin(np.abs(zeroValue-binCenter[zeroPeaks]))
-    zeroDelta = abs(binCenter[zeroPeaks][firstZero]-zeroValue)
-    if self.vendor==Vendor.Hysitron and self.method==Method.ISO:
-      zeroDelta *= 2  #data is noisy, more safety to prevent wrong identification
-    rate      = self.p[1:]-self.p[:-1]
-    loadMask  = rate>(zeroValue+zeroDelta)
-    unloadMask= rate<(zeroValue-zeroDelta)
+    try:
+      zeroPeaks = np.logical_and(hist<0.3, binCenter<zeroValue)
+      zeroPeaks = np.where(zeroPeaks)[0]
+      firstZero = np.argmin(np.abs(zeroValue-binCenter[zeroPeaks]))
+      zeroDelta = abs(binCenter[zeroPeaks][firstZero]-zeroValue)
+      if self.vendor==Vendor.Hysitron and self.method==Method.ISO:
+        zeroDelta *= 4  #data is noisy, more safety to prevent wrong identification
+      rate      = self.p[1:]-self.p[:-1]
+      loadMask  = rate>(zeroValue+zeroDelta)
+      unloadMask= rate<(zeroValue-zeroDelta)
+    except:
+      self.identifyLoadHoldUnloadCSM()     #simpler method, less error-prone
+      return
     if plot:     # verify visually
       plt.plot(binCenter,hist,'o')#, width=0.001)
       plt.axvline(zeroValue, c='k')
@@ -762,6 +771,16 @@ class Indentation:
     while len(loadIdx)>len(unloadIdx) and loadIdx[3]<unloadIdx[1]:
       print("*WARNING* identifyLoadHoldUnload: cut two from front of loadIdx: UNDESIRED")
       loadIdx = loadIdx[2:]
+    self.iLHU = []
+    for i,_ in enumerate(loadIdx[::2]):
+      self.iLHU.append([loadIdx[::2][i],loadIdx[1::2][i],unloadIdx[::2][i],unloadIdx[1::2][i]])
+      if loadIdx[::2][i]>loadIdx[1::2][i] or loadIdx[1::2][i]>unloadIdx[::2][i] or \
+         unloadIdx[::2][i]>unloadIdx[1::2][i]:
+        print("*ERROR* Wrong order in idx",i, \
+          [loadIdx[::2][i],loadIdx[1::2][i],unloadIdx[::2][i],unloadIdx[1::2][i]])
+        #plot = True #TODO change later
+    if len(self.iLHU)>1:
+      self.method=Method.MULTI
     if plot:     # verify visually
       plt.plot(self.p)
       plt.plot(loadIdx[::2],  self.p[loadIdx[::2]],  'o',label='load',markersize=12)
@@ -773,13 +792,6 @@ class Indentation:
       plt.xlabel('time incr. []')
       plt.ylabel(r'force [$\mathrm{mN}$]')
       plt.show()
-    self.iLHU = []
-    for i,_ in enumerate(loadIdx[::2]):
-      self.iLHU.append([loadIdx[::2][i],loadIdx[1::2][i],unloadIdx[::2][i],unloadIdx[1::2][i]])
-    if len(self.iLHU)>1:
-      self.method=Method.MULTI
-    if self.verbose>1:
-      print("Number Unloading segments",len(self.iLHU))
     #drift segments
     iDriftS = unloadIdx[1::2][i]+1
     iDriftE = len(self.p)-1
@@ -1352,6 +1364,11 @@ class Indentation:
     self.metaVendor = {}
     for key in self.datafile['metadata'].attrs:
       self.metaVendor[key] = self.datafile['metadata'].attrs[key]
+    if 'json' in self.metaVendor:
+      metaVendor = json.loads(self.metaVendor['json'])
+      if 'SAMPLE' in metaVendor:  #G200X data
+        if 'Dynamic' in metaVendor['SAMPLE']['@TEMPLATENAME']:
+          self.method = Method.CSM
     converter = self.datafile['converter'].attrs['uri'].split('/')[-1]
     if converter == 'hap2hdf.cwl':
       self.metaUser = {'measurementType': 'Fischer-Scope Indentation HDF5'}
@@ -1374,6 +1391,7 @@ class Indentation:
   def nextHDF5Test(self):
     """
     Go to next branch in HDF5 file
+    TODO clean up the if statements after converter
     """
     if len(self.testList)==0: #no sheet left
       return False
@@ -1390,22 +1408,31 @@ class Indentation:
       self.p = np.hstack((np.array(branch['loading']['force']),
                           np.array(branch['hold at max']['force']),
                           np.array(branch['unloading']['force'])))
+      self.valid = np.ones_like(self.t, dtype=bool)
     else:
-      if converter == 'nmd2hdf.cwl':   #G200X data has capital letters
+      if converter == 'nmd2hdf.cwl':   #G200X data has capital letters and is in SI units
         self.t = np.array(branch['Time'])
-        self.h = np.array(branch['Displacement'])
-        self.p = np.array(branch['Force'])
+        self.h = np.array(branch['Displacement'])*1.e6
+        self.p = np.array(branch['Force'])*1.e3
+        self.p -= np.min(self.p)     #prevent negative forces
+        if self.method==Method.CSM:
+          self.slope = np.array(branch['DynamicStiffness'])/1.e3
+          self.valid = ~np.isnan(self.slope)
+          self.slope = self.slope[self.valid]
+        else:
+          self.valid = np.ones_like(self.t, dtype=bool)
       else:
         self.t = np.array(branch['time'])
         self.h = np.array(branch['displacement'])
         self.p = np.array(branch['force'])
+        self.valid = np.ones_like(self.t, dtype=bool)
       if converter == 'hap2hdf.cwl':
         #Fischer-Scope reset the time multiple times
         resetPoints = np.where((self.t[1:]-self.t[:-1])<0)[0]
         self.t = self.t[resetPoints[-1]:]
         self.h = self.h[resetPoints[-1]:]
         self.p = self.p[resetPoints[-1]:]
-    self.valid = np.ones_like(self.t, dtype=bool)
+        self.valid = np.ones_like(self.t, dtype=bool)
     self.identifyLoadHoldUnload()
     return True
 
@@ -1705,17 +1732,20 @@ class Indentation:
     return res
 
 
-  def calibrateStiffness(self,critDepth=1.0,critForce=0.0001,plotStiffness=True, returnAxis=False):
+  def calibrateStiffness(self,critDepth=1.0,critForce=0.0001,plotStiffness=True, returnAxis=False, returnData=False):
     """
     Calibrate by first frame-stiffness from K^2/P of individual measurement
 
     Args:
        critDepth: frame stiffness: what is the minimum depth of data used
+
        critForce: frame stiffness: what is the minimum force used for fitting
 
        plotStiffness: plot stiffness graph with compliance
 
        returnAxis: return axis of plot
+
+       returnData: return data for external plotting
     """
     print("Start compliance fitting")
     ## output representative values
@@ -1725,14 +1755,15 @@ class Indentation:
       while True:
         self.analyse()
         if x is None:
-          x    = 1./np.sqrt(self.p[self.valid])
-          y    = 1./self.slope
+          x = 1./np.sqrt(self.p[self.valid]-np.min(self.p[self.valid])+0.001) #add 1nm to prevent runtime error
+          y = 1./self.slope
           h = self.h[self.valid]
         else:
-          x =    np.hstack((x,    1./np.sqrt(self.p[self.valid]) ))
-          y =    np.hstack((y,    1./self.slope))
+          x = np.hstack((x,    1./np.sqrt(self.p[self.valid]-np.min(self.p[self.valid])+0.001) ))
+          y = np.hstack((y,    1./self.slope))
           h = np.hstack((h, self.h[self.valid]))
-        if not self.testList: break
+        if not self.testList:
+          break
         self.nextTest()
       mask = np.logical_and(h>critDepth, x<1./np.sqrt(critForce))
       if len(mask[mask])==0:
@@ -1741,21 +1772,27 @@ class Indentation:
       maskPrint = []
     else:
       ## create data-frame of all files
-      dfAll = pd.DataFrame()
+      pAll, hAll, sAll = [], [], []
       while True:
         self.analyse()
-        dfAll = dfAll.append(self.getDataframe())
-        if not self.testList: break
+        pAll = pAll+list(self.metaUser['pMax_mN'])
+        hAll = hAll+list(self.metaUser['hMax_um'])
+        sAll = sAll+list(self.metaUser['S_mN/um'])
+        if not self.testList:
+          break
         self.nextTest()
-      maskPrint = dfAll['pMax_mN'] > 0.95*np.max(dfAll['pMax_mN'])
-      res['Input Max force: ave,stderr'] = [dfAll['pMax_mN'][maskPrint].mean(),dfAll['pMax_mN'][maskPrint].std()/dfAll['pMax_mN'][maskPrint].count()]
-      res['Input Max depth: ave,stderr'] = [dfAll['hMax_um'][maskPrint].mean(),dfAll['hMax_um'][maskPrint].std()/dfAll['hMax_um'][maskPrint].count()]
-      res['Input MeasStiff: ave,stderr'] = [dfAll['S_mN/um'][maskPrint].mean(),dfAll['S_mN/um'][maskPrint].std()/dfAll['S_mN/um'][maskPrint].count()]
+      pAll = np.array(pAll)
+      hAll = np.array(hAll)
+      sAll = np.array(sAll)
+      maskPrint = pAll > 0.95*pAll
+      res['Input Max force: ave,stderr'] = [pAll[maskPrint].mean(),pAll[maskPrint].std()/len(pAll[maskPrint])]
+      res['Input Max depth: ave,stderr'] = [hAll[maskPrint].mean(),hAll[maskPrint].std()/len(hAll[maskPrint])]
+      res['Input MeasStiff: ave,stderr'] = [sAll[maskPrint].mean(),sAll[maskPrint].std()/len(sAll[maskPrint])]
       ## determine compliance by intersection of 1/sqrt(p) -- compliance curve
-      x = 1./np.sqrt(dfAll['pMax_mN'])
-      y = 1./dfAll['S_mN/um']
-      mask = dfAll['hMax_um'] > critDepth
-      mask = np.logical_and(mask, dfAll['pMax_mN'] > critForce)
+      x = 1./np.sqrt(pAll)
+      y = 1./sAll
+      mask = hAll > critDepth
+      mask = np.logical_and(mask, pAll>critForce)
     if len(mask[mask])==0:
       print("ERROR too much filtering, no data left. Decrease critForce and critDepth")
       return None
@@ -1771,6 +1808,9 @@ class Indentation:
     print("  frame stiffness: %6.0f mN/um = %6.2e N/m"%(frameStiff,1000.*frameStiff))
     self.tip.compliance = frameCompliance
 
+    #end of function
+    if returnData:
+      return x,y
     if plotStiffness:
       f, ax = plt.subplots()
       ax.plot(x[~mask], y[~mask], 'o', color='#165480', fillstyle='none', markersize=1, label='excluded')
