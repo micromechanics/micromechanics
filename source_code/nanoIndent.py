@@ -297,7 +297,7 @@ class Indentation:
       hf0    = h[mask][-1]/2.0
       m0     = 2
       B0     = max(abs(P[0] / np.power(h[0]-hf0,m0)), 0.001)  #prevent neg. or zero
-      bounds = [[0,0,1],[np.inf, max(np.min(h[mask]),hf0), 10]]
+      bounds = [[0,0,0.8],[np.inf, max(np.min(h[mask]),hf0), 10]]
       if self.verbose>2:
         print("Initial fitting values", hf0, m0, B0)
         print("Bounds", bounds)
@@ -308,9 +308,8 @@ class Indentation:
       try:
         opt, _ = curve_fit(self.UnloadingPowerFunc, h[mask],P[mask],
                             p0=[B0,hf0,m0], bounds=bounds,
-                            ftol=1e-4, maxfev=1000 )#set ftol to 1e-4 if accept more and fail less
+                            ftol=1e-4, maxfev=3000 )#set ftol to 1e-4 if accept more and fail less
         if self.verbose>2:
-          print("Bounds for fitting",bounds)
           print("Optimal values", opt)
         B,hf,m = opt
         if np.isnan(B):
@@ -1398,13 +1397,13 @@ class Indentation:
     converter = self.datafile['converter'].attrs['uri'].split('/')[-1]
     self.testName = self.testList.pop(0)
     branch = self.datafile[self.testName]
-    if 'loading' in branch:
+    if 'loading' in branch:  #for Micromaterials Indenter
       self.t = np.hstack((np.array(branch['loading']['time']),
                           np.array(branch['hold at max']['time'])+branch['loading']['time'][-1],
                           np.array(branch['unloading']['time'])))
       self.h = np.hstack((np.array(branch['loading']['displacement']),
                           np.array(branch['hold at max']['displacement']),
-                          np.array(branch['unloading']['displacement'])))
+                          np.array(branch['unloading']['displacement'])))/1.e3
       self.p = np.hstack((np.array(branch['loading']['force']),
                           np.array(branch['hold at max']['force']),
                           np.array(branch['unloading']['force'])))
