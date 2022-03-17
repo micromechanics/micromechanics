@@ -11,7 +11,8 @@ class TestStringMethods(unittest.TestCase):
 			### MAIN ###
 			i = Indentation('examples/Micromaterials/Sample1_Vac_200C.hdf5')
 			i.analyse()
-			self.assertTrue((np.sum(i.modulus)==7.074141923076374e-05),'Calculation of modulus changed')
+			i.plot(show=False)
+			self.assertTrue((np.sum(i.modulus)==93.834198967926),'Calculation of modulus changed')
 			### END OF MAIN ###
 			print('\n*** DONE WITH VERIFY ***')
 
