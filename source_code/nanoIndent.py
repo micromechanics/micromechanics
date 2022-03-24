@@ -268,7 +268,7 @@ class Indentation:
        plot (bool): plot results
 
     Returns:
-       list: stiffness, validMask [values of P,h where stiffness is determined], mask, optimalVariables, powerlawFit-success
+       list: stiffness, validMask [values of p,h where stiffness is determined], mask, optimalVariables, powerlawFit-success
     """
     if self.method== Method.CSM:
       print("*ERROR* Should not land here: CSM method")
