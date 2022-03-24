@@ -32,7 +32,7 @@ import h5py, lmfit
 import matplotlib.pyplot as plt
 from scipy.optimize import fmin_l_bfgs_b, curve_fit, newton
 from scipy import ndimage, interpolate
-from scipy.signal import savgol_filter
+from scipy.signal import savgol_filter, medfilt
 
 
 # enum classes: make code more readable
@@ -67,7 +67,7 @@ class Indentation:
   """
   Main class
   """
-  def __init__(self, fileName, nuMat= 0.3, tip=None, verbose=2):
+  def __init__(self, fileName, nuMat= 0.3, tip=None, surfaceFind={}, verbose=2):
     """
     Initialize indentation experiment data
 
@@ -88,6 +88,7 @@ class Indentation:
     if tip is None:
       tip = Tip()
     self.tip = tip
+    self.surfaceFind = surfaceFind
     self.iLHU   = [ [-1,-1,-1,-1] ]                         #indicies of Load-Hold-Unload cycles (StartLoad-StartHold-StartUnload-EndLoad)
     self.iDrift = [-1,-1]                                   #start and end indicies of drift segment
     self.metaVendor = {}                                    #some results come from input file
@@ -773,12 +774,13 @@ class Indentation:
       loadIdx = loadIdx[2:]
     self.iLHU = []
     for i,_ in enumerate(loadIdx[::2]):
-      self.iLHU.append([loadIdx[::2][i],loadIdx[1::2][i],unloadIdx[::2][i],unloadIdx[1::2][i]])
       if loadIdx[::2][i]>loadIdx[1::2][i] or loadIdx[1::2][i]>unloadIdx[::2][i] or \
          unloadIdx[::2][i]>unloadIdx[1::2][i]:
         print("*ERROR* Wrong order in idx",i, \
-          [loadIdx[::2][i],loadIdx[1::2][i],unloadIdx[::2][i],unloadIdx[1::2][i]])
+          [loadIdx[::2][i],loadIdx[1::2][i],unloadIdx[::2][i],unloadIdx[1::2][i]],'SKIP FOR NOW')
         #plot = True #TODO change later
+      else:
+        self.iLHU.append([loadIdx[::2][i],loadIdx[1::2][i],unloadIdx[::2][i],unloadIdx[1::2][i]])
     if len(self.iLHU)>1:
       self.method=Method.MULTI
     if plot:     # verify visually
@@ -843,21 +845,72 @@ class Indentation:
   # @name FILE HANDLING; PLOTTING
   # Access to class variables
   #@{
-  def nextTest(self):
+  def nextTest(self, newTest=True, plotSurface=False):
     """
     Wrapper for all next test for all vendors
     """
-    if self.vendor == Vendor.Agilent:
-      success = self.nextAgilentTest()
-    elif self.vendor == Vendor.Micromaterials:
-      success = self.nextMicromaterialsTest()
-    elif self.vendor == Vendor.FischerScope:
-      success = self.nextFischerScopeTest()
-    elif self.vendor == Vendor.CommonHDF5:
-      success = self.nextHDF5Test()
+    if newTest:
+      if self.vendor == Vendor.Agilent:
+        success = self.nextAgilentTest(newTest)
+      elif self.vendor == Vendor.Micromaterials:
+        success = self.nextMicromaterialsTest()
+      elif self.vendor == Vendor.FischerScope:
+        success = self.nextFischerScopeTest()
+      elif self.vendor == Vendor.CommonHDF5:
+        success = self.nextHDF5Test()
+      else:
+        print("No multiple tests in file")
+        success = False
     else:
-      print("No multiple tests in file")
-      success = False
+      success = True
+
+    #SURFACE FIND
+    if 'gradient' in self.surfaceFind:
+      optGrad = self.surfaceFind['gradient']
+      h,p = self.h, self.p
+      if 'filt' in self.surfaceFind:
+        h = ndimage.gaussian_filter1d(self.h, self.surfaceFind['filt'])
+        p = ndimage.gaussian_filter1d(self.p, self.surfaceFind['filt'])
+      y = np.gradient(p)
+      y -= np.average(y[10:40])
+      if isinstance(optGrad, list):
+        #if domain given, use that to backward extrapolate
+        mask = np.logical_and(optGrad[0]<y, y<optGrad[1])
+        data = np.where(mask)[0]                               #where is true
+        data = np.split(data, np.where(np.diff(data)!=1)[0]+1) #find consecutive areas
+        #use first domain for fitting
+        mask = np.zeros_like(y, dtype=np.bool)
+        if len(data)>1 and len(data[0])<len(data[1]):  #if two domains are identified
+          mask[data[1]] = True
+        else:
+          mask[data[0]] = True
+        fit = np.polyfit(h[mask],y[mask],1)
+        surface = np.argmin(np.abs(h-np.roots(fit)[0]))
+        surface = np.argmax(self.h[surface-4:surface+5])+surface-4 #since scatter in h, find largest value in prox
+        ## for debugging surface find
+        if plotSurface:
+          _, ax1 = plt.subplots()
+          ax2 = ax1.twinx()
+          ax2.plot(self.h, self.p,'C3-')
+          ax2.plot(self.h[mask], self.p[mask],'C3o')
+          ax2.plot(self.h[surface], self.p[surface],'C2o', markersize=12)
+          ax1.plot(h,y)
+          ax1.plot(h[mask], y[mask],'o')
+          ax1.plot(h[mask], np.polyval(fit,h[mask]), '--k')
+          ax1.plot(h[surface], y[surface], 'C2o', markersize=12)
+          ax1.axhline(0,linestyle='dashed')
+          ax1.set_ylim([-0.0005,0.001])
+          ax1.set_xlim([h[surface]-1.1, np.max(h[mask])+1.02])
+          ax1.set_xlabel('depth [$\mu m$]')
+          ax1.set_ylabel('gradient [mN]')
+          ax1.grid()
+          ax2.set_ylim([-2,5])
+          ax2.set_ylabel('force [mN]')
+          plt.show()
+      else:
+        surface = np.where(y>optGrad)[0][0]
+      self.h -= self.h[surface]
+      self.p -= self.p[surface]
     return success
 
   def restartFile(self):
@@ -902,7 +955,8 @@ class Indentation:
           ,"TotalLateralForce": "L", "X Force": "pX", "_XForce": "pX", "Y Force": "pY", "_YForce": "pY"\
           ,"_XDeflection": "Ux", "_YDeflection": "Uy" }
     self.fullData = ['h','p','t','pVsHSlope','hRaw','pRaw','tTotal','slopeSupport']
-    if self.verbose>1: print("=============  "+fileName+"  ============")
+    if self.verbose>1:
+      print("=============  "+fileName+"  ============")
     for dfName in self.datafile.keys():
       df    = self.datafile.get(dfName)
       if "Test " in dfName and not "Tagged" in dfName and not "Test Inputs" in dfName:
@@ -912,9 +966,9 @@ class Indentation:
           for cell in df.columns:
             if cell in code:
               self.indicies[code[cell]] = cell
-              if self.verbose>1: print("     %-30s : %-20s "%(cell,code[cell]) )
+              if self.verbose>2: print("     %-30s : %-20s "%(cell,code[cell]) )
             else:
-              if self.verbose>1: print(" *** %-30s NOT USED"%cell)
+              if self.verbose>2: print(" *** %-30s NOT USED"%cell)
             if "Harmonic" in cell or "Dyn. Frequency" in cell:
               self.method = Method.CSM
           #reset to ensure default values are set
@@ -929,7 +983,7 @@ class Indentation:
       print("*WARNING*: INDENTATION: Some index is missing (t,p,h,slope) should be there")
     self.metaUser['measurementType'] = 'MTS, Agilent Indentation XLS'
     self.allTestList =  list(self.testList)
-    self.nextAgilentTest()
+    self.nextTest()
     return True
 
 
@@ -1223,8 +1277,8 @@ class Indentation:
       self.datafile = ZipFile(fileName)
       self.testList = self.datafile.namelist()
       self.fileName = fileName
-      self.nextMicromaterialsTest()
       self.metaUser = {'measurementType': 'Micromaterials Indentation ZIP'}
+      self.nextTest()
       return True
     return True
 
@@ -1328,13 +1382,13 @@ class Indentation:
       self.method = Method.MULTI
     else:
       self.method = Method.ISO
-    self.nextFischerScopeTest()
+    self.nextTest()
     return True
 
 
   def nextFischerScopeTest(self):
     """
-    Go to next dataframe
+    Go to next test
     """
     df = self.workbook.pop(0)
     self.testName = self.testList.pop(0)
@@ -1384,7 +1438,8 @@ class Indentation:
       self.unloadPMin = 0.5
     else:
       print("ERROR UNKNOWN CONVERTER")
-    self.nextHDF5Test()
+    self.allTestList =  list(self.testList)
+    self.nextTest()
     return True
 
 
@@ -1587,7 +1642,7 @@ class Indentation:
   ##
   # @name CALIBRATION METHOD
   #@{
-  def calibration(self,eTarget=72.0,numPolynomial=3,critDepth=1.0,critForce=0.01,plotStiffness=False,plotTip=False, **kwargs):
+  def calibration(self,eTarget=72.0,numPolynomial=3,critDepth=1.0,critForce=1.0,plotStiffness=False,plotTip=False, **kwargs):
     """
     Calibrate by first frame-stiffness and then area-function calibration
 
@@ -1599,9 +1654,11 @@ class Indentation:
        critForce: frame stiffness: what is the minimum force used for fitting
        plotStiffness: plot stiffness graph with compliance
        pltTip: plot tip shape after fitting
+       constantTerm: add constant term into area function
+       returnArea: return contact depth and area
     """
     constantTerm = kwargs.get('constantTerm', False)
-    frameCompliance, res = self.calibrateStiffness(critDepth=critDepth,critForce=critForce,plotStiffness=plotStiffness)
+    frameCompliance = self.calibrateStiffness(critDepth=critDepth,critForce=critForce,plotStiffness=plotStiffness)
 
     ## re-create data-frame of all files
     temp = {'method': self.method, 'onlyLoadingSegment': self.onlyLoadingSegment}
@@ -1609,36 +1666,32 @@ class Indentation:
     self.tip.compliance = frameCompliance
     for item in temp:
       setattr(self, item, temp[item])
+    slope, h, p = np.array([], dtype=np.float), np.array([], dtype=np.float), np.array([], dtype=np.float)
     if self.method==Method.CSM:
-      self.nextAgilentTest(newTest=False)  #rerun to ensure that onlyLoadingSegment used
-      slope = None
+      self.nextTest(newTest=False)  #rerun to ensure that onlyLoadingSegment used
       while True:
         self.analyse()
-        if slope is None:
-          slope = self.slope
-          h     = self.h[self.valid]
-          p     = self.p[self.valid]
-        else:
-          slope = np.hstack((slope, self.slope))
-          h     = np.hstack((h,     self.h[self.valid]))
-          p     = np.hstack((p,     self.p[self.valid]))
-        if not self.testList: break
+        slope = np.hstack((slope, self.slope))
+        h     = np.hstack((h,     self.h[self.valid]))
+        p     = np.hstack((p,     self.p[self.valid]))
+        if not self.testList:
+          break
         self.nextTest()
     else:
-      dfNew = pd.DataFrame()
       while True:
         self.analyse()
-        dfNew = dfNew.append(self.getDataframe())
-        if len(self.testList)==0: break
+        slope = np.hstack((slope, self.metaUser['S_mN/um']))
+        h     = np.hstack((h,     self.metaUser['hMax_um']))
+        p     = np.hstack((p,     self.metaUser['pMax_mN']))
+        if len(self.testList)==0:
+          break
         self.nextTest()
-      slope = np.array(dfNew['S_mN/um'])
-      ## verify (only makes sense for non-CSM because CSM calculates stiffness like this)
-      totalCompliance = 1./dfAll['S_mN/um']
-      contactStiffness = 1./(totalCompliance-frameCompliance) #mN/um
-      print("Info: difference direct-indirect stiffness %",round(np.linalg.norm((slope-contactStiffness)/slope)*100,2),"%. Should be small")
-      slope = np.array(dfNew['S_mN/um'])
-      h     = dfNew['hMax_um']
-      p     = dfNew['pMax_mN']
+
+    #depth has to be positive
+    mask = h>0.000
+    slope = slope[mask]
+    h = h[mask]
+    p = p[mask]
 
     ## fit shape function
     #reverse OliverPharrMethod to determine area function
@@ -1686,13 +1739,12 @@ class Indentation:
       print("  iterated prefactors",[round(i,1) for i in self.tip.prefactors[:-1]])
       stderr = [result.params[x].stderr for x in result.params]
       print("    standard error",['NaN' if x is None else round(x,2) for x in stderr])
-      res['tip prefact factors and std.error'] = [self.tip.prefactors[:-1],stderr]
 
     if plotTip:
       if numPolynomial is None:
         self.tip.setInterpolationFunction(interpolationFunct)
       rNonPerfect = np.sqrt(A/np.pi)
-      plt.plot(rNonPerfect, h_c,'.')
+      plt.plot(rNonPerfect, h_c,'C0o', label='data')
       self.tip.plotIndenterShape(maxDepth=1.5)
       #Error plot
       plt.plot(h_c,(A-self.tip.areaFunction(h_c))/A,'o',markersize=2)
@@ -1704,32 +1756,9 @@ class Indentation:
       plt.yticks([-0.1,-0.05,0,0.05,0.1])
       plt.show()
 
-    #rerun everything with calibrated area function to see
-    self.restartFile()
-    for item in temp:
-      setattr(self, item, temp[item])
-    if self.method==Method.CSM:
-      self.nextAgilentTest(newTest=False)  #rerun to ensure that onlyLoadingSegment used
-    else:
-      ## create data-frame of all files
-      dfAll = pd.DataFrame()
-      while True:
-        self.analyse()
-        dfAll = dfAll.append(self.getDataframe())
-        if not self.testList: break
-        self.nextTest()
-      ## output representative values
-      maskPrint = dfAll['pMax_mN'] > 0.95*np.max(dfAll['pMax_mN'])
-      res['End Max depth: ave,stderr']=[dfAll['hMax_um'][maskPrint].mean(),dfAll['hMax_um'][maskPrint].std()/dfAll['hMax_um'][maskPrint].count()]
-      res['End MeasStiff: ave,stderr']=[dfAll['S_mN/um'][maskPrint].mean(),dfAll['S_mN/um'][maskPrint].std()/dfAll['S_mN/um'][maskPrint].count()]
-      res['End A_c: ave,stderr']=[      dfAll['A_um2'][maskPrint].mean(),  dfAll['A_um2'][maskPrint].std()/  dfAll['A_um2'][maskPrint].count()]
-      res['End h_c: ave,stderr']=[      dfAll['hc_um'][maskPrint].mean(),  dfAll['hc_um'][maskPrint].std()/  dfAll['hc_um'][maskPrint].count()]
-      res['End E: ave,stderr']=[  dfAll['E_GPa'].mean(),   dfAll['E_GPa'].std()/   dfAll['E_GPa'].count()]
-      res['End E_r: ave,stderr']=[dfAll['modulusRed_GPa'].mean(),dfAll['modulusRed_GPa'].std()/dfAll['modulusRed_GPa'].count()]
-      res['End H: ave,stderr']=[  dfAll['H_GPa'].mean(),   dfAll['H_GPa'].std()/   dfAll['H_GPa'].count()]
-    if numPolynomial is None:
-      return res, interpolationFunct
-    return res
+    if kwargs.get('returnArea', False):
+      return h_c, A
+    return
 
 
   def calibrateStiffness(self,critDepth=1.0,critForce=0.0001,plotStiffness=True, returnAxis=False, returnData=False):
@@ -1749,7 +1778,6 @@ class Indentation:
     """
     print("Start compliance fitting")
     ## output representative values
-    res = {}
     if self.method==Method.CSM:
       x, y, h = None, None, None
       while True:
@@ -1785,14 +1813,12 @@ class Indentation:
       hAll = np.array(hAll)
       sAll = np.array(sAll)
       maskPrint = pAll > 0.95*pAll
-      res['Input Max force: ave,stderr'] = [pAll[maskPrint].mean(),pAll[maskPrint].std()/len(pAll[maskPrint])]
-      res['Input Max depth: ave,stderr'] = [hAll[maskPrint].mean(),hAll[maskPrint].std()/len(hAll[maskPrint])]
-      res['Input MeasStiff: ave,stderr'] = [sAll[maskPrint].mean(),sAll[maskPrint].std()/len(sAll[maskPrint])]
       ## determine compliance by intersection of 1/sqrt(p) -- compliance curve
       x = 1./np.sqrt(pAll)
       y = 1./sAll
       mask = hAll > critDepth
       mask = np.logical_and(mask, pAll>critForce)
+      print("number of data-points:", len(x[mask]))
     if len(mask[mask])==0:
       print("ERROR too much filtering, no data left. Decrease critForce and critDepth")
       return None
@@ -1804,7 +1830,6 @@ class Indentation:
     print("  frame compliance: %8.4e um/mN = %8.4e m/N"%(frameCompliance,frameCompliance/1000.))
     stderrPercent = np.abs( np.sqrt(np.diag(covM)[1]) / param[1] * 100. )
     print("  compliance and stiffness standard error in %:",round(stderrPercent,2) )
-    res['Stiffness and error in %']=[frameStiff,stderrPercent]
     print("  frame stiffness: %6.0f mN/um = %6.2e N/m"%(frameStiff,1000.*frameStiff))
     self.tip.compliance = frameCompliance
 
@@ -1829,7 +1854,7 @@ class Indentation:
       if returnAxis:
         return ax
       plt.show()
-    return [frameCompliance, res]
+    return frameCompliance
 
 
   def isFusedSilica(self, bounds=[[610,700],[71,73],[8.9,10.1]], numPoints=50):
@@ -2244,7 +2269,7 @@ class Tip:
     return h
 
 
-  def plotIndenterShape(self, maxDepth=1, steps=2000, show=True, tipLabel=None, fileName=None):
+  def plotIndenterShape(self, maxDepth=1, steps=50, show=True, tipLabel=None, fileName=None):
     """
     check indenter shape: plot shape function against perfect Berkovich
 
@@ -2266,9 +2291,9 @@ class Tip:
     rNonPerfect = np.sqrt( self.areaFunction(h_c)/math.pi)
     rPerfect  = 2.792254*h_c
     if tipLabel is None:  tipLabel = 'this tip'
-    plt.plot(rNonPerfect, h_c, '-', label=tipLabel)
     plt.plot(rPerfect,h_c, '-k', label='Berkovich')
     plt.plot(np.tan(np.radians(60.0))*h_c,h_c, '--k', label='$60^o$')
+    plt.plot(rNonPerfect, h_c, 'C1-', label=tipLabel)
     plt.legend(loc="best")
     plt.ylabel(r'contact depth [$\mathrm{\mu m}$]')
     plt.xlabel(r'contact radius [$\mathrm{\mu m}$]')
