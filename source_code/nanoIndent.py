@@ -78,10 +78,10 @@ class Indentation:
     """
     self.nuMat = nuMat                                      #nuMat: material's Posson ratio
     self.nuIndent = 0.07
-    self.EIndent  = 1140                                    #GPa from Oliver,Pharr Method paper
+    self.stiffnessIndent  = 1140                            #GPa from Oliver,Pharr Method paper
     self.beta = 0.75                                        #beta: contact depth coefficient
     self.verbose = verbose
-    self.method    = Method.ISO                             #iso default: csm uses different methods
+    self.method = Method.ISO                                #iso default: csm uses different methods
     self.onlyLoadingSegment = False                         #use all data by default
 
     if tip is None:
@@ -161,10 +161,10 @@ class Indentation:
     Returns:
         float: Young's modulus
     """
-    nu = self.nuMat
+    numat = self.nuMat
     if nuThis>0:
-      nu = nuThis
-    modulus = (1.0-nu*nu) / ( 1.0/modulusRed - (1.0-self.nuIndent*self.nuIndent)/self.EIndent )
+      numat = nuThis
+    modulus = (1.0-numat*numat) / ( 1.0/modulusRed - (1.0-self.nuIndent*self.nuIndent)/self.stiffnessIndent )
     return modulus
 
 
@@ -180,10 +180,10 @@ class Indentation:
     Returns:
         float: Reduced Young's modulus
     """
-    nu = self.nuMat
+    numat = self.nuMat
     if nuThis>0:
-      nu = nuThis
-    modulusRed =  1.0/(  (1.0-nu*nu)/modulus + (1.0-self.nuIndent*self.nuIndent)/self.EIndent )
+      numat = nuThis
+    modulusRed =  1.0/(  (1.0-numat*numat)/modulus + (1.0-self.nuIndent*self.nuIndent)/self.stiffnessIndent )
     return modulusRed
 
 
@@ -226,7 +226,7 @@ class Indentation:
     - only used for verification of the Oliver-Pharr Method
 
     Args:
-       stiffness (float): slope dP/dh
+       stiffness (float): slope dpMax/dh
 
        pMax (float): maximal force
 
@@ -243,15 +243,15 @@ class Indentation:
 
 
   @staticmethod
-  def UnloadingPowerFunc(h,B,hf,m):
+  def UnloadingPowerFunc(h,b,hf,m):
     """
     internal function describing the unloading regime
     - function: p = B*(h-hf)^m
-    - B:  scaling factor (no physical meaning)
+    - b:  scaling factor (no physical meaning)
     - m:  exponent       (no physical meaning)
     - hf: final depth = depth where force becomes 0
     """
-    value = B*np.power(h-hf,m)
+    value = b*np.power(h-hf,m)
     return value
 
 
@@ -295,23 +295,23 @@ class Indentation:
       #initial values of fitting
       hf0    = h[mask][-1]/2.0
       m0     = 2
-      B0     = max(abs(p[0] / np.power(h[0]-hf0,m0)), 0.001)  #prevent neg. or zero
+      b0     = max(abs(p[0] / np.power(h[0]-hf0,m0)), 0.001)  #prevent neg. or zero
       bounds = [[0,0,0.8],[np.inf, max(np.min(h[mask]),hf0), 10]]
       if self.verbose>2:
-        print("Initial fitting values", hf0, m0, B0)
+        print("Initial fitting values", hf0, m0, b0)
         print("Bounds", bounds)
       # Old linear assumptions
-      # B0  = (P[mask][-1]-P[mask][0])/(h[mask][-1]-h[mask][0])
+      # b0  = (P[mask][-1]-P[mask][0])/(h[mask][-1]-h[mask][0])
       # hf0 = h[mask][0] - P[mask][0]/B0
       # m0  = 1.5 #to get of axis
       try:
         opt, _ = curve_fit(self.UnloadingPowerFunc, h[mask],p[mask],
-                            p0=[B0,hf0,m0], bounds=bounds,
+                            p0=[b0,hf0,m0], bounds=bounds,
                             ftol=1e-4, maxfev=3000 )#set ftol to 1e-4 if accept more and fail less
         if self.verbose>2:
           print("Optimal values", opt)
-        B,hf,m = opt
-        if np.isnan(B):
+        b,hf,m = opt
+        if np.isnan(b):
           raise ValueError("NAN after fitting")
         powerlawFit.append(True)
       except:
@@ -319,18 +319,18 @@ class Indentation:
         print(traceback.format_exc())
         if self.verbose>0:
           print("stiffnessFrommasking: #",cycleNum," Fitting failed. use linear")
-        B  = (p[mask][-1]-p[mask][0])/(h[mask][-1]-h[mask][0])
-        hf = h[mask][0] -p[mask][0]/B
+        b  = (p[mask][-1]-p[mask][0])/(h[mask][-1]-h[mask][0])
+        hf = h[mask][0] -p[mask][0]/b
         m  = 1.
-        opt= (B,hf,m)
+        opt= (b,hf,m)
         powerlawFit.append(False)
-      stiffness_ = B*m*math.pow( (h[unloadStart]-hf), m-1)
+      stiffness_ = b*m*math.pow( (h[unloadStart]-hf), m-1)
       stiffness.append(stiffness_)
       validMask[unloadStart]=True
       if plot:
-        plt.plot(h[mask],   self.UnloadingPowerFunc(h[mask],B,hf,m),'m-')
-        stiffnessN= p[unloadStart]-stiffness_*h[unloadStart]
-        plt.plot(h[mask],   stiffness_*h[mask]+stiffnessN, 'r--', lw=3)
+        plt.plot(h[mask],   self.UnloadingPowerFunc(h[mask],b,hf,m),'m-')
+        stiffnessNew= p[unloadStart]-stiffness_*h[unloadStart]
+        plt.plot(h[mask],   stiffness_*h[mask]+stiffnessNew, 'r--', lw=3)
     if plot:
       plt.xlim(left=0)
       plt.ylim(bottom=0)
@@ -916,14 +916,14 @@ class Indentation:
             if "Harmonic" in cell or "Dyn. Frequency" in cell:
               self.method = Method.CSM
           #reset to ensure default values are set
-          if not "p" in self.indicies: self.indicies['p']=self.indicies['pRaw']
-          if not "h" in self.indicies: self.indicies['h']=self.indicies['hRaw']
-          if not "t" in self.indicies: self.indicies['t']=self.indicies['tTotal']
+          if "p" not in self.indicies: self.indicies['p']=self.indicies['pRaw']
+          if "h" not in self.indicies: self.indicies['h']=self.indicies['hRaw']
+          if "t" not in self.indicies: self.indicies['t']=self.indicies['tTotal']
           #if self.verbose: print("   Found column names: ",sorted(self.indicies))
       if "Tagged" in dfName: tagged.append(dfName)
     if len(tagged)>0 and self.verbose>1: print("Tagged ",tagged)
-    if not "t" in self.indicies or not "p" in self.indicies or \
-       not "h" in self.indicies or not "slope" in self.indicies:
+    if "t" not in self.indicies or "p" not in self.indicies or \
+       "h" not in self.indicies or "slope" not in self.indicies:
       print("*WARNING*: INDENTATION: Some index is missing (t,p,h,slope) should be there")
     self.metaUser['measurementType'] = 'MTS, Agilent Indentation XLS'
     self.allTestList =  list(self.testList)
@@ -990,7 +990,7 @@ class Indentation:
     if "slopeSupport" in self.indicies: self.slopeSupport /= 1.e3 #from N/m in mN/um     # pylint error: slopeSupport is not defined
     if 'hc' in self.indicies         : self.hc /= 1.e3  #from nm in um
     if 'hRaw' in self.indicies        : self.hRaw /= 1.e3  #from nm in um
-    if not "k2p" in self.indicies and 'slope' in self.indicies:
+    if "k2p" not in self.indicies and 'slope' in self.indicies:
       self.k2p = self.slope * self.slope / self.p[self.valid]
     return success
 
