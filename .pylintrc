@@ -452,7 +452,7 @@ good-names=i,
            x, y, x_, y_,
            B, B0,
            ax, df,
-           YoungsModulus, ReducedModulus, OliverPharrMethod, UnloadingPowerFunc
+           YoungsModulus, ReducedModulus, OliverPharrMethod
 
 # Good variable names regexes, separated by a comma. If names match any regex,
 # they will always be accepted

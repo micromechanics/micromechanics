@@ -62,14 +62,14 @@ def loadAgilent(self, fileName):
           if "Harmonic" in cell or "Dyn. Frequency" in cell:
             self.method = Method.CSM
         #reset to ensure default values are set
-        if not "p" in self.indicies: self.indicies['p']=self.indicies['pRaw']
-        if not "h" in self.indicies: self.indicies['h']=self.indicies['hRaw']
-        if not "t" in self.indicies: self.indicies['t']=self.indicies['tTotal']
+        if "p" not in self.indicies: self.indicies['p']=self.indicies['pRaw']
+        if "h" not in self.indicies: self.indicies['h']=self.indicies['hRaw']
+        if "t" not in self.indicies: self.indicies['t']=self.indicies['tTotal']
         #if self.verbose: print("   Found column names: ",sorted(self.indicies))
     if "Tagged" in dfName: tagged.append(dfName)
   if len(tagged)>0 and self.verbose>1: print("Tagged ",tagged)
-  if not "t" in self.indicies or not "p" in self.indicies or \
-      not "h" in self.indicies or not "slope" in self.indicies:
+  if "t" not in self.indicies or "p" not in self.indicies or \
+     "h" not in self.indicies or "slope" not in self.indicies:
     print("*WARNING*: INDENTATION: Some index is missing (t,p,h,slope) should be there")
   self.metaUser['measurementType'] = 'MTS, Agilent Indentation XLS'
   self.allTestList =  list(self.testList)

@@ -20,7 +20,7 @@ def YoungsModulus(self, modulusRed, nuThis=-1):
   nu = self.nuMat
   if nuThis>0:
     nu = nuThis
-  modulus = (1.0-nu*nu) / ( 1.0/modulusRed - (1.0-self.nuIndent*self.nuIndent)/self.EIndent )
+  modulus = (1.0-nu*nu) / ( 1.0/modulusRed - (1.0-self.nuTip*self.nuTip)/self.modulusTip)
   return modulus
 
 
@@ -39,7 +39,7 @@ def ReducedModulus(self, modulus, nuThis=-1):
   nu = self.nuMat
   if nuThis>0:
     nu = nuThis
-  modulusRed =  1.0/(  (1.0-nu*nu)/modulus + (1.0-self.nuIndent*self.nuIndent)/self.EIndent )
+  modulusRed =  1.0/(  (1.0-nu*nu)/modulus + (1.0-self.nuTip*self.nuTip)/self.modulusTip)
   return modulusRed
 
 
@@ -83,7 +83,7 @@ def inverseOliverPharrMethod(self, stiffness, pMax, modulusRed):
   - only used for verification of the Oliver-Pharr Method
 
   Args:
-      stiffness (float): slope dP/dh
+      stiffness (float): slope dP/dh at the maximum load pMax
 
       pMax (float): maximal force
 
@@ -100,7 +100,7 @@ def inverseOliverPharrMethod(self, stiffness, pMax, modulusRed):
 
 
 @staticmethod
-def UnloadingPowerFunc(h,B,hf,m):
+def unloadingPowerFunc(h,B,hf,m):
   """
   internal function describing the unloading regime
   - function: p = B*(h-hf)^m
@@ -163,7 +163,7 @@ def stiffnessFromUnloading(self, p, h, plot=False):
     # hf0 = h[mask][0] - P[mask][0]/B0
     # m0  = 1.5 #to get of axis
     try:
-      opt, _ = curve_fit(self.UnloadingPowerFunc, h[mask],p[mask],
+      opt, _ = curve_fit(self.unloadingPowerFunc, h[mask],p[mask],
                           p0=[B0,hf0,m0], bounds=bounds,
                           ftol=1e-4, maxfev=3000 )#set ftol to 1e-4 if accept more and fail less
       if self.verbose>2:
@@ -186,9 +186,9 @@ def stiffnessFromUnloading(self, p, h, plot=False):
     stiffness.append(stiffnessPlot)
     validMask[unloadStart]=True
     if plot:
-      plt.plot(h[mask],   self.UnloadingPowerFunc(h[mask],B,hf,m),'m-')
-      stiffnessN= p[unloadStart]-stiffnessPlot*h[unloadStart]
-      plt.plot(h[mask],   stiffnessPlot*h[mask]+stiffnessN, 'r--', lw=3)
+      plt.plot(h[mask],   self.unloadingPowerFunc(h[mask],B,hf,m),'m-')
+      stiffnessValue= p[unloadStart]-stiffnessPlot*h[unloadStart]
+      plt.plot(h[mask],   stiffnessPlot*h[mask]+stiffnessValue, 'r--', lw=3)
   if plot:
     plt.xlim(left=0)
     plt.ylim(bottom=0)

@@ -36,7 +36,7 @@ class Indentation:
     identifyLoadHoldUnload, identifyLoadHoldUnloadCSM, nextTest, saveToUserMeta
   from .plot import plotTestingMethod, plot, plotAsDepth
   from .theory import YoungsModulus, ReducedModulus, OliverPharrMethod, inverseOliverPharrMethod,\
-    stiffnessFromUnloading, UnloadingPowerFunc
+    stiffnessFromUnloading, unloadingPowerFunc
   #pylint: enable=import-outside-toplevel
 
   def __init__(self, fileName, nuMat= 0.3, tip=None, surfaceFind={}, verbose=2):
