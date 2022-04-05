@@ -145,6 +145,7 @@ disable=print-statement,
         misplaced-comparison-constant,
         fixme,
         broad-except,
+        bare-except,
         import-outside-toplevel
 
 # Enable the message, report, category or checker with the given id(s). You can
@@ -441,11 +442,12 @@ good-names=i,
            ex,
            Run,
            _,
-           nu, m, m0
+           nu, m, m0,
            Ac,
            hc, hc0,
            h, hf,
-           p
+           p,
+           x, y, x_, y_
 
 # Good variable names regexes, separated by a comma. If names match any regex,
 # they will always be accepted

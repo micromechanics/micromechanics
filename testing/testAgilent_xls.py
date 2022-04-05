@@ -10,7 +10,7 @@ class TestStringMethods(unittest.TestCase):
 			### MAIN ###
 			i = Indentation('examples/Agilent/FS_Calibration.xls', nuMat = 0.18)
 			i.calibration()
-			self.assertTrue(i.tip.prefactors==[25.991228859792464, 305.48268776072473, 2052.5362399789738, 'iso'],'Tip prefactors changed')
+			self.assertTrue(i.tip.prefactors==[25.99088100777346, 305.6978416681741, 2050.70109154738, 'iso'],'Tip prefactors changed')
 			### END OF MAIN ###
 			print('\n*** DONE WITH VERIFY ***')
 
