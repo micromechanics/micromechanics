@@ -146,7 +146,9 @@ disable=print-statement,
         fixme,
         broad-except,
         bare-except,
-        import-outside-toplevel
+        import-outside-toplevel,
+        multiple-statements
+
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -183,7 +185,7 @@ score=yes
 [REFACTORING]
 
 # Maximum number of nested blocks for function / method body
-max-nested-blocks=5
+max-nested-blocks=10
 
 # Complete name of functions that never returns. When checking for
 # inconsistent-return-statements if a never returning function is called then
@@ -443,11 +445,14 @@ good-names=i,
            Run,
            _,
            nu, m, m0,
-           Ac,
-           hc, hc0,
-           h, hf,
+           Ac, Ac_,
+           hc, hc0, hc_, h0, h_, p_,
+           h, hf, t,
            p,
-           x, y, x_, y_
+           x, y, x_, y_,
+           B, B0,
+           ax, df,
+           YoungsModulus, ReducedModulus, OliverPharrMethod, UnloadingPowerFunc
 
 # Good variable names regexes, separated by a comma. If names match any regex,
 # they will always be accepted
@@ -527,16 +532,16 @@ valid-metaclass-classmethod-first-arg=cls
 max-args=10
 
 # Maximum number of attributes for a class (see R0902).
-max-attributes=15
+max-attributes=45
 
 # Maximum number of boolean expressions in an if statement (see R0916).
 max-bool-expr=12
 
 # Maximum number of branch for function / method body.
-max-branches=20
+max-branches=40
 
 # Maximum number of locals for function / method body.
-max-locals=25
+max-locals=50
 
 # Maximum number of parents for a class (see R0901).
 max-parents=7
@@ -548,7 +553,7 @@ max-public-methods=20
 max-returns=6
 
 # Maximum number of statements in function / method body.
-max-statements=50
+max-statements=150
 
 # Minimum number of public methods for a class (see R0903).
 min-public-methods=0
