@@ -1,7 +1,7 @@
 """VERIFY METHODS"""
 import numpy as np
 import matplotlib.pyplot as plt
-from definitions import Method
+from .definitions import Method
 
 def verifyOneData(self):
   """
