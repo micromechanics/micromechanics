@@ -1,7 +1,7 @@
 """
 Introduction
 ============
-This is a tutorial for using nanoIndent.py while analysing nanoindentation data
+The toolbox aims to help with nanoindentation data analysis using python.
 
 .. note::
    The following units should be used: [mN], [µm], [GPa] because the area function is unit-dependent.
@@ -12,7 +12,7 @@ This is a tutorial for using nanoIndent.py while analysing nanoindentation data
 
    - Method: ISO, CSM
 
-   - Vendor: Agilent, Hysitron, FischerScope
+   - Vendor: Agilent, Hysitron, FischerScope, Micromaterials
 
    - Indenter Tip: shape of indenter tip and stiffness of gantry
 
@@ -21,33 +21,34 @@ How it works:
 1. Obtain loading and unloading data through nanoindentation, measuring force (p) and depth (h)
 2. Calculate:
 
-    - S [mN/µm]: Slope of unloading part (stiffness)
+    - slope [mN/µm]: Slope of unloading part (stiffness)
     - hc [µm]: Contact depth
     - Ac [µm2]: Contact area
-    - H [GPa]: Hardness
-    - Er [GPa]: reduced Young’s modulus
-    - E [GPa]: Young’s modulus
+    - hardness [GPa]
+    - modulusRed [GPa]: reduced Young’s modulus
+    - modulus [GPa]: Young’s modulus
 3. Plot
 
 Installation
 ============
-1. Download "nanoIndent.py" from the sorce_code folder and use as described in the tutorial or clone this github repository::
+1. Download the ".py" files from the nanoindentation folder and use as described in the tutorial
+or clone this github repository::
 
     git clone git@github.com:micromechanics/main.git
 
-Or download "main.zip" from github directily ::
+Or download "main.zip" from github directily.
 
-Files from clone for nanoindentation calculation:
+Files in the cloned repository:
 
     - examples[folder]: experimental data for vendor Agilent, FisherScope, Hysitron ...
-    - Source_code[folder]: contains functional codes for nanoindentation calcultation (nanoIndent.py)
-    - requirements[txt]: packages are required in nanaindentation
+    - nanoindentation[folder]: contains functional codes for nanoindentation calcultation (nanoIndent.py)
+    - requirements[txt]: packages are required in nanoindentation
 
-2. Install packages using requirements (contains numpy, matplotlib, scipy ...) ::
+2. Install packages using requirements (contains numpy, matplotlib, scipy etc) ::
 
     pip3 install -r requirements.txt
 
-In case the pip hasn't installed::
+In case pip hasn't been installed::
 
    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py   # download pip script
    sudo python3 get-pip.py
@@ -62,7 +63,7 @@ Import necessary libraries::
 
     import matplotlib.pyplot as plt
     import numpy as np
-    from nanoIndent import Indentation, Tip
+    from nanoindentation import Indentation, Tip
 
 Introduce tip::
 
@@ -99,7 +100,8 @@ Plotting:
     i.plot()
     plt.plot(i.h, i.p)
 
-Save all values to a dictionary. This can be appended to a user defined dataframe and further information can be added to it accordingly. E.g. the file name in this case::
+Save all values to a dictionary. This can be appended to a user defined dataframe and further information can be added to it
+accordingly. E.g. the file name in this case::
 
     meta = i.metaUser
     meta["file name"]=fileName
@@ -115,7 +117,7 @@ This is an example code analysing the hdf5 files from FischerScope nanoindenter:
 
     import matplotlib.pyplot as plt
     import pandas as pd
-    from nanoIndent import Indentation, Tip
+    from nanoindentation import Indentation, Tip
 
     fileName = "Nafion_15_100_5.hdf5"
     ourTip = Tip()  #um/mN
