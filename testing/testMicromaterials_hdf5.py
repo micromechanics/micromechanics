@@ -2,7 +2,7 @@
 import traceback
 import unittest
 import numpy as np
-from nanoIndent import Indentation
+from nanoindentation import Indentation
 
 
 class TestStringMethods(unittest.TestCase):

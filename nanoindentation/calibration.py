@@ -29,11 +29,11 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepth=1.0,critForce=1.0,pl
 
   ## re-create data-frame of all files
   temp = {'method': self.method, 'onlyLoadingSegment': self.onlyLoadingSegment}
-  self.restartFile()
+  #fself.restartFile()
   self.tip.compliance = frameCompliance
   for item in temp:
     setattr(self, item, temp[item])
-  slope, h, p = np.array([], dtype=np.float), np.array([],dtype=np.float), np.array([],dtype=np.float)
+  slope, h, p = np.array([], dtype=np.float64), np.array([],dtype=np.float64), np.array([],dtype=np.float64)
   if self.method==Method.CSM:
     self.nextTest(newTest=False)  #rerun to ensure that onlyLoadingSegment used
     while True:
