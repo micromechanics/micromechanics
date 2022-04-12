@@ -7,7 +7,7 @@ from nanoindentation import Indentation
 
 class TestStringMethods(unittest.TestCase):
 	def test_main(self):
-		
+
 		try:
 			### MAIN ###
 			i = Indentation('examples/Micromaterials/Sample1_Vac_200C.hdf5')
@@ -17,7 +17,7 @@ class TestStringMethods(unittest.TestCase):
 					break
 				i.nextTest()
 			i.plot()
-			self.assertTrue((np.sum(i.modulus)==51.664364831662226),'Calculation of modulus changed')
+			self.assertTrue((abs(np.sum(i.modulus)-51.664364831662226)<1e-4),'Calculation of modulus changed')
 			### END OF MAIN ###
 			print('\n*** DONE WITH VERIFY ***')
 
