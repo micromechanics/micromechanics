@@ -582,3 +582,9 @@ def isfloat(value):
     return True
   except ValueError:
     return False
+
+
+def restartFile(self):
+  self.testList = list(self.allTestList)
+  self.nextTest()
+  return

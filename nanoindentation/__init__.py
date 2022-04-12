@@ -31,7 +31,7 @@ class Indentation:
   #pylint: disable=import-outside-toplevel
   from .calibration import calibration, calibrateStiffness
   from .input import loadAgilent, nextAgilentTest, loadHysitron, loadMicromaterials, nextMicromaterialsTest, \
-    loadFischerScope, nextFischerScopeTest, loadHDF5, nextHDF5Test
+    loadFischerScope, nextFischerScopeTest, loadHDF5, nextHDF5Test, restartFile
   from .main import popIn, calcYoungsModulus, calcHardness, calcStiffness2Force, analyse, \
     identifyLoadHoldUnload, identifyLoadHoldUnloadCSM, nextTest, saveToUserMeta
   from .plot import plotTestingMethod, plot, plotAsDepth

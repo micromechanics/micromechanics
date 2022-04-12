@@ -29,7 +29,7 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepth=1.0,critForce=1.0,pl
 
   ## re-create data-frame of all files
   temp = {'method': self.method, 'onlyLoadingSegment': self.onlyLoadingSegment}
-  #fself.restartFile()
+  self.restartFile()
   self.tip.compliance = frameCompliance
   for item in temp:
     setattr(self, item, temp[item])
