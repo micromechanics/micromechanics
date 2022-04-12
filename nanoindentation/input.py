@@ -46,7 +46,7 @@ def loadAgilent(self, fileName):
         ,"_XDeflection": "Ux", "_YDeflection": "Uy" }
   self.fullData = ['h','p','t','pVsHSlope','hRaw','pRaw','tTotal','slopeSupport']
   if self.verbose>1:
-    print("=============  "+fileName+"  ============")
+    print("Open Agilent file: "+fileName)
   for dfName in self.datafile.keys():
     df    = self.datafile.get(dfName)
     if "Test " in dfName and not "Tagged" in dfName and not "Test Inputs" in dfName:
@@ -69,8 +69,8 @@ def loadAgilent(self, fileName):
     if "Tagged" in dfName: tagged.append(dfName)
   if len(tagged)>0 and self.verbose>1: print("Tagged ",tagged)
   if "t" not in self.indicies or "p" not in self.indicies or \
-     "h" not in self.indicies or "slope" not in self.indicies:
-    print("*WARNING*: INDENTATION: Some index is missing (t,p,h,slope) should be there")
+     "h" not in self.indicies:
+    print("*WARNING*: INDENTATION: Some index is missing (t,p,h) should be there")
   self.metaUser['measurementType'] = 'MTS, Agilent Indentation XLS'
   self.allTestList =  list(self.testList)
   self.nextTest()
@@ -452,7 +452,7 @@ def loadFischerScope(self,fileName):
     else:
       df = pd.DataFrame(np.array(block), columns=['F','h','t'] )
     self.workbook.append(df)
-  if self.verbose>1:
+  if self.verbose>2:
     print("Meta information:",self.metaVendor)
     print("Number of measurements read:",len(self.workbook))
   self.metaUser['measurementType'] = 'Fischer-Scope Indentation TXT'
