@@ -120,3 +120,24 @@ class Indentation:
       self.unloadPMin = 0.5
       success = self.loadHDF5(fileName)
     return
+
+
+  #defining an iterator for cleaner usage
+  #https://www.programiz.com/python-programming/iterator
+  #Building Custom Iterators
+  def __iter__(self):
+    self.restartFile()
+    self.newFileRead = True                                 #just read the file
+    return self
+
+
+  def __next__(self):
+    if self.testList and len(self.testList)>0:
+      if self.newFileRead:                                  #skip/redo first run through
+        self.newFileRead=False
+      else:
+        self.nextTest()
+    else:
+      raise StopIteration
+    return self.testName
+
