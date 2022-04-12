@@ -84,28 +84,32 @@ def verifyReadCalc(self, plot=True):
   hardness = self.p[self.valid] / Ac
   if self.method==Method.CSM:
     if plot:
-      plt.plot(self.t[self.valid],self.hc,'o',label='read')
-      plt.plot(self.t[self.valid],hc,label='calc')
+      plt.semilogy(self.t[self.valid],self.hc,'o',label='read')
+      plt.semilogy(self.t[self.valid],hc,label='calc')
       plt.legend(loc=0)
       plt.xlim(left=0)
       plt.ylim([0,np.max(self.hc)])
+      plt.xlabel('time [s]')
+      plt.ylabel('contact depth $h_c$ [$\mu m$]')
       plt.title("Error in hc: {0:.2e}".format(np.linalg.norm(hc-self.hc)) )
       plt.show()
     else:
-      print("Error in hc: {0:.2e}".format(np.linalg.norm(hc-self.hc)) )
+      print("  Error in hc: {0:.2e}".format(np.linalg.norm(hc-self.hc)) )
   else:
     print("Error in hc: %.3e %% between %.3e and %.3e" %(abs(hc-self.hc)*100./hc, hc, self.hc) )
   if self.method==Method.CSM:
     if plot:
-      plt.plot(self.t[self.valid],self.Ac,'o',label='read')
-      plt.plot(self.t[self.valid],Ac,label='calc')
+      plt.semilogy(self.t[self.valid],self.Ac,'o',label='read')
+      plt.semilogy(self.t[self.valid],Ac,label='calc')
       plt.legend(loc=0)
       plt.xlim(left=0)
       plt.ylim([0,np.max(self.Ac)])
+      plt.xlabel('time [s]')
+      plt.ylabel('contact area $A_c$ [$\mu m^2$]')
       plt.title("Error in Ac: {0:.2e}".format(np.linalg.norm((Ac-self.Ac))) )
       plt.show()
     else:
-      print("Error in Ac: {0:.2e}".format(np.linalg.norm((Ac-self.Ac))))
+      print("  Error in Ac: {0:.2e}".format(np.linalg.norm((Ac-self.Ac))))
   else:
     print("Error in Ac: %.3e %% between %.3e and %.3e" %(abs(Ac-self.Ac)*100./Ac,Ac,self.Ac) )
   if self.method==Method.CSM:
@@ -113,12 +117,14 @@ def verifyReadCalc(self, plot=True):
       plt.plot(self.t[self.valid],self.modulusRed,'o',label='read')
       plt.plot(self.t[self.valid],modulusRed,label='calc')
       plt.legend(loc=0)
+      plt.xlabel('time [s]')
+      plt.ylabel('reduced modulus [GPa]')
       plt.xlim(left=0)
       plt.ylim([0,np.max(self.modulusRed)])
       plt.title("Error in modulusRed: {0:.2e}".format(np.linalg.norm((modulusRed-self.modulusRed))))
       plt.show()
     else:
-      print("Error in modulusRed: {0:.2e}".format(np.linalg.norm((modulusRed-self.modulusRed))))
+      print("  Error in modulusRed: {0:.2e}".format(np.linalg.norm((modulusRed-self.modulusRed))))
   else:
     print("Error in modulusRed: %.3e %% between %.3e and %.3e" \
       %(abs(modulusRed-self.modulusRed)*100./modulusRed,modulusRed,self.modulusRed) )
@@ -127,12 +133,14 @@ def verifyReadCalc(self, plot=True):
       plt.plot(self.t[self.valid],self.modulus,'o',label='read')
       plt.plot(self.t[self.valid],modulus,label='calc')
       plt.legend(loc=0)
+      plt.xlabel('time [s]')
+      plt.ylabel('modulus E [GPa]')
       plt.xlim(left=0)
       plt.ylim([0,np.max(self.modulus)])
       plt.title("Error in modulus: {0:.2e}".format(np.linalg.norm((modulus-self.modulus))) )
       plt.show()
     else:
-      print("Error in modulus: {0:.2e}".format(np.linalg.norm((modulus-self.modulus))))
+      print("  Error in modulus: {0:.2e}".format(np.linalg.norm((modulus-self.modulus))))
   else:
     print("Error in modulus:  %.3e %% between %.3e and %.3e" \
       %(abs(modulus-self.modulus)*100./modulus, modulus,self.modulus) )
@@ -141,12 +149,14 @@ def verifyReadCalc(self, plot=True):
       plt.plot(self.t[self.valid],self.hardness,'o',label='read')
       plt.plot(self.t[self.valid],hardness,label='calc')
       plt.legend(loc=0)
+      plt.xlabel('time [s]')
+      plt.ylabel('hardness [GPa]')
       plt.xlim(left=0)
       plt.ylim([0,np.max(self.hardness)])
       plt.title("Error in hardness: {0:.2e}".format(np.linalg.norm((hardness-self.hardness))) )
       plt.show()
     else:
-      print("Error in hardness: {0:.2e}".format(np.linalg.norm((hardness-self.hardness))))
+      print("  Error in hardness: {0:.2e}".format(np.linalg.norm((hardness-self.hardness))))
   else:
     print("Error in hardness:  %.3e %% between %.3e and %.3e" \
       %(abs(hardness-self.hardness)*100./hardness, hardness,self.hardness) )

@@ -1,0 +1,3304 @@
+Method Name : C:\Programme\MTS Systems\TestWorks\Methods\XP\G-Series CSM Standard Hardness, Modulus, and Tip Cal.msm
+Owner : MTS
+Channels
+	Modulus
+		Internal Name : Modulus
+		Units : GPa
+		Formula : IF (Isvalid(DisplacementIntoSurface) AND (CurrentIndex() < EndOfLoadingMarker), (1.0-pow( PoissonsRatio, 2.0))*pow ( (1/ReducedModulus-(1-pow(IndenterTipPoissonsRatio, 2.0) )/TipModulus()), -1.0), InvalidDouble())
+		Description : Subject to a number of assumptions, this is the Young's modulus for the sample. 
+Young's modulus relates stress and strain when the material is subjected to 
+elastic deformation.  
+		Places : 3
+		Notation : Fixed
+		Export Order : 5
+		Effect of Increasing Extension : Increases Value
+		Invert Polarity : No
+		Hidden : No
+		Save Raw Data : No
+		Recalculate Post-Test : Yes
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	Contact Area
+		Internal Name : ContactArea
+		Units : nm^2
+		Formula : TipArea(ContactDepth,_TipName)
+		Description : The projected contact area between the indenter tip and the sample.
+		Places : 3
+		Notation : Fixed
+		Export Order : 6
+		Effect of Increasing Extension : Increases Value
+		Invert Polarity : No
+		Hidden : No
+		Save Raw Data : No
+		Recalculate Post-Test : Yes
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	Time
+		Internal Name : _Time
+		Units : s
+		Formula : 
+		Description : Time.
+		Places : 3
+		Notation : Fixed
+		Export Order : 27
+		Effect of Increasing Extension : Increases Value
+		Invert Polarity : No
+		Hidden : No
+		Save Raw Data : Yes
+		Recalculate Post-Test : No
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	Raw Load
+		Internal Name : _Load
+		Units : mN
+		Formula : 
+		Description : Raw force applied electromagnetically to the indenter column.
+		Places : 6
+		Notation : Fixed
+		Export Order : 21
+		Effect of Increasing Extension : Effect of Increasing Extension
+		Invert Polarity : No
+		Hidden : No
+		Save Raw Data : Yes
+		Recalculate Post-Test : No
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	Contact Depth
+		Internal Name : ContactDepth
+		Units : nm
+		Formula : if (DisplacementIntoSurface>0.0 AND CurrentIndex() < EndOfLoadingMarker, DisplacementIntoSurface-Epsilon*LoadOnSample/Stiffness,InvalidDouble())
+		Description : The depth over which the indenter makes contact with the sample.
+		Places : 3
+		Notation : Fixed
+		Export Order : 7
+		Effect of Increasing Extension : Increases Value
+		Invert Polarity : No
+		Hidden : No
+		Save Raw Data : No
+		Recalculate Post-Test : Yes
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	Harmonic Contact Stiffness
+		Internal Name : Stiffness
+		Units : N/m
+		Formula : 1/(1/(_HarmonicStiffness)-1/ ( _HarmonicFrame+HarmonicFrameCorrection))
+		Description : Harmonic stiffness of the contact, used directly in the calculation of contact area, 
+hardness, and reduced modulus.
+		Places : 3
+		Notation : Fixed
+		Export Order : 3
+		Effect of Increasing Extension : Increases Value
+		Invert Polarity : No
+		Hidden : No
+		Save Raw Data : No
+		Recalculate Post-Test : Yes
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	Hardness
+		Internal Name : Hardness
+		Units : GPa
+		Formula : if ((DisplacementIntoSurface>0.0) AND (CurrentIndex() < EndOfLoadingMarker), LoadOnSample/ContactArea, InvalidDouble())
+		Description : Mean pressure of the contact.
+		Places : 3
+		Notation : Fixed
+		Export Order : 4
+		Effect of Increasing Extension : Increases Value
+		Invert Polarity : No
+		Hidden : No
+		Save Raw Data : No
+		Recalculate Post-Test : Yes
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	Segment Number
+		Internal Name : SegmentIndex
+		Units : 
+		Formula : IF(CurrentIndex() eq 0, 0, SegmentIndex)
+		Description : Identifies segment number (sequentially indexed).
+		Places : 0
+		Notation : Fixed
+		Export Order : 23
+		Effect of Increasing Extension : Increases Value
+		Invert Polarity : No
+		Hidden : Yes
+		Save Raw Data : Yes
+		Recalculate Post-Test : No
+		Calculate during Test : No
+		Never Recalculate : Yes
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	X Position
+		Internal Name : _XPosition
+		Units : um
+		Formula : 
+		Description : The x-position of the sample stage.
+		Places : 3
+		Notation : Fixed
+		Export Order : 28
+		Effect of Increasing Extension : Effect of Increasing Extension
+		Invert Polarity : No
+		Hidden : No
+		Save Raw Data : Yes
+		Recalculate Post-Test : No
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	Frame Stiffness
+		Internal Name : _Frame
+		Units : N/m
+		Formula : 
+		Description : Stiffness used to account for slight deformation in the test frame that 
+occurs when applying load to a sample.
+		Places : 0
+		Notation : Fixed
+		Export Order : 9
+		Effect of Increasing Extension : Effect of Increasing Extension
+		Invert Polarity : No
+		Hidden : No
+		Save Raw Data : Yes
+		Recalculate Post-Test : No
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	Y Position
+		Internal Name : _YPosition
+		Units : um
+		Formula : 
+		Description : The y-position of the sample stage.
+		Places : 3
+		Notation : Fixed
+		Export Order : 29
+		Effect of Increasing Extension : Description
+		Invert Polarity : No
+		Hidden : No
+		Save Raw Data : Yes
+		Recalculate Post-Test : No
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	Harmonic Load
+		Internal Name : _HarmonicLoad
+		Units : uN
+		Formula : 
+		Description : The amplitude of the load oscillation.  
+		Places : 3
+		Notation : Fixed
+		Export Order : 14
+		Effect of Increasing Extension : Effect of Increasing Extension
+		Invert Polarity : No
+		Hidden : No
+		Save Raw Data : Yes
+		Recalculate Post-Test : No
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	Segment Type
+		Internal Name : SegmentType
+		Units : 
+		Formula : IF(CurrentIndex() eq 0, 0, SegmentType)
+		Description : Identifies segment type (approach, load, unload, etc.) for post-test analysis.  
+Set using "Segment Type" test segments.  
+		Places : 0
+		Notation : Fixed
+		Export Order : 24
+		Effect of Increasing Extension : Increases Value
+		Invert Polarity : No
+		Hidden : Yes
+		Save Raw Data : Yes
+		Recalculate Post-Test : No
+		Calculate during Test : No
+		Never Recalculate : Yes
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	Reduced Modulus
+		Internal Name : ReducedModulus
+		Units : GPa
+		Formula : if ((DisplacementIntoSurface>0.0) AND (CurrentIndex() < EndOfLoadingMarker),Stiffness*Sqrt(Pi())/(2*Beta*sqrt(ContactArea)),InvalidDouble())
+		Description : The reduced modulus includes biaxial deformation in both the indenter
+and the sample. 
+		Places : 3
+		Notation : Fixed
+		Export Order : 22
+		Effect of Increasing Extension : Increases Value
+		Invert Polarity : No
+		Hidden : No
+		Save Raw Data : No
+		Recalculate Post-Test : Yes
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	Raw Displacement
+		Internal Name : _Displacement
+		Units : um
+		Formula : 
+		Description : Absolute position of the indenter shaft relative to the center of its full range 
+of travel.
+		Places : 3
+		Notation : Fixed
+		Export Order : 20
+		Effect of Increasing Extension : Effect of Increasing Extension
+		Invert Polarity : No
+		Hidden : No
+		Save Raw Data : Yes
+		Recalculate Post-Test : No
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	Load vs Disp Slope
+		Internal Name : _ContactStiffness
+		Units : N/m
+		Formula : 
+		Description : Instantaneous and continuous slope of load with respect to displacement.  
+Used for the in-situ determination of surface contact.
+		Places : 3
+		Notation : Fixed
+		Export Order : 18
+		Effect of Increasing Extension : Effect of Increasing Extension
+		Invert Polarity : No
+		Hidden : No
+		Save Raw Data : Yes
+		Recalculate Post-Test : No
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	Harmonic Contact Damping
+		Internal Name : _HarmonicDamping
+		Units : N/m
+		Formula : 
+		Description : Harmonic damping of the contact only.
+		Places : 3
+		Notation : Fixed
+		Export Order : 10
+		Effect of Increasing Extension : Increases Value
+		Invert Polarity : No
+		Hidden : Yes
+		Save Raw Data : Yes
+		Recalculate Post-Test : No
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	Harmonic Frame Stiffness
+		Internal Name : _HarmonicFrame
+		Units : N/m
+		Formula : 
+		Description : Stiffness used to account for the slight influence of the test frame on the
+measured harmonic stiffness
+		Places : 3
+		Notation : Fixed
+		Export Order : 12
+		Effect of Increasing Extension : Effect of Increasing Extension
+		Invert Polarity : No
+		Hidden : No
+		Save Raw Data : Yes
+		Recalculate Post-Test : No
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	Support Spring Stiffness
+		Internal Name : _Column
+		Units : N/m
+		Formula : 
+		Description : Stiffness of the springs which support the indenter column.
+		Places : 3
+		Notation : Fixed
+		Export Order : 26
+		Effect of Increasing Extension : Effect of Increasing Extension
+		Invert Polarity : No
+		Hidden : No
+		Save Raw Data : Yes
+		Recalculate Post-Test : No
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	Harmonic Frequency
+		Internal Name : _HarmonicFrequency
+		Units : Hz
+		Formula : 
+		Description : The frequency of the harmonic oscillation.
+		Places : 3
+		Notation : Fixed
+		Export Order : 13
+		Effect of Increasing Extension : Effect of Increasing Extension
+		Invert Polarity : No
+		Hidden : No
+		Save Raw Data : Yes
+		Recalculate Post-Test : No
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	Harmonic Displacement
+		Internal Name : _HarmonicDisplacement
+		Units : nm
+		Formula : 
+		Description : Amplitude of displacement oscillation.
+		Places : 3
+		Notation : Fixed
+		Export Order : 11
+		Effect of Increasing Extension : Effect of Increasing Extension
+		Invert Polarity : No
+		Hidden : No
+		Save Raw Data : Yes
+		Recalculate Post-Test : No
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	Load On Sample
+		Internal Name : LoadOnSample
+		Units : mN
+		Formula : _Load-_Load[SurfaceMarker] -(_Displacement-_Displacement[SurfaceMarker])*_Column[SurfaceMarker]
+		Description : Load on the sample, "zeroed" when the indenter first contacts the surface.  
+This value has been corrected for the force imposed by the springs supporting 
+the indenter shaft.
+		Places : 6
+		Notation : Fixed
+		Export Order : 1
+		Effect of Increasing Extension : Increases Value
+		Invert Polarity : No
+		Hidden : No
+		Save Raw Data : No
+		Recalculate Post-Test : Yes
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	Harmonic Stiffness
+		Internal Name : _HarmonicStiffness
+		Units : N/m
+		Formula : 
+		Description : Combined harmonic stiffness of the contact together with the frame.
+		Places : 3
+		Notation : Fixed
+		Export Order : 15
+		Effect of Increasing Extension : Increases Value
+		Invert Polarity : No
+		Hidden : No
+		Save Raw Data : Yes
+		Recalculate Post-Test : No
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	Stiffness Squared Over Load
+		Internal Name : LoadByStiffnessSquared
+		Units : GPa
+		Formula : if ((DisplacementIntoSurface>0.0) AND (CurrentIndex() < EndOfLoadingMarker), Stiffness*Stiffness/LoadOnSample, InvalidDouble())
+		Description : Proportional to the ratio of the square of modulus to hardness.  Useful for
+troubleshooting.
+		Places : 0
+		Notation : Scientific
+		Export Order : 25
+		Effect of Increasing Extension : Increases Value
+		Invert Polarity : No
+		Hidden : No
+		Save Raw Data : No
+		Recalculate Post-Test : Yes
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	Time On Sample
+		Internal Name : TimeOnSample
+		Units : s
+		Formula : _Time-_Time[SurfaceMarker]
+		Description : Time, "zeroed" when the indenter first contacts the surface.  
+		Places : 6
+		Notation : Fixed
+		Export Order : 2
+		Effect of Increasing Extension : Increases Value
+		Invert Polarity : No
+		Hidden : No
+		Save Raw Data : No
+		Recalculate Post-Test : Yes
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	Harmonic System Damping
+		Internal Name : _HarmonicSystemDamping
+		Units : N/m
+		Formula : 
+		Description : Contact and equipment together are modeled as a simple harmonic oscillator,
+i.e. one effective spring (K), one effective dashpot (D), and one effective 
+mass (m) subjected to a force, F(t), oscillating at frequency, w.  
+This is the "imaginary" part of the solution for such as system; that is, Dw.
+		Places : 3
+		Notation : Fixed
+		Export Order : 16
+		Effect of Increasing Extension : Increases Value
+		Invert Polarity : No
+		Hidden : Yes
+		Save Raw Data : Yes
+		Recalculate Post-Test : No
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	CSM Status
+		Internal Name : _CSM
+		Units : 
+		Formula : 
+		Description : Status of lock-in amplifier. A value of 1 indicates everything is OK.
+A value of 0 indicates that the analog-to-digital converter is overloaded.
+		Places : 0
+		Notation : Fixed
+		Export Order : 8
+		Effect of Increasing Extension : Increases Value
+		Invert Polarity : No
+		Hidden : Yes
+		Save Raw Data : Yes
+		Recalculate Post-Test : No
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	Phase Angle
+		Internal Name : _PhaseAngle
+		Units : deg
+		Formula : 
+		Description : Phase angle between the applied load oscillation and the resulting 
+displacement oscillation.
+		Places : 3
+		Notation : Fixed
+		Export Order : 19
+		Effect of Increasing Extension : Effect of Increasing Extension
+		Invert Polarity : No
+		Hidden : No
+		Save Raw Data : Yes
+		Recalculate Post-Test : No
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	Displacement Into Surface
+		Internal Name : DisplacementIntoSurface
+		Units : nm
+		Formula : _Displacement - _Displacement[SurfaceMarker]  -DriftCorrection*(_Time - _Time[SurfaceMarker]) - ((_Load-_Load[SurfaceMarker] )/( _Frame+FrameStiffnessCorrection))
+		Description : Penetration into the test surface as measured from the point at which the 
+indenter first touches the sample.  This value has been corrected for thermal
+drift and for any deflection in the instrument frame.  
+		Places : 3
+		Notation : Fixed
+		Export Order : 0
+		Effect of Increasing Extension : Increases Value
+		Invert Polarity : No
+		Hidden : No
+		Save Raw Data : No
+		Recalculate Post-Test : Yes
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+	Harmonic System Stiffness
+		Internal Name : _HarmonicSystemStiffness
+		Units : N/m
+		Formula : 
+		Description : Contact and equipment together are modeled as a simple harmonic oscillator,
+i.e. one effective spring (K), one effective dashpot (D), and one effective 
+mass (m) subjected to a force, F(t), oscillating at frequency, w.  
+This is the "real" part of the solution for such as system; that is, K - mw^2.
+		Places : 3
+		Notation : Fixed
+		Export Order : 17
+		Effect of Increasing Extension : Increases Value
+		Invert Polarity : No
+		Hidden : Yes
+		Save Raw Data : Yes
+		Recalculate Post-Test : No
+		Calculate during Test : No
+		Never Recalculate : No
+		Advanced button : No
+		Locked : No
+		Discardable : No
+Inputs
+	Batch Inputs
+		_Memo
+			Internal Name : _Memo
+			Default Value :   
+			Description : This input is used to hold the sample memo.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : Yes
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : Yes
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Approach Distance to Store
+			Internal Name : _ApproachDistanceToSave
+			Default Value : 1000.000  nm
+			Description : Distance within the approach segment over which data is acquired and recorded.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : Yes
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Delta X For Finding Surface
+			Internal Name : _DeltaXForFindingSurface
+			Default Value : -50.000  um
+			Description : Instrument uses a 'practice' indent to locate the test surface.
+
+This is the distance in the x-direction of the practice indent from the first prescribed
+indent on the sample.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : Yes
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Delta Y For Finding Surface
+			Internal Name : _DeltaYForFindingSurface
+			Default Value : -50.000  um
+			Description : Instrument uses a 'practice' indent to locate the test surface.
+
+This is the distance in the y-direction of the practice indent from the first prescribed
+indent on the sample.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : Yes
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Surface Approach Distance
+			Internal Name : _SurfaceApproachDistance
+			Default Value : 1000.000  nm
+			Description : The indenter begins 'looking' for the test surface at this (estimated) distance
+above the surface.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : Yes
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Surface Approach Sensitivity
+			Internal Name : _SurfaceApproachSensitivity
+			Default Value : 40.000  %
+			Description : This value sets the criteria that the indenter uses to decide whether it has 
+contacted the test surface.  A lower value causes more sensitive surface detection, 
+but increases the likelihood of false detection (and vice versa).
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Sample
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : Yes
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Surface Approach Velocity
+			Internal Name : _SurfaceApproachVelocity
+			Default Value : 10.000  nm/s
+			Description : Speed with which the indenter approaches the test surface.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Sample
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : Yes
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Surface Stiffness
+			Internal Name : SurfaceStiffness
+			Default Value : 160.000  N/m
+			Description : Used to establish the point of contact for the purpose of preliminary calculations 
+only.  
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : Yes
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		X Test Position
+			Internal Name : _XLocation
+			Default Value : ****  um
+			Description : The x coordinate of the desired test position.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : Yes
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : Yes
+			Sample Level : No
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		X Y Table Speed
+			Internal Name : XYTableSpeed
+			Default Value : 1.000  mm/s
+			Description : Velocity of stages.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Y Test Position
+			Internal Name : _YLocation
+			Default Value : ****  um
+			Description : The y coordinate of the desired test position.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : Yes
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : Yes
+			Sample Level : No
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+	Internal Use
+		Added Approach First Dent
+			Internal Name : AddedApproachFirstDent
+			Default Value : 7000.000  nm
+			Description : This is not the actual approach distance added to the first indent.  
+This is an approximation used to calculate an appropriate maximum loading time
+based on the approach distance and approach velocity specified by the user.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Sample
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Author
+			Internal Name : Author
+			Default Value : Jennifer Hay  
+			Description : Author of the method
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 0
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Newtons Per Meter
+			Internal Name : NewtonsPerMeter
+			Default Value : 1.000  N/m
+			Description : Used for clarification of dimensions in various calculations.  
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : Yes
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : Yes
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Number of Tests in this Sample
+			Internal Name : _MaxSpecimens
+			Default Value : 0.000  
+			Description : Used for batch mode.  Do not modify or delete.  
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : Yes
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Surface Displacement
+			Internal Name : _SurfaceDisplacement
+			Default Value : 100.000  mm
+			Description : Used by several test segments to keep track of the current displacement 
+value at the surface of the sample.  Do not delete.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Sample
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : Yes
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Zero Force Amp
+			Internal Name : ZeroForceAmp
+			Default Value : 0.000  mN
+			Description : Used to zero harmonic oscillation at the start of unload.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : No
+			Locked : Yes
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+	Hold Segment Inputs
+		Drift Determination Time
+			Internal Name : DriftDeterminationTime
+			Default Value : 50.000  s
+			Description : Time over which the force on the indenter is held at a small, constant value.  
+Data acquired during this time are used to determine thermal drift.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Peak Hold Time
+			Internal Name : PeakHoldTime
+			Default Value : 10.000  s
+			Description : Time over which load is held constant immediately before each unload.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+	Unload Segment Inputs
+		Percent To Unload
+			Internal Name : PercentToUnload
+			Default Value : 90.000  %
+			Description : Percent to reduce the load on the indenter.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+	Data Acquistion Inputs
+		Data Acquisition Rate
+			Internal Name : DataRate
+			Default Value : 5.000  Hz
+			Description : Data acquisition rate
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Drift Determination Acquisition Rate
+			Internal Name : DriftDeterminationAcquisitionRate
+			Default Value : 0.500  Hz
+			Description : Data acquisition rate during hold for thermal drift correction.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Sample
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Outer Loop Rate
+			Internal Name : _OuterLoopRate
+			Default Value : 25.000  Hz
+			Description : Used for data collection.  Do not delete.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+	Oliver & Pharr Constants
+		Beta
+			Internal Name : Beta
+			Default Value : 1.000  
+			Description : Factor which allows one to apply the axisymmetric Sneddon contact solution to 
+indentation with pyramids.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Sample
+			Minimum : 1.000
+			Maximum : 1.034
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : Yes
+			Choice List : Yes
+			Only Allow Choice : Yes
+			Input Order : N/A
+		Epsilon
+			Internal Name : Epsilon
+			Default Value : 0.750  
+			Description : Geometric factor used in the calculation of contact depth.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Sample
+			Minimum : 0.720
+			Maximum : 0.750
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : Yes
+			Editable Post-Test : No
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Indenter Poissons Ratio
+			Internal Name : IndenterTipPoissonsRatio
+			Default Value : 0.070  
+			Description : Poisson ratio for indenter material.  Default is for diamond.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Sample
+			Minimum : 0.000
+			Maximum : 0.500
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+	Segment Types
+		Hold Segment Type
+			Internal Name : Hold
+			Default Value : 300  
+			Description : Integer used to designate a test segment as a specific segment type.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 0
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : Yes
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Load Segment Type
+			Internal Name : Load
+			Default Value : 0  
+			Description : Integer used to designate a test segment as a specific segment type.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 0
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : Yes
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Thermal Drift Hold Segment
+			Internal Name : ThermalDriftHold
+			Default Value : 400  
+			Description : Integer used to designate a test segment as a specific segment type.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 0
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : Yes
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Unload From Peak Segment Type
+			Internal Name : UnloadFromPeak
+			Default Value : 600  
+			Description : Integer used to designate a test segment as a specific segment type.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 0
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : Yes
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Unload Segment Type
+			Internal Name : Unload
+			Default Value : 500  
+			Description : Integer used to designate a test segment as a specific segment type.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 0
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : Yes
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+	Reported Test Inputs
+		Allowable Drift Rate
+			Internal Name : _AllowableDriftRate
+			Default Value : 0.050  nm/s
+			Description : Thermal stability criteria for initiating tests on a sample.   While the indenter is in 
+contact with the test surface under a small constant force, the time rate of
+change in the displacement must be less than this value.  The lower the value, the
+longer the instrument will wait before initiating testing on a sample. 
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Sample
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : Yes
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Depth Limit
+			Internal Name : DepthLimit
+			Default Value : 2000.000  nm
+			Description : Maximum penetration of the indenter into the test surface.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Sample
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : Yes
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : Yes
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Frequency Target
+			Internal Name : FrequencySetPoint
+			Default Value : 45.000  Hz
+			Description : Target (set point) for harmonic frequency.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : Yes
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : Yes
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Harmonic Displacement Target
+			Internal Name : HarmonicDisplacement
+			Default Value : 2.000  nm
+			Description : Target (set point) for amplitude of displacement oscillation.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : Yes
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : Yes
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Strain Rate Target
+			Internal Name : StrainRate
+			Default Value : 0.050  1/s
+			Description : Loading is controlled such that the loading rate divided by the load on the test 
+surface is held constant at this value.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : Yes
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : Yes
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+	Reported Calculation Inputs
+		Frame Stiffness Correction
+			Internal Name : FrameStiffnessCorrection
+			Default Value : 0.000  N/m
+			Description : Correction applied to the Frame Stiffness.  This correction is added directly
+to the Frame Stiffness (i.e. compliances are NOT summed).  Correction might
+be needed if the sample is mounted in such a way that affects the 
+frame stiffness.
+
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : Yes
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : Yes
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Harmonic Frame Stiffness Correction
+			Internal Name : HarmonicFrameCorrection
+			Default Value : 0.000  N/m
+			Description : Correction applied to the Harmonic Frame Stiffness.  This correction is added
+directly to the Harmonic Frame Stiffness (i.e. compliances are NOT summed). 
+Correction might be needed if the sample is mounted in such a way that affects
+the frame stiffness.
+
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : Yes
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : Yes
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Maximum Calculation Depth
+			Internal Name : Max_Modulus_Depth
+			Default Value : 200.000  nm
+			Description : Only data acquired at surface penetrations less than this value are used in 
+the calculation of average hardness and modulus.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : 0.000
+			Maximum : 0.000
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : Yes
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Minimum Calculation Depth
+			Internal Name : Min_Modulus_Depth
+			Default Value : 100.000  nm
+			Description : Only data acquired at surface penetrations greater than this value are used 
+in the calculation of average hardness and modulus.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : Yes
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Percent Unload In Stiffness Calculation
+			Internal Name : PercentUnloadInStiffnessCalc
+			Default Value : 50.000  %
+			Description : Percent of unloading curve used in the calculation of stiffness from unload.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : Yes
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Perform Drift Correction
+			Internal Name : PerformDriftCorrection
+			Default Value : 1  
+			Description : Flag that determines whether the displacement data are corrected for 
+thermal expansion/contraction of the test material and/or equipment. 
+ A value of unity means that the correction will be performed.  Note: this
+input should be set to zero when testing polymers or metals that creep.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 0
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : Yes
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : Yes
+			Only Allow Choice : Yes
+			Input Order : N/A
+		Poissons Ratio
+			Internal Name : PoissonsRatio
+			Default Value : 0.180  
+			Description : Poisson ratio for the test sample.  Default value is for fused silica (amorphous
+quartz).  Although this value is used in the calculation of modulus, the result is
+rather insensitive.  Use the following guidelines: 0.2 for glasses and ceramics; 
+0.25 for steels; 0.3 for polymers and soft metals.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Sample
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : Yes
+			Input Required : Yes
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : Yes
+			Only Allow Choice : No
+			Input Order : N/A
+	Plot Scaling Inputs
+		Max Plotted Hardness
+			Internal Name : MaxPlottedHardness
+			Default Value : 30.000  GPa
+			Description : Maximum axis value on Hardness plot.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Post-Sample
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Max Plotted Modulus
+			Internal Name : MaxPlottedModulus
+			Default Value : 300.000  GPa
+			Description : Maximum axis value on Modulus plot.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Pre-Test
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Min Plotted Hardness
+			Internal Name : MinPlottedHardness
+			Default Value : 0.000  GPa
+			Description : Minimum axis value on Hardness plot.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Post-Sample
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+		Min Plotted Modulus
+			Internal Name : MinPlottedModulus
+			Default Value : 0.000  GPa
+			Description : Minimum axis value on Modulus plot.
+			Source : Keyboard Only
+			Statistics Type : None
+			Number of Readings : 1
+			When : Post-Sample
+			Minimum : No
+			Maximum : No
+			Places : 3
+			Notation : Fixed
+			Hidden : No
+			Display Only : No
+			Editable Post-Test : No
+			Input Required : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Panel Input : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Choice List : No
+			Only Allow Choice : No
+			Input Order : N/A
+Formulas
+	Batch Formulas
+		Average SS by P
+			Internal Name : AveragePbySS
+			Units : GPa
+			Formula : AverageValue (LoadByStiffnessSquared,Index_of_Min_Calc_Depth, Index_of_Max_Calc_Range)
+			Description : Average "Stiffness Squared Over Load" over a specified range of penetration 
+depths.
+			Default Value : 
+			When : Post-Test
+			Notation : Fixed
+			Places : 0
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : Yes
+			Never Recalculate : No
+			Sample Level : No
+			Reset To Default Values : No
+			Advanced button : Yes
+		Batch Name
+			Internal Name : _BatchName
+			Units : 
+			Formula : concat(CurrentDate("yyyy-MM-dd")," Batch #")
+			Description : Creates the name of the batch.
+
+TestWorks stores the information for a batch in a directory.  The directory
+contains the batch file, sample files, and other information stored about the batch.
+
+			Default Value : 
+			When : Post-Test
+			Notation : Fixed
+			Places : 0
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : Yes
+			Never Recalculate : No
+			Sample Level : Yes
+			Reset To Default Values : Yes
+			Advanced button : No
+		E Average Over Defined Range
+			Internal Name : E_Over_Depth_Range
+			Units : GPa
+			Formula : AverageValue (Modulus,Index_of_Min_Calc_Depth, Index_of_Max_Calc_Range)
+			Description : Average modulus calculated from harmonic data over a specified range of 
+penetration depths.
+			Default Value : 
+			When : Post-Test
+			Notation : Fixed
+			Places : 3
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : Yes
+			Reporting Order : 0
+			Recalculate Post-Test : Yes
+			Never Recalculate : No
+			Sample Level : No
+			Reset To Default Values : Yes
+			Advanced button : No
+		H Average Over Defined Range
+			Internal Name : HAverageOverDefinedRange
+			Units : GPa
+			Formula : AverageValue (Hardness,Index_of_Min_Calc_Depth, Index_of_Max_Calc_Range)
+			Description : Average hardness calculated from harmonic data over a specified range of 
+penetration depths.
+			Default Value : 
+			When : Post-Test
+			Notation : Fixed
+			Places : 3
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : Yes
+			Reporting Order : 1
+			Recalculate Post-Test : Yes
+			Never Recalculate : No
+			Sample Level : No
+			Reset To Default Values : Yes
+			Advanced button : No
+		Max Approach Time
+			Internal Name : MaxApproachTime
+			Units : s
+			Formula : (AddedApproachFirstDent+_SurfaceApproachDistance)/_SurfaceApproachVelocity
+			Description : Time allotted for the approach segment.  During a particular
+test, if the time required for the approach exceeds this value, 
+the test terminates and the instrument moves on to the next test.
+			Default Value : 
+			When : Pre-Sample
+			Notation : Fixed
+			Places : 3
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : No
+			Never Recalculate : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Advanced button : Yes
+		Max Calc Range Marker
+			Internal Name : Index_of_Max_Calc_Range
+			Units : 
+			Formula : ChannelIndex (DisplacementIntoSurface,Max_Modulus_Depth, SurfaceMarker)
+			Description : Index for the last data point to be included in the calculation of average
+hardness and modulus.
+			Default Value : 
+			When : Post-Test
+			Notation : Fixed
+			Places : 0
+			Marker : Yes
+			Moveable Marker : No
+			Symbol : N
+			Color : Green
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : Yes
+			Never Recalculate : No
+			Sample Level : No
+			Reset To Default Values : Yes
+			Advanced button : No
+		Min Calc Range Marker
+			Internal Name : Index_of_Min_Calc_Depth
+			Units : 
+			Formula : ChannelIndex (DisplacementIntoSurface,Min_Modulus_Depth, SurfaceMarker)
+			Description : Index for the first data point to be included in the calculation of average
+hardness and modulus.
+			Default Value : 
+			When : Post-Test
+			Notation : Fixed
+			Places : 0
+			Marker : Yes
+			Moveable Marker : No
+			Symbol : M
+			Color : Green
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : Yes
+			Never Recalculate : No
+			Sample Level : No
+			Reset To Default Values : Yes
+			Advanced button : No
+		Test File Name For Export
+			Internal Name : _ExportFileName
+			Units : 
+			Formula : IF((NumberOfSpecimens (1)+1) GT 99, Concat("Test",IToA((NumberOfSpecimens (1)+1) ) ), IF((NumberOfSpecimens (1)+1) GT 9, Concat("Test0",IToA((NumberOfSpecimens (1)+1) ) ),Concat("Test00",IToA(NumberOfSpecimens (1)+1 ) )))
+			Description : Filename to be used when the test is exported.
+			Default Value : 
+			When : Pre-Test
+			Notation : Fixed
+			Places : 0
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : No
+			Never Recalculate : Yes
+			Sample Level : No
+			Reset To Default Values : No
+			Advanced button : Yes
+		Time At Start Of Approach
+			Internal Name : TimeAtStartOfApproach
+			Units : 
+			Formula : CurrentTime()
+			Description : Clock reading off the PC, recorded just before starting the approach.
+			Default Value : 
+			When : In Test Segment
+			Notation : Fixed
+			Places : 0
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : Yes
+			Reporting Order : 3
+			Recalculate Post-Test : No
+			Never Recalculate : Yes
+			Sample Level : No
+			Reset To Default Values : No
+			Advanced button : Yes
+		Total Indent Time
+			Internal Name : TotalIndentTime
+			Units : s
+			Formula : _Time[EndDriftMarker]-_Time[SurfaceMarker]
+			Description : Time from when the indenter first contacts the surface to the end of the hold 
+for thermal drift.
+			Default Value : 
+			When : Post-Test
+			Notation : Fixed
+			Places : 1
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : Yes
+			Never Recalculate : No
+			Sample Level : No
+			Reset To Default Values : No
+			Advanced button : Yes
+	Approach Formulas
+		Surface Stiffness Increase
+			Internal Name : SurfaceStiffnessIncrease
+			Units : N/m
+			Formula : 500.0*NewtonsPerMeter*_SurfaceApproachSensitivity
+			Description : In situ, surface contact is determined to be the point at which the change in 
+load with respect to displacement reaches this value.  When this criteria is met,
+the approach is terminated and the prescribed loading algorithm begins.
+			Default Value : 
+			When : Pre-Test
+			Notation : Fixed
+			Places : 3
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : No
+			Never Recalculate : Yes
+			Sample Level : Yes
+			Reset To Default Values : No
+			Advanced button : Yes
+	Load Segment Formulas
+		Prescribed Loading Rate
+			Internal Name : LoadingRateForStrain
+			Units : mN/s
+			Formula : LoadOnSample*StrainRate + _SurfaceApproachVelocity * _Column
+			Description : Prescribed loading rate based on the prescribed strain rate and current load on the
+sample.  Continuously recalculated.  
+			Default Value : 
+			When : Every Point
+			Notation : Fixed
+			Places : 6
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : No
+			Never Recalculate : Yes
+			Sample Level : No
+			Reset To Default Values : Yes
+			Advanced button : Yes
+	UnLoad Segment Formulas
+		Unload Limit
+			Internal Name : UnloadLimit
+			Units : uN
+			Formula : LoadOnSample * (1.0-PercentToUnload)
+			Description : Load at which to stop the unload.
+			Default Value : 
+			When : In Test Segment
+			Notation : Fixed
+			Places : 3
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : No
+			Never Recalculate : Yes
+			Sample Level : No
+			Reset To Default Values : No
+			Advanced button : Yes
+		Unload Rate
+			Internal Name : UnloadRate
+			Units : uN/s
+			Formula : IF (LoadOnSample*StrainRate>UnloadRate, LoadOnSample*StrainRate, UnloadRate)
+			Description : Rate at which the indenter is withdrawn from the sample.
+
+			Default Value : 
+			When : In Test Segment
+			Notation : Fixed
+			Places : 3
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : No
+			Never Recalculate : Yes
+			Sample Level : No
+			Reset To Default Values : Yes
+			Advanced button : Yes
+	Hold Segment Formulas
+		Drift Correction
+			Internal Name : DriftCorrection
+			Units : nm/s
+			Formula : PerformDriftCorrection*SlopeValue (_Displacement,_Time, DriftDeterminationMarker, EndDriftMarker)
+			Description : Displacement rate due to thermal expansion/contraction of the test material.  
+
+			Default Value : 
+			When : Post-Test
+			Notation : Fixed
+			Places : 3
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : Yes
+			Reporting Order : 2
+			Recalculate Post-Test : Yes
+			Never Recalculate : No
+			Sample Level : No
+			Reset To Default Values : Yes
+			Advanced button : Yes
+	Segment Markers
+		End Drift Marker
+			Internal Name : EndDriftMarker
+			Units : 
+			Formula : CurrentIndex()
+			Description : Index for last data point to be used in the calculation of thermal drift.
+			Default Value : 
+			When : In Test Segment
+			Notation : Fixed
+			Places : 0
+			Marker : Yes
+			Moveable Marker : Yes
+			Symbol : E
+			Color : Magenta
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : No
+			Never Recalculate : Yes
+			Sample Level : No
+			Reset To Default Values : Yes
+			Advanced button : Yes
+		End Of Loading Marker
+			Internal Name : EndOfLoadingMarker
+			Units : 
+			Formula : CurrentIndex()
+			Description : Index for the last data point in the loading segment.
+			Default Value : 
+			When : In Test Segment
+			Notation : Fixed
+			Places : 0
+			Marker : Yes
+			Moveable Marker : No
+			Symbol : L
+			Color : Blue
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : No
+			Never Recalculate : Yes
+			Sample Level : No
+			Reset To Default Values : Yes
+			Advanced button : Yes
+		Start Drift Marker
+			Internal Name : DriftDeterminationMarker
+			Units : 
+			Formula : CurrentIndex()
+			Description : Index for first data point to be used in the calculation of thermal drift.
+			Default Value : 
+			When : In Test Segment
+			Notation : Fixed
+			Places : 0
+			Marker : Yes
+			Moveable Marker : Yes
+			Symbol : D
+			Color : Magenta
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : No
+			Never Recalculate : Yes
+			Sample Level : No
+			Reset To Default Values : Yes
+			Advanced button : Yes
+		Start Hold Marker
+			Internal Name : StartHoldMarker
+			Units : 
+			Formula : CurrentIndex()
+			Description : Index for the data point corresponding to the start of the hold for thermal drift. 
+Used in the calculation of stiffness from unload.
+			Default Value : 
+			When : In Test Segment
+			Notation : Fixed
+			Places : 0
+			Marker : Yes
+			Moveable Marker : No
+			Symbol : H
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : No
+			Never Recalculate : Yes
+			Sample Level : No
+			Reset To Default Values : Yes
+			Advanced button : Yes
+		Surface Marker
+			Internal Name : SurfaceMarker
+			Units : 
+			Formula : ChannelIndex (_HarmonicStiffness, SurfaceStiffness)
+			Description : Index for the data point corresponding to surface contact.
+			Default Value : 
+			When : In Test Segment
+			Notation : Fixed
+			Places : 0
+			Marker : Yes
+			Moveable Marker : Yes
+			Symbol : S
+			Color : DarkBlue
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : No
+			Never Recalculate : Yes
+			Sample Level : No
+			Reset To Default Values : Yes
+			Advanced button : Yes
+		Unloading Stiffness Marker
+			Internal Name : UnloadStiffnessMarker
+			Units : 
+			Formula : CurrentIndex()
+			Description : Index for the data point corresponding to the start of unload.
+			Default Value : 
+			When : In Test Segment
+			Notation : Fixed
+			Places : 0
+			Marker : Yes
+			Moveable Marker : Yes
+			Symbol : U
+			Color : Cyan
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : No
+			Never Recalculate : Yes
+			Sample Level : No
+			Reset To Default Values : Yes
+			Advanced button : Yes
+	Oliver & Pharr Calculations
+		Area Coefficient 1
+			Internal Name : AreaCoefficient1
+			Units : 
+			Formula : TipParameter(1)
+			Description : The nth coefficient in the area function.
+			Default Value : 
+			When : Pre-Test
+			Notation : Scientific
+			Places : 5
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : Yes
+			Reporting Order : 5
+			Recalculate Post-Test : Yes
+			Never Recalculate : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Advanced button : Yes
+		Area Coefficient 2
+			Internal Name : AreaCoefficient2
+			Units : 
+			Formula : TipParameter(2)
+			Description : The nth coefficient in the area function.
+			Default Value : 
+			When : Pre-Test
+			Notation : Scientific
+			Places : 9
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : Yes
+			Reporting Order : 6
+			Recalculate Post-Test : Yes
+			Never Recalculate : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Advanced button : Yes
+		Area Coefficient 3
+			Internal Name : AreaCoefficient3
+			Units : 
+			Formula : TipParameter(3)
+			Description : The nth coefficient in the area function.
+			Default Value : 
+			When : Pre-Test
+			Notation : Scientific
+			Places : 9
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : Yes
+			Reporting Order : 7
+			Recalculate Post-Test : Yes
+			Never Recalculate : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Advanced button : Yes
+		Area Coefficient 4 
+			Internal Name : AreaCoefficient4
+			Units : 
+			Formula : TipParameter(4)
+			Description : The nth coefficient in the area function.
+			Default Value : 
+			When : Pre-Test
+			Notation : Scientific
+			Places : 9
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : Yes
+			Never Recalculate : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Advanced button : Yes
+		Area Coefficient 5
+			Internal Name : AreaCoefficient5
+			Units : 
+			Formula : TipParameter(5)
+			Description : The nth coefficient in the area function.
+			Default Value : 
+			When : Pre-Test
+			Notation : Scientific
+			Places : 9
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : Yes
+			Never Recalculate : No
+			Sample Level : Yes
+			Reset To Default Values : Yes
+			Advanced button : Yes
+		Area Coefficient 6
+			Internal Name : AreaCoefficient6
+			Units : 
+			Formula : TipParameter(6)
+			Description : The nth coefficient in the area function.
+			Default Value : 
+			When : Pre-Test
+			Notation : Scientific
+			Places : 9
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : Yes
+			Never Recalculate : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Advanced button : Yes
+		Area Coefficient 7
+			Internal Name : AreaCoefficient7
+			Units : 
+			Formula : TipParameter(7)
+			Description : The nth coefficient in the area function.
+			Default Value : 
+			When : Pre-Test
+			Notation : Scientific
+			Places : 9
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : Yes
+			Never Recalculate : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Advanced button : Yes
+		Area Coefficient 8
+			Internal Name : AreaCoefficient8
+			Units : 
+			Formula : TipParameter(8)
+			Description : The nth coefficient in the area function.
+			Default Value : 
+			When : Pre-Test
+			Notation : Scientific
+			Places : 9
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : Yes
+			Never Recalculate : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Advanced button : Yes
+		Area Coefficient 9
+			Internal Name : AreaCoefficient9
+			Units : 
+			Formula : TipParameter(9)
+			Description : The nth coefficient in the area function.
+			Default Value : 
+			When : Pre-Test
+			Notation : Scientific
+			Places : 9
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : Yes
+			Never Recalculate : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Advanced button : Yes
+		Contact Area From Unload
+			Internal Name : UnloadingContactArea
+			Units : nm^2
+			Formula : TipArea(UnloadingContactDepth,_TipName)
+			Description : Contact area calculated using the elastic contact stiffness as determined from the 
+slope of the unloading curve.
+
+This is the projected contact area between the indenter tip and the sample.
+
+
+			Default Value : 
+			When : Post-Test
+			Notation : Fixed
+			Places : 3
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : Yes
+			Never Recalculate : No
+			Sample Level : No
+			Reset To Default Values : Yes
+			Advanced button : No
+		Contact Depth From Unload
+			Internal Name : UnloadingContactDepth
+			Units : nm
+			Formula : DisplacementIntoSurface[UnloadStiffnessMarker]-0.75*LoadOnSample[UnloadStiffnessMarker]/UnloadingStiffness
+			Description : Contact depth calculated using the elastic contact stiffness as determined from the 
+slope of the unloading curve.
+
+Contact depth is the depth over which the indenter makes contact with the 
+sample.
+			Default Value : 
+			When : Post-Test
+			Notation : Fixed
+			Places : 3
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : Yes
+			Never Recalculate : No
+			Sample Level : No
+			Reset To Default Values : Yes
+			Advanced button : No
+		Hardness From Unload
+			Internal Name : HardnessFromUnload
+			Units : GPa
+			Formula : LoadOnSample[UnloadStiffnessMarker]/UnloadingContactArea
+			Description : Mean pressure of the contact calculated using the elastic contact stiffness
+as measured from the slope of the unloading curve.
+			Default Value : 
+			When : Post-Test
+			Notation : Fixed
+			Places : 3
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : Yes
+			Never Recalculate : No
+			Sample Level : No
+			Reset To Default Values : Yes
+			Advanced button : No
+		Modulus From Unload
+			Internal Name : ModulusFromUnload
+			Units : GPa
+			Formula : IF(Isvalid(UnloadingStiffness), (1.0-pow( PoissonsRatio, 2.0))*pow ( (1/ReducedModulusFromUnload-(1-pow(IndenterTipPoissonsRatio, 2.0) )/TipModulus()), -1.0), InvalidDouble())
+			Description : Modulus calculated using the elastic contact stiffness as measured from the 
+slope of the unloading curve.
+
+Subject to a number of assumptions, this is the Young's modulus for the sample.  
+Young's modulus relates stress and strain when the material is subjected to 
+elastic deformation.  
+			Default Value : 
+			When : Post-Test
+			Notation : Fixed
+			Places : 3
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : Yes
+			Never Recalculate : No
+			Sample Level : No
+			Reset To Default Values : Yes
+			Advanced button : No
+		Reduced Modulus From Unload
+			Internal Name : ReducedModulusFromUnload
+			Units : GPa
+			Formula : Sqrt(Pi())*UnloadingStiffness/(2*Beta*Sqrt(UnloadingContactArea))
+			Description : Reduced modulus calculated using the elastic contact stiffness as determined by
+the slope of the unloading curve.
+
+The reduced modulus includes biaxial deformation in both the indenter
+and the test sample. 
+			Default Value : 
+			When : Post-Test
+			Notation : Fixed
+			Places : 3
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : Yes
+			Never Recalculate : No
+			Sample Level : No
+			Reset To Default Values : Yes
+			Advanced button : Yes
+		Stiffness From Unload
+			Internal Name : UnloadingStiffness
+			Units : N/m
+			Formula : UnloadingStiffnessValue(DisplacementIntoSurface , LoadOnSample,UnloadStiffnessMarker +5,UnloadStiffnessMarker+Floor(PercentUnloadInStiffnessCalc*(StartHoldMarker-UnloadStiffnessMarker)))
+			Description : Elastic contact stiffness as determined from the slope of the unloading curve.
+			Default Value : 
+			When : Post-Test
+			Notation : Fixed
+			Places : 3
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : Yes
+			Never Recalculate : No
+			Sample Level : No
+			Reset To Default Values : No
+			Advanced button : Yes
+		Tip Name
+			Internal Name : _TipName
+			Units : 
+			Formula : TipName()
+			Description : References a specific area function.  The area function is an empirical 
+polynomial that relates the distance from the apex of the indenter tip to 
+cross-sectional area, i.e. A = f(d).  Every real indenter has a unique area function.
+			Default Value : 
+			When : Pre-Test
+			Notation : Fixed
+			Places : 0
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : Yes
+			Reporting Order : 4
+			Recalculate Post-Test : Yes
+			Never Recalculate : No
+			Sample Level : Yes
+			Reset To Default Values : No
+			Advanced button : Yes
+	Data Acquisition Formulas
+		Approach Points To Save
+			Internal Name : ApproachPointsToSave
+			Units : 
+			Formula : _ApproachDistanceToSave/_SurfaceApproachVelocity * DataRate
+			Description : The number of approach points to save.
+			Default Value : 
+			When : Pre-Test
+			Notation : Fixed
+			Places : 0
+			Marker : No
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : No
+			Never Recalculate : No
+			Sample Level : Yes
+			Reset To Default Values : Yes
+			Advanced button : Yes
+	Plot Scaling Markers
+		Max Plotted E Marker
+			Internal Name : MaxPlottedEMarker
+			Units : 
+			Formula : ChannelIndex (Modulus, MaxPlottedModulus)
+			Description : Index marking axis maximum for modulus plot on report.
+			Default Value : 
+			When : Post-Sample
+			Notation : Fixed
+			Places : 0
+			Marker : Yes
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : No
+			Never Recalculate : No
+			Sample Level : No
+			Reset To Default Values : Yes
+			Advanced button : Yes
+		Max Plotted H Marker
+			Internal Name : MaxPlottedHMarker
+			Units : 
+			Formula : ChannelIndex (Hardness, MaxPlottedHardness)
+			Description : Index marking axis maximum for hardness plot on report.
+			Default Value : 
+			When : Post-Sample
+			Notation : Fixed
+			Places : 0
+			Marker : Yes
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : No
+			Never Recalculate : No
+			Sample Level : No
+			Reset To Default Values : Yes
+			Advanced button : Yes
+		Min Plotted E Marker
+			Internal Name : MinPlottedEMarker
+			Units : 
+			Formula : ChannelIndex (Modulus, MinPlottedModulus)
+			Description : Index marking axis minimum for modulus plot on report.
+			Default Value : 
+			When : Post-Sample
+			Notation : Fixed
+			Places : 0
+			Marker : Yes
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : No
+			Never Recalculate : No
+			Sample Level : No
+			Reset To Default Values : Yes
+			Advanced button : Yes
+		Min Plotted H Marker
+			Internal Name : MinPlottedHMarker
+			Units : 
+			Formula : ChannelIndex (Hardness, MinPlottedHardness)
+			Description : Index marking axis minimum for hardness plot on report.
+			Default Value : 
+			When : Post-Sample
+			Notation : Fixed
+			Places : 0
+			Marker : Yes
+			Moveable Marker : No
+			Symbol : 
+			Color : White
+			Hidden : No
+			Locked : No
+			Result : No
+			Reporting Order : N/A
+			Recalculate Post-Test : No
+			Never Recalculate : No
+			Sample Level : No
+			Reset To Default Values : Yes
+			Advanced button : Yes
+Configuration Objects
+	Indenter Tip
+		CurrentTipName
+			TipName : Berk-20210318
+			FunctionType : 0
+			Modulus : 1.1635e+005
+			Parameters
+				Label0 : m0   Value : 2.4695e+001
+				Label1 : m1   Value : 3.9577e+002
+				Label2 : m2   Value : -1.6132e+001
+				Label3 : m3   Value : 1.3341e+002
+				Label4 : m4   Value : 1.0646e+002
+				Label5 : m5   Value : 0.0000e+000
+				Label6 : m6   Value : 0.0000e+000
+				Label7 : m7   Value : 0.0000e+000
+				Label8 : m8   Value : 0.0000e+000
+		OriginalTipName
+			TipName : Berk-20210318
+			FunctionType : 0
+			Modulus : 116349.6199
+			Parameters
+				Label0 : m0   Value : 2.4695e+001
+				Label1 : m1   Value : 3.9577e+002
+				Label2 : m2   Value : -1.6132e+001
+				Label3 : m3   Value : 1.3341e+002
+				Label4 : m4   Value : 1.0646e+002
+				Label5 : m5   Value : 0.0000e+000
+				Label6 : m6   Value : 0.0000e+000
+				Label7 : m7   Value : 0.0000e+000
+				Label8 : m8   Value : 0.0000e+000
+	Units
+		Category : SI
+	Sample Report
+		Report Template : %system%\MTS Nano Standard Sample Report.rtf
+		Options
+			Report Header
+			Test Results
+			Statistics
+			Modulus vs. Displacement Into Surface
+			Hardness vs. Displacement Into Surface
+			Tip Information
+			Calculation Inputs
+			Test Inputs
+	Hardware Status
+		Maximum Displacement Limit : [ Disabled ]
+		Minimum Displacement Limit : [ Disabled ]
+		Crosshead Stopped : [ Disabled ]
+		Positive Device Overload : [ Disabled ]
+		Hardware Communication Error : [ Disabled ]
+		Negative Device Overload : [ Disabled ]
+		Amp Fault : [ Disabled ]
+		Lost Frame Communication : [ Disabled ]
+		Emergency Stop : [ Disabled ]
+		Z Stage Upper Limit : [ Disabled ]
+		Lower Auxiliary Limit Active : [ Disabled ]
+	Limit Detection
+	Miscellaneous
+		Method Access Level : 0
+		Raw Data : Save Raw Data
+		Automatically Save Every Test : No
+		Master Flag : Yes
+		Switch to Review after test : No
+		Enable Next Test Segment button : Yes
+		Disable Jog buttons during test : Yes
+		Method Description : G-Series CSM Standard Method for Hardness, Modulus, and Tip Calibration
+Current Tip: {_TipName}
+	Tag Limits
+	Excel Output Configuration
+Test Segments
+
+	Idle
+
+		Data Collection : [ Disabled ]
+
+		
+
+	Review Sample Names
+		Run-Time Message : 
+
+		Data Collection : [ Disabled ]
+
+		
+
+	Review First Location
+		Run-Time Message : 
+
+		Data Collection : [ Disabled ]
+
+		
+
+	Delay before Running Batch
+		Use Default Start Time
+		Default Start Time : 11:30 AM
+		Run-Time Message : Waiting to Start Batch
+
+		Data Collection : [ Disabled ]
+
+		
+
+	Required Inputs : [ Disabled ]
+
+	Formulas
+		Calculation Time : Pre-Sample
+		Run-Time Message : 
+
+		Data Collection : [ Disabled ]
+
+		
+
+	WAV File : [ Disabled ]
+
+	Required Inputs : [ Disabled ]
+
+	Formulas
+		Calculation Time : Pre-Test
+		Run-Time Message : 
+
+		Data Collection : [ Disabled ]
+
+		
+
+	Tare Time
+
+		Data Collection : [ Disabled ]
+
+		
+
+	XY Goto Test Segment
+		Speed : X Y Table Speed
+		X Position : X Test Position
+		Y Position : Y Test Position
+		Run-Time Message : Moving Table to Indent Location
+
+		Data Collection : [ Disabled ]
+
+		
+
+	CSM Test Segment
+		CSM Channel : Harmonic Frequency
+		Value : Frequency Target
+		Run-Time Message : Set Harmonic Frequency
+
+		Data Collection : [ Disabled ]
+
+		
+
+	CSM Test Segment
+		Zero Phase between Harmonic Load and Displacement
+		Run-Time Message : CSM Zero Phase Test Segment
+
+		Data Collection : [ Disabled ]
+
+		
+
+	IF _SurfaceDisplacement >= 2.0
+
+		Data Collection : [ Disabled ]
+
+		
+
+	Surface Find
+		Delta X for Finding Surface : Delta X For Finding Surface
+		Delta Y for Finding Surface : Delta Y For Finding Surface
+		Allowable Drift Before Starting Test : Allowable Drift Rate
+
+		Data Collection : [ Disabled ]
+
+		
+
+	EndIF
+
+		Data Collection : [ Disabled ]
+
+		
+
+	CSM Test Segment
+		CSM Channel : Harmonic Displacement
+		Value : Harmonic Displacement Target
+		Run-Time Message : Set Harmonic Displacement
+
+		Data Collection : [ Disabled ]
+
+		
+
+	Tare Time
+
+		Data Collection : [ Disabled ]
+
+		
+
+	One-Time Formula - Time At Start Of Approach
+
+		Data Collection : [ Disabled ]
+
+		
+
+	Segment Type Test Segment
+		New Segment Type : Load Segment Type
+		Segment Type Channel : Segment Type
+		Segment Index Channel : Segment Number
+		Run-Time Message : 
+
+		Data Collection : [ Disabled ]
+
+		
+
+	Approach Surface
+		Surface Approach Distance : Surface Approach Distance
+		Surface Approach Velocity : Surface Approach Velocity
+		Surface Stiffness Increase : Surface Stiffness Increase
+		Surface Marker : Surface Marker
+		Run-Time Message : Approaching Surface
+
+		Data Collection : 
+			Acquisition Type 1 : Rate
+			Channel 1 : Time
+			Rate Value Input 1 : Data Acquisition Rate
+			Buffer : Unlimited
+			Take Data on Pause : Yes
+			Preserve last data point : Yes
+
+		
+			Time
+				Comparison : >
+				Variable : 
+				Action : Post-Specimen
+
+	GoTo
+		Rate Channel : Raw Load
+		Rate Unit Class : Force Rate
+		Direction : Loading
+		Rate Value : Prescribed Loading Rate
+		Enable Stopping Conditions : Yes
+			Stop Channel : Raw Displacement
+			Comparison : Increases by
+			Stop Value : Depth Limit
+			Ramping Time (Stopping Conditions Ignored) : [ Disabled ]
+			End Action : Stop
+		Run-Time Message : Load to Indent Depth
+
+		PID Parameters
+			Always use Outer Loop Control : Yes
+			Show PID dialog during test : Yes
+			Save updated parameters : Yes
+			kP : 0
+			kI : 0
+			kD : 1
+			Maximum Integral (mN/s) : 5000.00
+			Derivative Interval (s) : 1
+			Maximum Speed (mN/s) : 5000.00
+			Minimum Speed (mN/s) : 0.00
+			Use Multiplier : No
+
+		Data Collection : 
+			Acquisition Type 1 : Rate
+			Channel 1 : Time
+			Rate Value Input 1 : Data Acquisition Rate
+			Buffer : Unlimited
+			Take Data on Pause : Yes
+			Preserve last data point : Yes
+
+		
+
+	One-Time Formula - End Of Loading Marker
+
+		Data Collection : 
+			Acquisition Type 1 : Rate
+			Channel 1 : Time
+			Rate Value Input 1 : Data Acquisition Rate
+			Buffer : Unlimited
+			Take Data on Pause : Yes
+			Preserve last data point : Yes
+
+		
+
+	Segment Type Test Segment
+		New Segment Type : Hold Segment Type
+		Segment Type Channel : Segment Type
+		Segment Index Channel : Segment Number
+		Run-Time Message : 
+
+		Data Collection : 
+			Acquisition Type 1 : Rate
+			Channel 1 : Time
+			Rate Value Input 1 : Data Acquisition Rate
+			Buffer : Unlimited
+			Take Data on Pause : Yes
+			Preserve last data point : Yes
+
+		
+
+	Hold
+		Channel : Raw Load
+		Hold Current Value : Yes
+		Enable Stopping Conditions : Yes
+			Channel : Time
+			Comparison : Increases by
+			Value : Peak Hold Time
+		Run-Time Message : Hold Peak Value
+
+		PID Parameters
+			Always use Outer Loop Control : No
+			Show PID dialog during test : No
+			Use Multiplier : No
+
+		Data Collection : 
+			Acquisition Type 1 : Rate
+			Channel 1 : Time
+			Rate Value Input 1 : Drift Determination Acquisition Rate
+			Buffer : Unlimited
+			Take Data on Pause : Yes
+			Preserve last data point : Yes
+
+		
+
+	CSM Test Segment
+		Send Command to CSM controller.
+		Send Command   : AL 0
+		Run-Time Message : 
+
+		Data Collection : 
+			Acquisition Type 1 : Rate
+			Channel 1 : Time
+			Rate Value Input 1 : Data Acquisition Rate
+			Buffer : Unlimited
+			Take Data on Pause : Yes
+			Preserve last data point : Yes
+
+		
+
+	CSM Test Segment
+		Send Command to CSM controller.
+		Send Command   : OA 0
+		Run-Time Message : 
+
+		Data Collection : 
+			Acquisition Type 1 : Rate
+			Channel 1 : Time
+			Rate Value Input 1 : Data Acquisition Rate
+			Buffer : Unlimited
+			Take Data on Pause : Yes
+			Preserve last data point : Yes
+
+		
+
+	One-Time Formula - Unload Rate
+
+		Data Collection : 
+			Acquisition Type 1 : Rate
+			Channel 1 : Time
+			Rate Value Input 1 : Data Acquisition Rate
+			Buffer : Unlimited
+			Take Data on Pause : Yes
+			Preserve last data point : Yes
+
+		
+
+	One-Time Formula - Unload Limit
+
+		Data Collection : 
+			Acquisition Type 1 : Rate
+			Channel 1 : Time
+			Rate Value Input 1 : Data Acquisition Rate
+			Buffer : Unlimited
+			Take Data on Pause : Yes
+			Preserve last data point : Yes
+
+		
+
+	Segment Type Test Segment
+		New Segment Type : Unload From Peak Segment Type
+		Segment Type Channel : Segment Type
+		Segment Index Channel : Segment Number
+		Run-Time Message : 
+
+		Data Collection : 
+			Acquisition Type 1 : Rate
+			Channel 1 : Time
+			Rate Value Input 1 : Data Acquisition Rate
+			Buffer : Unlimited
+			Take Data on Pause : Yes
+			Preserve last data point : Yes
+
+		
+
+	One-Time Formula - Unloading Stiffness Marker
+
+		Data Collection : 
+			Acquisition Type 1 : Rate
+			Channel 1 : Time
+			Rate Value Input 1 : Data Acquisition Rate
+			Buffer : Unlimited
+			Take Data on Pause : Yes
+			Preserve last data point : Yes
+
+		
+
+	GoTo
+		Rate Channel : Raw Load
+		Rate Unit Class : Force Rate
+		Direction : UnLoading
+		Rate Value : Unload Rate
+		Enable Stopping Conditions : Yes
+			Stop Channel : Load On Sample
+			Comparison : Becomes less than
+			Stop Value : Unload Limit
+			Ramping Time (Stopping Conditions Ignored) : [ Disabled ]
+			End Action : Stop
+		Run-Time Message : Unloading
+
+		PID Parameters
+			Always use Outer Loop Control : Yes
+			Show PID dialog during test : No
+			Use Multiplier : No
+
+		Data Collection : 
+			Acquisition Type 1 : Rate
+			Channel 1 : Time
+			Rate Value Input 1 : Data Acquisition Rate
+			Buffer : Unlimited
+			Take Data on Pause : Yes
+			Preserve last data point : Yes
+
+		
+
+	Segment Type Test Segment
+		New Segment Type : Thermal Drift Hold Segment
+		Segment Type Channel : Segment Type
+		Segment Index Channel : Segment Number
+		Run-Time Message : 
+
+		Data Collection : 
+			Acquisition Type 1 : Rate
+			Channel 1 : Time
+			Rate Value Input 1 : Data Acquisition Rate
+			Buffer : Unlimited
+			Take Data on Pause : Yes
+			Preserve last data point : Yes
+
+		
+
+	One-Time Formula - Start Hold Marker
+
+		Data Collection : 
+			Buffer : Unlimited
+			Take Data on Pause : Yes
+			Preserve last data point : Yes
+
+		
+
+	Hold
+		Channel : Raw Load
+		Hold Current Value : Yes
+		Enable Stopping Conditions : Yes
+			Channel : Time
+			Comparison : Increases by
+			Value : Drift Determination Time
+		Run-Time Message : Settling time prior to drift acquisition
+
+		PID Parameters
+			Always use Outer Loop Control : No
+			Show PID dialog during test : No
+			Use Multiplier : No
+
+		Data Collection : 
+			Buffer : Unlimited
+			Take Data on Pause : Yes
+			Preserve last data point : Yes
+
+		
+
+	One-Time Formula - Start Drift Marker
+
+		Data Collection : 
+			Buffer : Unlimited
+			Take Data on Pause : Yes
+			Preserve last data point : Yes
+
+		
+
+	Hold
+		Channel : Raw Load
+		Hold Current Value : Yes
+		Enable Stopping Conditions : Yes
+			Channel : Time
+			Comparison : Increases by
+			Value : Drift Determination Time
+		Run-Time Message : Thermal Drift Correction Hold Segment
+
+		PID Parameters
+			Always use Outer Loop Control : No
+			Show PID dialog during test : No
+			Use Multiplier : No
+
+		Data Collection : 
+			Acquisition Type 1 : Rate
+			Channel 1 : Time
+			Rate Value Input 1 : Drift Determination Acquisition Rate
+			Buffer : Unlimited
+			Take Data on Pause : No
+			Preserve last data point : No
+
+		
+
+	One-Time Formula - End Drift Marker
+
+		Data Collection : [ Disabled ]
+
+		
+
+	GoTo
+		Rate Channel : Raw Load
+		Rate Unit Class : Force Rate
+		Direction : UnLoading
+		Rate Value : Unload Rate
+		Enable Stopping Conditions : Yes
+			Stop Channel : Raw Displacement
+			Comparison : Becomes less than
+			Stop Value : Surface Displacement
+			Ramping Time (Stopping Conditions Ignored) : [ Disabled ]
+			End Action : Stop
+		Run-Time Message : Second UnLoading Segment.
+
+		PID Parameters
+			Always use Outer Loop Control : Yes
+			Show PID dialog during test : No
+			Use Multiplier : No
+
+		Data Collection : [ Disabled ]
+
+		
+
+	One-Time Formula - Surface Marker
+
+		Data Collection : [ Disabled ]
+
+		
+
+	Recalculate Test
+
+		Data Collection : [ Disabled ]
+
+		
+
+	Report : [ Disabled ]
