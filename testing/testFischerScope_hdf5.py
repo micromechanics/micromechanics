@@ -9,8 +9,13 @@ class TestStringMethods(unittest.TestCase):
 		try:
 			### MAIN ###
 			i = Indentation('examples/FischerScope/Nafion_15_100_5.hdf5')
-			i.analyse()
-			self.assertTrue((np.sum(i.modulus)==0.45085650501100577)<1e-12,'Calculation of modulus changed')
+			while True:
+				i.analyse()
+				if len(i.testList)==0:
+					break
+				i.nextTest()
+			i.plot()
+			self.assertTrue((np.sum(i.modulus)==0.4132913081938913),'Calculation of modulus changed')
 			### END OF MAIN ###
 			print('\n*** DONE WITH VERIFY ***')
 

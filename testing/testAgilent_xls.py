@@ -23,9 +23,14 @@ class TestStringMethods(unittest.TestCase):
 		try:
 			### MAIN ###
 			i = Indentation('examples/Agilent/NiAl_250nm_TUIL_max_depth_1000nm_GM3_SM_previousGM1.xls')
-			i.analyse()
+			while True:
+				i.analyse()
+				if len(i.testList)==0:
+					break
+				i.nextTest()
+			i.plot()
 			#print((np.sum(i.modulus)))
-			self.assertTrue(np.sum(i.modulus)==153761.1832316111,'Calculation of modulus changed')
+			self.assertTrue(np.sum(i.modulus)==136478.52405870787,'Calculation of modulus changed')
 			### END OF MAIN ###
 			print('\n*** DONE WITH VERIFY ***')
 
