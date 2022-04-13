@@ -77,13 +77,11 @@ Introduce class Indentation, where nuMat is material’s Poisson’s ratio::
 
     i = Indentation(fileName, nuMat=0.3, tip=ourTip)
 
-Run through all indentations (Test 1, Test 2, etc) in the file with ``while True`` cycle::
+Run through all indentations (Test 1, Test 2, etc) in the file with a ``for`` cycle::
 
-    while True:
+    for testname in i:
         <body>
-        if len(i.testList)==0:
-            break
-        i.nextTest()
+
 
 In the ``<body>`` one can analyse the data and create the plots to be viewed like following:
 
@@ -124,15 +122,12 @@ This is an example code analysing the hdf5 files from FischerScope nanoindenter:
     i = Indentation(fileName, nuMat=0.5, tip=ourTip)
     df = pd.DataFrame()
 
-    while True:
+    for testname in i:
         i.analyse()
         #i.plot()
         plt.plot(i.h, i.p)
         meta = i.metaUser
         df = df.append(meta, ignore_index=True)
-        if len(i.testList)==0:
-            break
-        i.nextTest()
 
     print(df)
     plt.show()

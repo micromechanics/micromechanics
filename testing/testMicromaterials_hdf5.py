@@ -11,11 +11,8 @@ class TestStringMethods(unittest.TestCase):
 		try:
 			### MAIN ###
 			i = Indentation('examples/Micromaterials/Sample1_Vac_200C.hdf5')
-			while True:
+			for testname in i:
 				i.analyse()
-				if len(i.testList)==0:
-					break
-				i.nextTest()
 			i.plot(show=3)
 			self.assertTrue((abs(np.sum(i.modulus)-51.664364831662226)<1e-4),'Calculation of modulus changed')
 			### END OF MAIN ###
