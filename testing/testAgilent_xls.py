@@ -29,7 +29,7 @@ class TestStringMethods(unittest.TestCase):
 				if len(i.testList)==0:
 					break
 				i.nextTest()
-			i.plot()
+			i.plot(show=3)
 			self.assertTrue(np.sum(i.modulus)==136478.52405870787,'Calculation of modulus changed')
 			### END OF MAIN ###
 			print('\n*** DONE WITH VERIFY ***')

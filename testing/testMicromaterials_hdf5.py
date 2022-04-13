@@ -16,7 +16,7 @@ class TestStringMethods(unittest.TestCase):
 				if len(i.testList)==0:
 					break
 				i.nextTest()
-			i.plot()
+			i.plot(show=3)
 			self.assertTrue((abs(np.sum(i.modulus)-51.664364831662226)<1e-4),'Calculation of modulus changed')
 			### END OF MAIN ###
 			print('\n*** DONE WITH VERIFY ***')
