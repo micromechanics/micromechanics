@@ -2,6 +2,7 @@
 import traceback
 import unittest
 import numpy as np
+import matplotlib.pyplot as plt
 from nanoindentation import Indentation
 
 class TestStringMethods(unittest.TestCase):
@@ -29,7 +30,6 @@ class TestStringMethods(unittest.TestCase):
 					break
 				i.nextTest()
 			i.plot()
-			#print((np.sum(i.modulus)))
 			self.assertTrue(np.sum(i.modulus)==136478.52405870787,'Calculation of modulus changed')
 			### END OF MAIN ###
 			print('\n*** DONE WITH VERIFY ***')

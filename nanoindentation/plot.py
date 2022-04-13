@@ -76,7 +76,9 @@ def plot(self, saveFig=False, show=True):
   if saveFig:
     plt.savefig(self.fileName.split('.')[0]+".png", dpi=150, bbox_inches='tight')
   if show:
-    plt.show()
+    plt.show(block = False)
+    plt.pause(3)
+    plt.close()
   return ax
 
 
