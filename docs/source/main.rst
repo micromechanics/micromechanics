@@ -1,7 +1,7 @@
 Documentation
 =============
 
-.. automodule:: definitions.py
+.. automodule:: tutorialBasic
    :members:
    :undoc-members:
    :show-inheritance:
