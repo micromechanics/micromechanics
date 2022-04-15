@@ -1,7 +1,7 @@
 Documentation
 =============
 
-.. automodule:: nanoIndent_linting
+.. automodule:: definination
    :members:
    :undoc-members:
    :show-inheritance:
