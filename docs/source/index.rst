@@ -7,7 +7,7 @@ Welcome to micromechanics' documentation!
 =========================================
 
 .. toctree::
-   :maxdepth: 8
+   :maxdepth: 4
    :caption: Contents:
 
    modules
