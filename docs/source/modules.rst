@@ -2,7 +2,7 @@ NanoIndentation Data Analysis
 =============================
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 8
 
    tutorialBasic
    tutorialAdvanced
