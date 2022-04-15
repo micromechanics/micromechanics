@@ -8,4 +8,3 @@ scipy
 matplotlib
 h5py
 lmfit
-enum
