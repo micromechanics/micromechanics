@@ -4,7 +4,7 @@ Documentation
 Definitions
 =============
 
-.. automodule:: definitions.rst
+.. automodule:: definitions
    :members:
    :undoc-members:
    :show-inheritance:
