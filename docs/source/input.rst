@@ -1,3 +1,6 @@
+Input
+=============
+
 .. automodule:: input
    :members:
    :undoc-members:
