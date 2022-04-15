@@ -1,7 +1,7 @@
 Documentation
 =============
 
-.. automodule:: tutorialBasic
+.. automodule:: definition
    :members:
    :undoc-members:
    :show-inheritance:
