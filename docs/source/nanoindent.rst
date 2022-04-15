@@ -15,3 +15,10 @@ Calibration
    :members:
    :undoc-members:
    :show-inheritance:
+   
+SeldomUsedFunctions
+=============
+.. automodule:: seldomUsedFunctions
+   :members:
+   :undoc-members:
+   :show-inheritance:
