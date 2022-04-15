@@ -1,7 +1,7 @@
 Documentation
 =============
 
-.. automodule:: __init__
+.. automodule:: main
    :members:
    :undoc-members:
    :show-inheritance:
