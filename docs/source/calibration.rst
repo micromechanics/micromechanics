@@ -1,3 +1,6 @@
+Calibrations
+=============
+
 .. automodule:: calibration
    :members:
    :undoc-members:
