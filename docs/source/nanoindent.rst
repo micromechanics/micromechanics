@@ -6,3 +6,5 @@ Documentation
    
    definitions
    seldomUsedFunctions
+   input
+   calibration
