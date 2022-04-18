@@ -1,3 +1,6 @@
+Definitions
+=============
+
 .. automodule:: definitions
    :members:
    :undoc-members:
