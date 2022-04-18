@@ -5,6 +5,9 @@ Documentation
    :maxdepth: 4
    
    definitions
-   seldomUsedFunctions
+   main
    input
+   theory
+   plot
    calibration
+   seldomUsedFunctions
