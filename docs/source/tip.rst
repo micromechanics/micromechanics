@@ -1,7 +1,7 @@
-Tips
+Tip
 =============
 
-.. automodule:: tips
+.. automodule:: tip
    :members:
    :undoc-members:
    :show-inheritance:
