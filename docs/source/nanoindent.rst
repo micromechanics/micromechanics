@@ -10,4 +10,6 @@ Documentation
    theory
    plot
    calibration
+   verification
    seldomUsedFunctions
+   tip
