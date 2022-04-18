@@ -1,24 +1,8 @@
 Documentation
 =============
 
-Definitions
-=============
-
-.. automodule:: definitions
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Calibration
-=============
-.. automodule:: calibration
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. toctree::
+   :maxdepth: 4
    
-SeldomUsedFunctions
-=============
-.. automodule:: seldomUsedFunctions
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   definitions
+   seldomUsedFunctions
