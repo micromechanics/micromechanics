@@ -57,6 +57,8 @@ Make sure the latest pip version to install requirements::
 
    \......\python.exe -m pip install --upgrade pip
 
+Add the folder with the source code to the pythonpath 
+
 Initialization
 ==============
 Import necessary libraries::
