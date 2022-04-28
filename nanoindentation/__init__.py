@@ -20,8 +20,7 @@ array of valid length: E,H,Ac,hc, ... [only has the length where these values ar
 Coding rules:
 - Change all variables: do not keep original-depth as can be reread and makes code less readable
 """
-import os, sys
-sys.path.append(os.path.dirname(os.path.realpath(__file__)))
+import os
 from .definitions import Method, Vendor, FileType
 #import definitions
 from .tip import Tip
