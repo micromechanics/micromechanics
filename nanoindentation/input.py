@@ -5,8 +5,8 @@ import h5py
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import definitions
-#from .definitions import Method, Vendor
+#import definitions
+from .definitions import Method, Vendor
 
 def loadAgilent(self, fileName):
   """

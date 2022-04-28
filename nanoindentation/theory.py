@@ -3,8 +3,8 @@ import math, traceback
 import numpy as np
 import matplotlib.pylab as plt
 from scipy.optimize import curve_fit
-import definitions
-#from .definitions import Method
+#import definitions
+from .definitions import Method
 
 def YoungsModulus(self, modulusRed, nuThis=-1):
   """
