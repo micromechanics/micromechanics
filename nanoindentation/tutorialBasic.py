@@ -1,6 +1,6 @@
 """
 Introduction
-============
+------------
 The toolbox aims to help with nanoindentation data analysis using python.
 
 .. note::
@@ -30,37 +30,43 @@ How it works:
 3. Plot
 
 Installation
-============
-1. Download the ".py" files from the nanoindentation folder and use as described in the tutorial
-or clone this github repository::
+------------
+Linux
+=====
+
+1. Clone this github repository (ensure git is installed)::
 
     git clone git@github.com:micromechanics/main.git
-
-Or download "main.zip" from github directily.
-
-Files in the cloned repository:
-
-    - examples[folder]: experimental data for vendor Agilent, FisherScope, Hysitron ...
-    - nanoindentation[folder]: contains functional codes for nanoindentation calcultation (nanoIndent.py)
-    - requirements[txt]: packages are required in nanoindentation
 
 2. Install packages using requirements (contains numpy, matplotlib, scipy etc) ::
 
     pip3 install -r requirements.txt
 
-In case pip hasn't been installed::
+If pip has not been installed::
 
    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py   # download pip script
    sudo python3 get-pip.py
 
-Make sure the latest pip version to install requirements::
+If pip is installed, make sure it is the latest version::
 
-   \......\python.exe -m pip install --upgrade pip
+    python3 -m pip install --upgrade pip
 
-Add the folder with the source code to the pythonpath 
+3. Add the folder with the source code to the pythonpath. Open and edit with text editor (e.g. gedit).
+Type in the terminal::
+
+    gedit .bashrc
+
+and add in the end for pythonpath the location of the folder, for example::
+
+    export PYTHONPATH=$PYTHONPATH:/home/*USER*/...../main
+
+Save and close.
+
+Windows
+=======
 
 Initialization
-==============
+--------------
 Import necessary libraries::
 
     import matplotlib.pyplot as plt
@@ -112,7 +118,7 @@ Show plots::
     plt.show()
 
 Example:
-========
+--------
 This is an example code analysing the hdf5 files from FischerScope nanoindenter::
 
     import matplotlib.pyplot as plt
