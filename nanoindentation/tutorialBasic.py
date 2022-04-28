@@ -65,6 +65,29 @@ Save and close.
 Windows
 =======
 
+1. Install git
+  - Go to http://git-scm.com/download/win and download '64-bit Git for Windows Setup' (mostlikely choice.)
+  - install it using
+    - under "Adjusting your PATH environment" choose:  Git from the command line and also from 3rd-party software
+    - under "Choosing the ssh executable" choose:  use OpenSSH
+    - under "Choosing the HTTPS transport backend" choose:  Use the OpenSSL library
+    - under "Configuring the line ending conversions" choose:  Checkout Windows-Style, commit Unix-Style line endings
+    - under "Configuring the terminal emulator to use with Git bash" choose:  Use minTTY
+    - under "Choose the default behavior of 'git pull'" choose:  Default
+    - under "Choose credential helper" choose:  Git credential Manager Core
+    - under "Configure extra options" choose:  Enable filesystem caching and Enable symbolic links
+
+2. Using the command-line tool "CMD.exe"
+  - change to your "MyDocuments"
+  - type "git clone git@github.com:micromechanics/main.git"
+
+3. Adopt the "System Variables" or "Environment Variables"  (search "systemvariables" in the Windows search bar) and edit the variables "for your account"
+Edit the entry path and add:
+
+"C:\Users*USER*\Documents\Micromechanics"
+
+
+
 Initialization
 --------------
 Import necessary libraries::
@@ -93,7 +116,7 @@ Run through all indentations (Test 1, Test 2, etc) in the file with a ``for`` cy
 
 In the ``<body>`` one can analyse the data and create the plots to be viewed like following:
 
-Calculate all the relevent data from the indent: stiffness S [mN/µm], maximum depth hMax [µm], maximum force pMax [mN], 
+Calculate all the relevent data from the indent: stiffness S [mN/µm], maximum depth hMax [µm], maximum force pMax [mN],
 reduced Young’s modulus redE [GPa], contact area A [µm2], contact depth hc [µm], Young’s modulus E [GPa], hardness H [GPa]::
 
     i.analyse()
