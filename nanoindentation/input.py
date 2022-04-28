@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from .definitions import Method, Vendor
-import definitions
+#import definitions
 
 def loadAgilent(self, fileName):
   """
