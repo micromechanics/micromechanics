@@ -1,6 +1,8 @@
 """CALIBRATION METHODS"""
 import numpy as np
 import matplotlib.pyplot as plt
+import sys    
+print("In module products sys.path[0], __package__ ==", sys.path[0], __package__)
 from scipy.signal import savgol_filter#, medfilt
 import scipy.interpolate as interpolate
 import lmfit
