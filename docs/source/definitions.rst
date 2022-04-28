@@ -1,7 +1,7 @@
 Definitions
 =============
 
-.. automodule:: ..definition.definitions
+.. automodule:: definitions
    :members:
    :undoc-members:
    :show-inheritance:
