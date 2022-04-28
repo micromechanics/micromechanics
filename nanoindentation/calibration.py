@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 from scipy.signal import savgol_filter#, medfilt
 import scipy.interpolate as interpolate
 import lmfit
-from .definitions import Method
+import definitions
+#from .definitions import Method
 
 def calibration(self,eTarget=72.0,numPolynomial=3,critDepth=1.0,critForce=1.0,plotStiffness=False,\
   plotTip=False, **kwargs):

@@ -1,7 +1,8 @@
 """Plotting of nanoindentation data"""
 import numpy as np
 import matplotlib.pyplot as plt
-from .definitions import Method
+import definitions
+#from .definitions import Method
 
 def plotTestingMethod(self, saveFig=False, show=True):
   """
@@ -75,8 +76,12 @@ def plot(self, saveFig=False, show=True):
   ax.set_ylabel(r"force [$\mathrm{mN}$]")
   if saveFig:
     plt.savefig(self.fileName.split('.')[0]+".png", dpi=150, bbox_inches='tight')
-  if show:
+  if isinstance(show,bool):
     plt.show()
+  elif isinstance(show,int):
+    plt.show(block = False)
+    plt.pause(show)
+    plt.close()
   return ax
 
 

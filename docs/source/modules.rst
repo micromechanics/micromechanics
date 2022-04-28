@@ -6,4 +6,4 @@ NanoIndentation Data Analysis
 
    tutorialBasic
    tutorialAdvanced
-   documentation
+   nanoindent

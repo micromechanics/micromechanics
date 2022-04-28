@@ -1,7 +1,7 @@
-Documentation
+Tip
 =============
 
-.. automodule:: nanoIndent
+.. automodule:: tip
    :members:
    :undoc-members:
    :show-inheritance:

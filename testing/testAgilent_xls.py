@@ -2,6 +2,7 @@
 import traceback
 import unittest
 import numpy as np
+import matplotlib.pyplot as plt
 from nanoindentation import Indentation
 
 class TestStringMethods(unittest.TestCase):
@@ -23,13 +24,9 @@ class TestStringMethods(unittest.TestCase):
 		try:
 			### MAIN ###
 			i = Indentation('examples/Agilent/NiAl_250nm_TUIL_max_depth_1000nm_GM3_SM_previousGM1.xls')
-			while True:
+			for testname in i:
 				i.analyse()
-				if len(i.testList)==0:
-					break
-				i.nextTest()
-			i.plot()
-			#print((np.sum(i.modulus)))
+			i.plot(show=3)
 			self.assertTrue(np.sum(i.modulus)==136478.52405870787,'Calculation of modulus changed')
 			### END OF MAIN ###
 			print('\n*** DONE WITH VERIFY ***')

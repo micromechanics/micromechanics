@@ -4,7 +4,7 @@ Tip calibration
 
 Initialize the datafile containing the calibration measurements, using nuMat=0.18 as the tip’s Poisson’s ratio::
 
-		from nanoIndent import Indentation, Tip
+		from nanoindentation import Indentation, Tip
 		i = Indentation("FS_Calibration.xls", nuMat=0.18)
 		i.plotAsDepth("K2P")
 
