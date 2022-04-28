@@ -22,6 +22,7 @@ Coding rules:
 """
 import os
 from .definitions import Method, Vendor, FileType
+import definitions
 from .tip import Tip
 
 class Indentation:

@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pylab as plt
 from scipy.optimize import curve_fit
 from .definitions import Method
+import definitions
 
 def YoungsModulus(self, modulusRed, nuThis=-1):
   """
