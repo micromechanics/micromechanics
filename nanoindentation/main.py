@@ -4,7 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import ndimage
 from scipy.optimize import fmin_l_bfgs_b, curve_fit
-#import definitions
 from .definitions import Vendor, Method
 
 def popIn(self, correctH=True, plot=True, removeInitialNM=2.):

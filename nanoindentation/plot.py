@@ -1,7 +1,6 @@
 """Plotting of nanoindentation data"""
 import numpy as np
 import matplotlib.pyplot as plt
-#import definitions
 from .definitions import Method
 
 def plotTestingMethod(self, saveFig=False, show=True):
