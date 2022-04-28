@@ -174,7 +174,7 @@ def calibrateStiffness(self,critDepth=0.5,critForce=0.0001,plotStiffness=True, r
         pAll = pAll+list(self.metaUser['pMax_mN'])
         hAll = hAll+list(self.metaUser['hMax_um'])
         sAll = sAll+list(self.metaUser['S_mN/um'])
-      else:  #TODO It should always be a list
+      else:
         pAll = pAll+[self.metaUser['pMax_mN']]
         hAll = hAll+[self.metaUser['hMax_um']]
         sAll = sAll+[self.metaUser['S_mN/um']]

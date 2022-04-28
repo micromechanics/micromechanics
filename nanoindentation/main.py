@@ -402,8 +402,6 @@ def identifyLoadHoldUnloadCSM(self):
 def nextTest(self, newTest=True, plotSurface=False):
   """
   Wrapper for all next test for all vendors
-
-  #TODO: make sure it is also used for one-test datafiles
   """
   if newTest:
     if self.vendor == Vendor.Agilent:

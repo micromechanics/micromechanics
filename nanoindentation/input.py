@@ -21,7 +21,6 @@ def loadAgilent(self, fileName):
   self.metaVendor.update( dict(workbook.iloc[-1]) )
   if self.metaVendor['Poissons Ratio']!=self.nuMat:
     print("*WARNING*: Poisson Ratio different than in file.",self.nuMat,self.metaVendor['Poissons Ratio'])
-  ## TODO check if CSM can be deduced form other sheets
   self.datafile = pd.read_excel(fileName, sheet_name=None)
   tagged = []
   code = {"Load On Sample":"p", "Force On Surface":"p", "LOAD":"p"\
@@ -524,7 +523,6 @@ def loadHDF5(self,fileName):
 def nextHDF5Test(self):
   """
   Go to next branch in HDF5 file
-  TODO clean up the if statements after converter
   """
   if len(self.testList)==0: #no sheet left
     return False

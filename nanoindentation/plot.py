@@ -64,7 +64,7 @@ def plot(self, saveFig=False, show=True):
     if len(self.hc)<2:
       ax.plot(h_[0],p_[0],'og',)
       ax.plot(h_[-1],p_[-1],'og', label="fit domain")
-      stiffnessPlot= self.p[self.valid]-self.slope*self.h[self.valid]  #TODO correction
+      stiffnessPlot= self.p[self.valid]-self.slope*self.h[self.valid]
       h_ = np.linspace(self.hc,self.h[self.valid],10)
       ax.plot(h_,   self.slope*h_+stiffnessPlot, 'r--', lw=2, label='stiffness')
     ax.legend(loc=0, numpoints=1)
