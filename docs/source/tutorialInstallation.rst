@@ -1,5 +1,6 @@
 Installation
-==========================
+============
+
 .. automodule:: tutorialInstallation
    :members:
    :undoc-members:

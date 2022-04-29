@@ -29,7 +29,6 @@ How it works:
 	- modulus [GPa]: Young’s modulus
 3. Plot
 
-
 Initialization
 --------------
 Import necessary libraries::
