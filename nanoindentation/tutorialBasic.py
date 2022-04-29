@@ -100,10 +100,33 @@ Mac OS
 
 3. Add the directory /Users/'username'/.../main to the PYTHONPATH
 
-	- open .bash_profile with text editor (for example, atom) 
-	
-	
+	- open Terminal.app
 
+	- open the file .bash_profile with text editor (for example, atom)::
+		
+		atom ~/.bash_profile
+	
+	- Add the following line to the end::
+	
+		export PYTHONPATH="/Users/'username'/.../main"
+	
+	- Save the file.
+	
+	- Type the following command in Terminal::
+
+		source ~/.bash_profile
+	
+	- check the PYTHONPATH::
+	
+		echo $PYTHONPATH
+	It should show something like /Users/'username'/.../main
+
+4. Checking system environment variables in Python::
+
+	import os
+	os.environ['PYTHONPATH']
+	/Users/'username'/.../main
+	
 
 Initialization
 --------------
