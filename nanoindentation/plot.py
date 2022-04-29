@@ -76,7 +76,8 @@ def plot(self, saveFig=False, show=True):
   if saveFig:
     plt.savefig(self.fileName.split('.')[0]+".png", dpi=150, bbox_inches='tight')
   if isinstance(show,bool):
-    plt.show()
+    if show:
+      plt.show()
   elif isinstance(show,int):
     plt.show(block = False)
     plt.pause(show)
