@@ -83,7 +83,9 @@ Install git using:
 	- type "git clone git@github.com:micromechanics/main.git"
 
 3. Adopt the "System Variables" or "Environment Variables" (search "systemvariables" in the Windows search bar) and edit
-the variables "for your account". Edit the entry path and add:
+the variables "for your account". Edit the entry path and add::
+
+	C:\\Users*USER*\\Documents\\Micromechanics
 
 
 Initialization
