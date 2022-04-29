@@ -87,6 +87,23 @@ the variables "for your account". Edit the entry path and add::
 
 	C:\\Users*USER*\\Documents\\Micromechanics
 
+Mac OS
+=======
+
+1. Clone this github repository (ensure git is installed)::
+
+	git clone git@github.com:micromechanics/main.git
+
+2. Install packages using requirements (contains numpy, matplotlib, scipy etc) ::
+
+	pip3 install -r requirements.txt
+
+3. Add the directory /Users/'username'/.../main to the PYTHONPATH
+
+	- open .bash_profile with text editor (for example, atom) 
+	
+	
+
 
 Initialization
 --------------
