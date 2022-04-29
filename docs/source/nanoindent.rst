@@ -4,7 +4,7 @@ Documentation
 .. toctree::
    :maxdepth: 4
    
-   definitions
+   definition.definitions
    main
    input
    theory
