@@ -2,6 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from .definitions import Method
+#import definitions
 
 def plotTestingMethod(self, saveFig=False, show=True):
   """
