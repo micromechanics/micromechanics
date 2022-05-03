@@ -1,5 +1,5 @@
-Tip calibration (advanced)
-==========================
+Advanced data analysis
+======================
 
 .. automodule:: tutorialAdvanced
    :members:
