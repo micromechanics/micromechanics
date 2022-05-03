@@ -423,12 +423,9 @@ def nextTest(self, newTest=True, plotSurface=False):
   if 'gradient' in self.surfaceFind:
     optGrad = self.surfaceFind['gradient']
     h,p = self.h, self.p
-    if 'filt' in self.surfaceFind:
-      # h = ndimage.gaussian_filter1d(self.h, self.surfaceFind['filt'])
-      p = ndimage.gaussian_filter1d(self.p, self.surfaceFind['filt'])
     y = np.gradient(p, h)
-    # y = np.gradient(p)
-    # y -= np.average(y[10:40])
+    if 'filt' in self.surfaceFind:
+      y = ndimage.gaussian_filter1d(y, self.surfaceFind['filt'])
     if isinstance(optGrad, list):
       #if domain given, use that to backward extrapolate
       mask = np.logical_and(optGrad[0]<y, y<optGrad[1])
@@ -455,9 +452,9 @@ def nextTest(self, newTest=True, plotSurface=False):
       ax1.plot(h[mask], y[mask],'C0o', markersize=10)
       if fit is not None:
         ax1.plot(h[mask], np.polyval(fit,h[mask]), '-k', linewidth=2)
-      ax1.plot(h[surface], y[surface], 'Co', markersize=14)
+      ax1.plot(h[surface], y[surface], 'C9o', markersize=14)
       ax1.axhline(0,linestyle='dashed')
-      ax1.set_ylim(bottom=0, top=np.max(optGrad)*2)
+      ax1.set_ylim(bottom=0, top=np.percentile(y,80))
       # ax1.set_xlim([h[surface]-1.1, np.max(h[mask])+1.02])
       ax1.set_xlabel('depth [$\mu m$]')
       ax1.set_ylabel('gradient [mN]', color='C0')
