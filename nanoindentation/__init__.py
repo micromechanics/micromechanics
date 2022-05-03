@@ -39,6 +39,7 @@ class Indentation:
   from .theory import YoungsModulus, ReducedModulus, OliverPharrMethod, inverseOliverPharrMethod,\
     stiffnessFromUnloading, unloadingPowerFunc
   from .verification import verifyOneData, verifyOneData1, verifyReadCalc
+  from .seldomUsedFunctions import tareDepthForce, analyseDrift
   #pylint: enable=import-outside-toplevel
 
   def __init__(self, fileName, nuMat= 0.3, tip=None, surfaceFind={}, verbose=2):

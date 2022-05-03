@@ -1,4 +1,9 @@
 # pylint: skip-file
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.signal import savgol_filter
+from scipy.interpolate import interpolate
+from .definitions import Vendor, Method
 
 def tareDepthForce(self, slopeThreshold=100, compareRead=False, plot=False):
   """
