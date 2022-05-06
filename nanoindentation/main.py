@@ -444,7 +444,7 @@ def nextTest(self, newTest=True, plotSurface=False):
       # surface = np.argmax(self.h[surface-4:surface+5])+surface-4
     else:
       surface = np.where(y>optGrad)[0][0]
-      mask    = np.zeros_like(y, dtype=np.bool)
+      mask    = np.zeros_like(y, dtype=bool)
       fit     = None
     if plotSurface or 'plot' in self.surfaceFind:
       _, ax1 = plt.subplots()
