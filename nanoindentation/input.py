@@ -335,6 +335,7 @@ def loadMicromaterials(self, fileName):
       fileName: file name or file-content
   """
   if isinstance(fileName, io.TextIOWrapper) or fileName.endswith('.txt'):
+    #if singe file or file in zip-archive
     try:            #file-content given
       dataTest = np.loadtxt(fileName)  #exception caught
       if not isinstance(fileName, io.TextIOWrapper):
@@ -350,16 +351,16 @@ def loadMicromaterials(self, fileName):
     self.p = dataTest[:,2]
     self.valid = np.ones_like(self.t, dtype=bool)
     self.identifyLoadHoldUnload()
-    return True
-  if fileName.endswith('.zip'):
+  elif fileName.endswith('.zip'):
+    #if zip-archive of multilpe files
     if self.verbose>1:
       print("Open Micromaterials zip-file: "+fileName)
     self.datafile = ZipFile(fileName)
     self.testList = self.datafile.namelist()
+    self.allTestList =  list(self.testList)
     self.fileName = fileName
     self.metaUser = {'measurementType': 'Micromaterials Indentation ZIP'}
     self.nextTest()
-    return True
   return True
 
 
