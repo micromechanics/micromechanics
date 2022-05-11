@@ -169,7 +169,7 @@ def identifyLoadHoldUnload(self,plot=False):
     return False
   #identify point in time, which are too close ~0
   gradTime = np.diff(self.t)
-  maskTooClose = gradTime < np.max(gradTime)/1.e3
+  maskTooClose = gradTime < np.percentile(gradTime,80)/1.e3
   self.t     = self.t[1:][~maskTooClose]
   self.p     = self.p[1:][~maskTooClose]
   self.h     = self.h[1:][~maskTooClose]
@@ -221,10 +221,10 @@ def identifyLoadHoldUnload(self,plot=False):
   if len(loadIdx) != len(unloadIdx):
     print("**ERROR: Load-Hold-Unload identification did not work",loadIdx, unloadIdx  )
   for i,_ in enumerate(loadIdx[::2]):
-    if loadIdx[::2][i] < loadIdx[1::2][i] < unloadIdx[::2][i] < unloadIdx[1::2][i]:
+    if loadIdx[::2][i] < loadIdx[1::2][i] <= unloadIdx[::2][i] < unloadIdx[1::2][i]:
       self.iLHU.append([loadIdx[::2][i],loadIdx[1::2][i],unloadIdx[::2][i],unloadIdx[1::2][i]])
     else:
-      print("**ERROR: some segment not found")
+      print("**ERROR: some segment not found", loadIdx[::2][i], loadIdx[1::2][i], unloadIdx[::2][i], unloadIdx[1::2][i])
       if len(self.iLHU)>0:
         self.iLHU.append([])
   if len(self.iLHU)>1:

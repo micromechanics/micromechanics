@@ -20,7 +20,7 @@ class TestMethods(unittest.TestCase):
 					fullPath = path+os.sep+fileName
 					if fullPath in skipFiles:
 						continue
-					print('\n')
+					print('\nStart with file:',fullPath)
 					i = Indentation(fullPath)
 					while True:
 						i.analyse()

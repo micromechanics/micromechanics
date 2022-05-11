@@ -233,6 +233,7 @@ def loadHysitron(self, fileName, plotContact=False):
       self.t = dataTest[:,0]
       self.h = dataTest[:,1]/1.e3
       self.p = dataTest[:,2]/1.e3
+      self.valid=np.ones_like(self.h, dtype=bool)
 
       # create loading-holding-unloading cycles
       #since the first / last point of each segment are double in both segments
@@ -241,6 +242,7 @@ def loadHysitron(self, fileName, plotContact=False):
       segmentPoints  -= 1
       segmentPoints[0]+=1
       segPnts   = np.cumsum(segmentPoints)
+      #don't use identifyLoadHoldUnload since those points are known
       self.iLHU = []
       for idx, _ in enumerate(listLoading):
         iSurface = segPnts[listLoading[idx]-1]+1
