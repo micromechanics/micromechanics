@@ -161,61 +161,31 @@ def identifyLoadHoldUnload(self,plot=False):
   """
   internal method: identify ALL load - hold - unload segments in data
 
-  TODO: SB work on
-
   Args:
       plot: verify by plotting
   """
-  #self.plotTestingMethod() # for debugging
   if self.method==Method.CSM:
     self.identifyLoadHoldUnloadCSM()
     return False
-  maxValue = np.max(self.p)
-  maxZone  = self.p > 0.98*maxValue
-  rate = self.p[maxZone][1:]-self.p[maxZone][:-1]
-  #using histogram, define masks for loading and unloading
-  hist, bins= np.histogram(rate , bins=200)
-  #TODO this 200 and zeroDelta below need must dependent on vendor
-  # ... can user change them, commonHDF blocks automatic identification
-  # .... or better algorithm
-  binCenter = (bins[1:]+bins[:-1])/2
-
-  peaks = np.where(hist>5)[0]                  #peaks with more than 10 items
-  if len(peaks)==0:
-    peaks = [np.argmax(hist)]                   #take largest
-  try:
-    zeroID = np.argmin(np.abs(binCenter[peaks]))  #id which is closest to zero
-    zeroValue = binCenter[peaks][zeroID]
-  except:     # pylingt warning: No exception type(s) specified (705:4) [bare-except]
-    self.iLHU = []
-    return False
-  ## Better algorithm: look for closest zero historgram-peak to zeroValue; take that to calculate delta
-  try:
-    zeroPeaks = np.logical_and(hist<0.3, binCenter<zeroValue)
-    zeroPeaks = np.where(zeroPeaks)[0]
-    firstZero = np.argmin(np.abs(zeroValue-binCenter[zeroPeaks]))
-    zeroDelta = abs(binCenter[zeroPeaks][firstZero]-zeroValue)
-    if self.vendor==Vendor.Hysitron and self.method==Method.ISO:
-      zeroDelta *= 4  #data is noisy, more safety to prevent wrong identification
-    rate      = self.p[1:]-self.p[:-1]
-    loadMask  = rate>(zeroValue+zeroDelta)
-    unloadMask= rate<(zeroValue-zeroDelta)
-  except:
-    self.identifyLoadHoldUnloadCSM()     #simpler method, less error-prone
-    return True
+  #identify point in time, which are too close ~0
+  gradTime = np.gradient(self.t)
+  maskTooClose = gradTime < np.max(gradTime)/1.e3
+  self.t = self.t[~maskTooClose]
+  self.p = self.p[~maskTooClose]
+  self.h = self.h[~maskTooClose]
+  self.valid=self.valid[~maskTooClose]
+  #use force-rate to identify load-hold-unload
+  rate = np.gradient(self.p, self.t)
+  rate /= np.max(rate)
+  zeroDelta = 0.001  #possibly depends on vendor
+  loadMask  = rate >  zeroDelta
+  unloadMask= rate < -zeroDelta
   if plot:     # verify visually
-    plt.plot(binCenter,hist,'o')#, width=0.001)
-    plt.axvline(zeroValue, c='k')
-    plt.axvline(binCenter[zeroPeaks][firstZero], c='r')
-    plt.axvline(zeroValue+zeroDelta, c='k', linestyle='dashed')
-    plt.axvline(zeroValue-zeroDelta, c='k', linestyle='dashed')
-    plt.ylabel('count []')
-    plt.xlabel(r'rate [$\mathrm{mN/s}$]')
-    plt.show()
     plt.plot(rate)
-    plt.axhline(zeroValue, c='k')
-    plt.axhline(zeroValue+zeroDelta, c='k', linestyle='dashed')
-    plt.axhline(zeroValue-zeroDelta, c='k', linestyle='dashed')
+    plt.axhline(0, c='k')
+    plt.axhline( zeroDelta, c='k', linestyle='dashed')
+    plt.axhline(-zeroDelta, c='k', linestyle='dashed')
+    plt.ylim([-5*zeroDelta, 5*zeroDelta])
     plt.xlabel('time incr. []')
     plt.ylabel(r'rate [$\mathrm{mN/sec}$]')
     plt.show()
@@ -238,47 +208,19 @@ def identifyLoadHoldUnload(self,plot=False):
     plt.plot(unloadIdx[::2],self.p[unloadIdx[::2]],'o',label='unload',markersize=8)
     plt.plot(unloadIdx[1::2],self.p[unloadIdx[1::2]],'o',label='unload-end',markersize=6)
     plt.legend(loc=0)
-    plt.title("BEFORE Cleaning")
     plt.xlabel('time incr. []')
     plt.ylabel(r'force [$\mathrm{mN}$]')
     plt.show()
-  while len(loadIdx)<len(unloadIdx) and unloadIdx[0]<loadIdx[0]:
-    print("*WARNING* identifyLoadHoldUnload: cut two from front of unloadIdx: UNDESIRED")
-    unloadIdx = unloadIdx[2:]
-  while len(loadIdx)<len(unloadIdx) and unloadIdx[-3]>loadIdx[-1]:
-    print("*WARNING* identifyLoadHoldUnload: cut two from end of unloadIdx: UNDESIRED")
-    unloadIdx = unloadIdx[:-2]
-  while len(loadIdx)>len(unloadIdx) and loadIdx[3]<unloadIdx[1]:
-    print("*WARNING* identifyLoadHoldUnload: cut two from front of loadIdx: UNDESIRED")
-    loadIdx = loadIdx[2:]
+  #store them in a list [[loadStart1, loadEnd1, unloadStart1, unloadEnd1], [loadStart2, loadEnd2, unloadStart2, unloadEnd2],.. ]
   self.iLHU = []
-  if len(loadIdx) > len(unloadIdx):
-    loadIdx = loadIdx[:len(unloadIdx)]
-    print("**Warning: cropped loadIDX to length of unloadIDX")
+  if len(loadIdx) != len(unloadIdx):
+    print("**ERROR: Load-Hold-Unload identification did not work",loadIdx, unloadIdx  )
   for i,_ in enumerate(loadIdx[::2]):
-    if loadIdx[::2][i]>loadIdx[1::2][i] or loadIdx[1::2][i]>unloadIdx[::2][i] or \
-        unloadIdx[::2][i]>unloadIdx[1::2][i]:
-      print("*ERROR* Wrong order in idx",i, \
-        [loadIdx[::2][i],loadIdx[1::2][i],unloadIdx[::2][i],unloadIdx[1::2][i]],'SKIP FOR NOW')
-      #plot = True #TODO change later
-    else:
-      self.iLHU.append([loadIdx[::2][i],loadIdx[1::2][i],unloadIdx[::2][i],unloadIdx[1::2][i]])
+    self.iLHU.append([loadIdx[::2][i],loadIdx[1::2][i],unloadIdx[::2][i],unloadIdx[1::2][i]])
   if len(self.iLHU)>1:
     self.method=Method.MULTI
-  if plot:     # verify visually
-    plt.plot(self.p)
-    plt.plot(loadIdx[::2],  self.p[loadIdx[::2]],  'o',label='load',markersize=12)
-    plt.plot(loadIdx[1::2], self.p[loadIdx[1::2]], 'o',label='hold',markersize=10)
-    plt.plot(unloadIdx[::2],self.p[unloadIdx[::2]],'o',label='unload',markersize=8)
-    plt.plot(unloadIdx[1::2],self.p[unloadIdx[1::2]],'o',label='unload-end',markersize=6)
-    plt.legend(loc=0)
-    plt.title("AFTER Cleaning")
-    plt.xlabel('time incr. []')
-    plt.ylabel(r'force [$\mathrm{mN}$]')
-    plt.show()
   #drift segments
   iDriftS = unloadIdx[1::2][-1]+1
-  # pylint warning: Using possibly undefined loop variable 'i' (785:30) [undefined-loop-variable]
   iDriftE = len(self.p)-1
   if iDriftS+1>iDriftE:
     iDriftS=iDriftE-1
