@@ -86,6 +86,37 @@ def plot(self, saveFig=False, show=True):
   return ax
 
 
+def plotAll(self, saveFig=False, show=True):
+  """
+  Plot force-depth curves of all tests in the file
+
+  Args:
+    saveFig: save plot to file [use known filename plus extension png]
+    show: show figure, else do not show
+  """
+  _, ax = plt.subplots()
+  ax.axhline(0,ls="dashed",c='k')
+  ax.axvline(0,ls="dashed",c='k')
+  for testName in self:
+    ax.plot(self.h,self.p, label=testName)
+  plt.legend()
+  ax.set_xlim(left=-0.03)
+  ax.set_xlabel(r"depth [$\mathrm{\mu m}$]")
+  ax.set_ylabel(r"force [$\mathrm{mN}$]")
+  if saveFig:
+    plt.savefig(self.fileName.split('.')[0]+".png", dpi=150, bbox_inches='tight')
+  if isinstance(show,bool):
+    if show:
+      plt.show()
+  elif isinstance(show,int):
+    plt.show(block = False)
+    plt.pause(show)
+    plt.close()
+  return ax
+
+
+
+
 def plotAsDepth(self, entity, hvline=None):
   """
   Plot as function of depth either Young's modulus, hardness,

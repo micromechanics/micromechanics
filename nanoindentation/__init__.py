@@ -35,7 +35,7 @@ class Indentation:
     loadFischerScope, nextFischerScopeTest, loadHDF5, nextHDF5Test, restartFile
   from .main import popIn, calcYoungsModulus, calcHardness, calcStiffness2Force, analyse, \
     identifyLoadHoldUnload, identifyLoadHoldUnloadCSM, nextTest, saveToUserMeta
-  from .plot import plotTestingMethod, plot, plotAsDepth
+  from .plot import plotTestingMethod, plot, plotAsDepth, plotAll
   from .theory import YoungsModulus, ReducedModulus, OliverPharrMethod, inverseOliverPharrMethod,\
     stiffnessFromUnloading, unloadingPowerFunc
   from .verification import verifyOneData, verifyOneData1, verifyReadCalc
