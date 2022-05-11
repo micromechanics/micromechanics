@@ -43,7 +43,7 @@ class Indentation:
   from .seldomUsedFunctions import tareDepthForce, analyseDrift
   #pylint: enable=import-outside-toplevel
 
-  def __init__(self, fileName, nuMat= 0.3, tip=None, surfaceFind={'gradient':None}, verbose=2):
+  def __init__(self, fileName, nuMat= 0.3, tip=None, surfaceFind={'_':None}, verbose=2):
     """
     Initialize indentation experiment data
 
@@ -90,6 +90,7 @@ class Indentation:
       self.fileType = FileType.Multi
       self.unloadPMax = 0.999
       self.unloadPMin = 0.5
+      self.zeroGradDelta = 0.002
       success = self.loadAgilent(fileName)
     if (fileName.endswith(".hld") or fileName.endswith(".txt")) and not success:
       # Hysitron
@@ -97,6 +98,7 @@ class Indentation:
       self.fileType = FileType.Single
       self.unloadPMax = 0.95
       self.unloadPMin = 0.4
+      self.zeroGradDelta = 0.2
       success = self.loadHysitron(fileName)
     if (fileName.endswith(".txt") or
         fileName.endswith(".zip")) and not success:
@@ -104,6 +106,7 @@ class Indentation:
       self.vendor = Vendor.Micromaterials
       self.unloadPMax = 0.99
       self.unloadPMin = 0.5
+      self.zeroGradDelta = 0.02
       if fileName.endswith(".txt"):
         self.fileType = FileType.Single
       else:
@@ -115,6 +118,7 @@ class Indentation:
       self.fileType = FileType.Multi
       self.unloadPMax = 0.95
       self.unloadPMin = 0.21
+      self.zeroGradDelta = 0.01
       success = self.loadFischerScope(fileName)
     if fileName.endswith(".hdf5") and not success:
       # Common hdf5 file
@@ -122,6 +126,7 @@ class Indentation:
       self.fileType = FileType.Multi
       self.unloadPMax = 0.99
       self.unloadPMin = 0.5
+      self.zeroGradDelta = 0.02
       success = self.loadHDF5(fileName)
     return
 

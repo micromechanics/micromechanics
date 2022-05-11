@@ -168,24 +168,23 @@ def identifyLoadHoldUnload(self,plot=False):
     self.identifyLoadHoldUnloadCSM()
     return False
   #identify point in time, which are too close ~0
-  gradTime = np.gradient(self.t)
+  gradTime = np.diff(self.t)
   maskTooClose = gradTime < np.max(gradTime)/1.e3
-  self.t = self.t[~maskTooClose]
-  self.p = self.p[~maskTooClose]
-  self.h = self.h[~maskTooClose]
-  self.valid=self.valid[~maskTooClose]
+  self.t     = self.t[1:][~maskTooClose]
+  self.p     = self.p[1:][~maskTooClose]
+  self.h     = self.h[1:][~maskTooClose]
+  self.valid = self.valid[1:][~maskTooClose]
   #use force-rate to identify load-hold-unload
   rate = np.gradient(self.p, self.t)
   rate /= np.max(rate)
-  zeroDelta = 0.001  #possibly depends on vendor
-  loadMask  = rate >  zeroDelta
-  unloadMask= rate < -zeroDelta
+  loadMask  = rate >  self.zeroGradDelta
+  unloadMask= rate < -self.zeroGradDelta
   if plot:     # verify visually
     plt.plot(rate)
     plt.axhline(0, c='k')
-    plt.axhline( zeroDelta, c='k', linestyle='dashed')
-    plt.axhline(-zeroDelta, c='k', linestyle='dashed')
-    plt.ylim([-5*zeroDelta, 5*zeroDelta])
+    plt.axhline( self.zeroGradDelta, c='k', linestyle='dashed')
+    plt.axhline(-self.zeroGradDelta, c='k', linestyle='dashed')
+    plt.ylim([-8*self.zeroGradDelta, 8*self.zeroGradDelta])
     plt.xlabel('time incr. []')
     plt.ylabel(r'rate [$\mathrm{mN/sec}$]')
     plt.show()
@@ -201,12 +200,18 @@ def identifyLoadHoldUnload(self,plot=False):
   unloadMask= np.r_[False,unloadMask,False]
   loadIdx   = np.flatnonzero(loadMask[1:]   != loadMask[:-1])
   unloadIdx = np.flatnonzero(unloadMask[1:] != unloadMask[:-1])
+  if len(unloadIdx) == len(loadIdx)+2 and np.all(unloadIdx[-4:]>loadIdx[-1]):
+    #for drift: partial unload-hold-full unload
+    unloadIdx = unloadIdx[:-2]
   if plot:     # verify visually
     plt.plot(self.p,'o')
     plt.plot(loadIdx[::2],  self.p[loadIdx[::2]],  'o',label='load',markersize=12)
     plt.plot(loadIdx[1::2], self.p[loadIdx[1::2]], 'o',label='hold',markersize=10)
     plt.plot(unloadIdx[::2],self.p[unloadIdx[::2]],'o',label='unload',markersize=8)
-    plt.plot(unloadIdx[1::2],self.p[unloadIdx[1::2]],'o',label='unload-end',markersize=6)
+    try:
+      plt.plot(unloadIdx[1::2],self.p[unloadIdx[1::2]],'o',label='unload-end',markersize=6)
+    except IndexError:
+      pass
     plt.legend(loc=0)
     plt.xlabel('time incr. []')
     plt.ylabel(r'force [$\mathrm{mN}$]')
@@ -216,15 +221,23 @@ def identifyLoadHoldUnload(self,plot=False):
   if len(loadIdx) != len(unloadIdx):
     print("**ERROR: Load-Hold-Unload identification did not work",loadIdx, unloadIdx  )
   for i,_ in enumerate(loadIdx[::2]):
-    self.iLHU.append([loadIdx[::2][i],loadIdx[1::2][i],unloadIdx[::2][i],unloadIdx[1::2][i]])
+    if loadIdx[::2][i] < loadIdx[1::2][i] < unloadIdx[::2][i] < unloadIdx[1::2][i]:
+      self.iLHU.append([loadIdx[::2][i],loadIdx[1::2][i],unloadIdx[::2][i],unloadIdx[1::2][i]])
+    else:
+      print("**ERROR: some segment not found")
+      if len(self.iLHU)>0:
+        self.iLHU.append([])
   if len(self.iLHU)>1:
     self.method=Method.MULTI
-  #drift segments
-  iDriftS = unloadIdx[1::2][-1]+1
-  iDriftE = len(self.p)-1
-  if iDriftS+1>iDriftE:
-    iDriftS=iDriftE-1
-  self.iDrift = [iDriftS,iDriftE]
+  #drift segments: only add if it makes sense
+  try:
+    iDriftS = unloadIdx[1::2][-1]+1
+    iDriftE = len(self.p)-1
+    if iDriftS+1>iDriftE:
+      iDriftS=iDriftE-1
+    self.iDrift = [iDriftS,iDriftE]
+  except:
+    self.iDrift = [-1,-1]
   return True
 
 

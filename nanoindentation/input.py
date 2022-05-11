@@ -265,6 +265,7 @@ def loadHysitron(self, fileName, plotContact=False):
       self.h = dataTest[:,0]/1.e3
       self.p = dataTest[:,1]/1.e3
       #set unknown values
+      self.valid = np.ones_like(self.h)
       forceTreshold = 0.25 #250uN
       self.identifyLoadHoldUnload()
 
