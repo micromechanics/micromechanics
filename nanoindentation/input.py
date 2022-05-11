@@ -584,6 +584,9 @@ def isfloat(value):
 
 
 def restartFile(self):
+  """
+  Restart processing the current file by resetting all values back to the initial
+  """
   self.testList = list(self.allTestList)
   self.nextTest()
   return

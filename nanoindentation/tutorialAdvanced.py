@@ -42,7 +42,8 @@ The datapoints at larger forces (smaller values on the diagram) are used for the
 
 	Error in tip shape calibration
 
-The blue points represent the experimental data. The blunting of the used tip is easily noticable at the very beginning of the orange line. A relative error of 5-10% is typical.
+The blue points represent the experimental data. The blunting of the used tip is easily noticable at the very
+beginning of the orange line. A relative error of 5-10% is typical.
 
 (To zoom in the blunted part of the tip, use ``plotIndenterShape()`` at e.g. maxDepth 0.25)::
 
@@ -67,7 +68,8 @@ If a mistake in polyfit appears, increase the value for gradient.
 If the datapoints for the gradient (blue line on the graph) are very noisy, increase the filtering value.
 
 Additionally, an interval for the gradient can be set.
-In this case the gradient interval would be used to extrapolate backwards to zero force and the resulting point would be used the surface.
+In this case the gradient interval would be used to extrapolate backwards to zero force and the resulting point
+would be used the surface.
 
 .. figure:: ../source/img/surfaceFind.png
 	:width: 400

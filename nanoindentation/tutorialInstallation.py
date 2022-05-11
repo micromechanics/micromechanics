@@ -71,21 +71,21 @@ Mac OS
 	- open Terminal.app
 
 	- open the file .bash_profile with text editor (for example, atom)::
-		
+
 		atom ~/.bash_profile
-	
+
 	- Add the following line to the end::
-	
+
 		export PYTHONPATH="/Users/'username'/.../main"
-	
+
 	- Save the file.
-	
+
 	- Type the following command in Terminal::
 
 		source ~/.bash_profile
-	
+
 	- check the PYTHONPATH::
-	
+
 		echo $PYTHONPATH
 	It should show something like /Users/'username'/.../main
 
@@ -94,5 +94,5 @@ Mac OS
 	import os
 	os.environ['PYTHONPATH']
 	/Users/'username'/.../main
-	
+
 """

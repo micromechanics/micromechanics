@@ -30,19 +30,20 @@ class Indentation:
   Main class of indentation
   """
   #pylint: disable=import-outside-toplevel
-  from .calibration import calibration, calibrateStiffness
   from .input import loadAgilent, nextAgilentTest, loadHysitron, loadMicromaterials, nextMicromaterialsTest, \
     loadFischerScope, nextFischerScopeTest, loadHDF5, nextHDF5Test, restartFile
-  from .main import popIn, calcYoungsModulus, calcHardness, calcStiffness2Force, analyse, \
+  from .main import calcYoungsModulus, calcHardness, calcStiffness2Force, analyse, \
     identifyLoadHoldUnload, identifyLoadHoldUnloadCSM, nextTest, saveToUserMeta
-  from .plot import plotTestingMethod, plot, plotAsDepth, plotAll
   from .theory import YoungsModulus, ReducedModulus, OliverPharrMethod, inverseOliverPharrMethod,\
     stiffnessFromUnloading, unloadingPowerFunc
+  from .hertz import popIn, hertzFit
+  from .plot import plotTestingMethod, plot, plotAsDepth, plotAll
+  from .calibration import calibration, calibrateStiffness
   from .verification import verifyOneData, verifyOneData1, verifyReadCalc
   from .seldomUsedFunctions import tareDepthForce, analyseDrift
   #pylint: enable=import-outside-toplevel
 
-  def __init__(self, fileName, nuMat= 0.3, tip=None, surfaceFind={}, verbose=2):
+  def __init__(self, fileName, nuMat= 0.3, tip=None, surfaceFind={'gradient':None}, verbose=2):
     """
     Initialize indentation experiment data
 
@@ -54,11 +55,12 @@ class Indentation:
     """
     self.nuMat = nuMat                                      #nuMat: material's Posson ratio
     self.nuTip      = 0.07
-    self.modulusTip = 1140                                    #GPa from Oliver,Pharr Method paper
+    self.modulusTip = 1140                                  #GPa from Oliver,Pharr Method paper
     self.beta = 0.75                                        #beta: contact depth coefficient
     self.verbose = verbose
     self.method    = Method.ISO                             #iso default: csm uses different methods
     self.onlyLoadingSegment = False                         #use all data by default
+    self.newFileRead = True                                 #file was just loaded
 
     if tip is None:
       tip = Tip()
@@ -142,4 +144,3 @@ class Indentation:
     else:
       raise StopIteration
     return self.testName
-
