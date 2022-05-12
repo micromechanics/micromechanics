@@ -90,7 +90,7 @@ class Indentation:
       self.fileType = FileType.Multi
       self.unloadPMax = 0.999
       self.unloadPMin = 0.5
-      self.zeroGradDelta = 0.002
+      self.zeroGradDelta = 0.02
       success = self.loadAgilent(fileName)
     if (fileName.endswith(".hld") or fileName.endswith(".txt")) and not success:
       # Hysitron
