@@ -58,8 +58,9 @@ def plot(self, saveFig=False, show=True):
   if self.method != Method.CSM:
     _, _, maskUnload, optPar, _ = self.stiffnessFromUnloading(self.p, self.h)
     h_, p_ = self.h[maskUnload], self.p[maskUnload]
-    ax.plot(self.h[maskUnload], self.unloadingPowerFunc(self.h[maskUnload],*optPar),\
-      'C1', label='fit powerlaw')
+    if maskUnload is not None:
+      ax.plot(self.h[maskUnload], self.unloadingPowerFunc(self.h[maskUnload],*optPar),\
+        'C1', label='fit powerlaw')
     ax.plot(self.h[self.valid],self.p[self.valid],"or",label="max", markersize=10)
     ax.plot(self.hc, np.zeros_like(self.hc),"ob", label="hc", markersize=10)
     if len(self.hc)<2:

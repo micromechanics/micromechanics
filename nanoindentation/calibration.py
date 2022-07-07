@@ -209,7 +209,7 @@ def calibrateStiffness(self,critDepth=0.5,critForce=0.0001,plotStiffness=True, r
   if returnData:
     return x,y
   if plotStiffness:
-    _, ax = plt.subplots()    # pylint warning: unused "f"
+    _, ax = plt.subplots()
     ax.plot(x[~mask], y[~mask], 'o', color='#165480', fillstyle='none', markersize=1, label='excluded')
     ax.plot(x[mask], y[mask],   'C0o', markersize=5, label='for fit')
     x_ = np.linspace(0, np.max(x)*1.1, 50)

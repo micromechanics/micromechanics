@@ -220,13 +220,17 @@ def identifyLoadHoldUnload(self,plot=False):
   self.iLHU = []
   if len(loadIdx) != len(unloadIdx):
     print("**ERROR: Load-Hold-Unload identification did not work",loadIdx, unloadIdx  )
-  for i,_ in enumerate(loadIdx[::2]):
-    if loadIdx[::2][i] < loadIdx[1::2][i] <= unloadIdx[::2][i] < unloadIdx[1::2][i]:
-      self.iLHU.append([loadIdx[::2][i],loadIdx[1::2][i],unloadIdx[::2][i],unloadIdx[1::2][i]])
-    else:
-      print("**ERROR: some segment not found", loadIdx[::2][i], loadIdx[1::2][i], unloadIdx[::2][i], unloadIdx[1::2][i])
-      if len(self.iLHU)>0:
-        self.iLHU.append([])
+  try:
+    for i,_ in enumerate(loadIdx[::2]):
+      if loadIdx[::2][i] < loadIdx[1::2][i] <= unloadIdx[::2][i] < unloadIdx[1::2][i]:
+        self.iLHU.append([loadIdx[::2][i],loadIdx[1::2][i],unloadIdx[::2][i],unloadIdx[1::2][i]])
+      else:
+        print("**ERROR: some segment not found", loadIdx[::2][i], loadIdx[1::2][i], unloadIdx[::2][i], unloadIdx[1::2][i])
+        if len(self.iLHU)>0:
+          self.iLHU.append([])
+  except:
+    print("**ERROR: load-unload-segment not found")
+    self.iLHU = []
   if len(self.iLHU)>1:
     self.method=Method.MULTI
   #drift segments: only add if it makes sense

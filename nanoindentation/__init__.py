@@ -7,7 +7,7 @@ Indentation data: indentation experiment
 
 Indenter tip: shape of indenter tip and gantry stiffness (that what you calibrate)
 
-UNITS: one should use mSB units in this code, since Agilent area function is unit-dependent
+UNITS: one should use mSI units in this code, since Agilent area function is unit-dependent
 mSB: [mN], [um], [GPa] (force, length, stress)
 
 

@@ -4,12 +4,45 @@ import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
 
 
-def hertzFit(self):
+def hertzEquation(h,h0,E,R=1):
+  """
+  calculate the force for a given reduced Youngsmodulus, tip-radius and penetration depth
+
+  Args:
+    h: depth of indent (possibly array)
+    h0: depth offset
+    E: reduced Young's modulus
+    R: radius of tip in um (default=1 for parameter fitting)
+  """
+  h -= h0
+  h[h<0] = 0
+  return 4./3. * E * np.sqrt(R*h**3)
+
+
+def hertzFit(self, forceRange=[1,25], correctH=True, plot=True):
   """
   Fit the initial force displacement curve to the Hertzian curve
   """
-  print(np.sum(self.h))
-  return
+  fitMask = np.logical_and(forceRange[0]<self.p, self.p<forceRange[1])
+  fitMask[np.argmax(self.p):] = False
+  depthRange = [self.h[fitMask].min(), self.h[fitMask].max()]
+  p0 = [0., 5000.]
+  bounds = [[-depthRange[0],0],[depthRange[0], 50000.]]
+  fitElast, _ = curve_fit(hertzEquation, self.h[fitMask], self.p[fitMask], p0=p0, bounds=bounds)
+  if self.verbose>1:
+    print('Depth range', depthRange)
+    print('Optimal parameters (h0,prefactor)',fitElast)
+  if plot:
+    plt.plot(self.h,self.p)
+    h_ = np.linspace(depthRange[0], depthRange[1])
+    plt.plot(h_, hertzEquation(h_,*p0))
+    plt.ylim([0,forceRange[1]*1.2])
+    plt.xlim([depthRange[0]-0.01,depthRange[1]+0.01])
+    plt.show()
+  if correctH:
+    self.h -= fitElast[0]
+  return fitElast
+
 
 
 def popIn(self, correctH=True, plot=True, removeInitialNM=2.):
