@@ -35,7 +35,7 @@ class Indentation:
   from .main import calcYoungsModulus, calcHardness, calcStiffness2Force, analyse, \
     identifyLoadHoldUnload, identifyLoadHoldUnloadCSM, nextTest, saveToUserMeta
   from .theory import YoungsModulus, ReducedModulus, OliverPharrMethod, inverseOliverPharrMethod,\
-    stiffnessFromUnloading, unloadingPowerFunc
+    stiffnessFromUnloading, unloadingPowerFunc, unloadingPowerFuncPrime
   from .hertz import popIn, hertzFit
   from .plot import plotTestingMethod, plot, plotAsDepth, plotAll
   from .calibration import calibration, calibrateStiffness

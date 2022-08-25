@@ -4,10 +4,12 @@ Linux
 
 1. Clone this github repository (ensure git is installed)::
 
-	git clone git@github.com:micromechanics/main.git
+	git clone https://github.com/micromechanics/main.git
 
-2. Install packages using requirements (contains numpy, matplotlib, scipy etc) ::
+2. Install packages using requirements (contains numpy, matplotlib, scipy etc).
+Make sure you are typing the command in the correct folder (requirements.txt is in "main" after successful cloning) ::
 
+	cd main
 	pip3 install -r requirements.txt
 
 If pip has not been installed::
@@ -20,7 +22,7 @@ If pip is installed, make sure it is the latest version::
 	python3 -m pip install --upgrade pip
 
 3. Add the folder with the source code to the pythonpath. Open and edit with text editor (e.g. gedit).
-Type in the terminal::
+Type in the terminal in home directory::
 
 	gedit .bashrc
 
@@ -28,7 +30,13 @@ and add in the end for pythonpath the location of the folder, for example::
 
 	export PYTHONPATH=$PYTHONPATH:/home/*USER*/...../main
 
-Save and close.
+where "*USER*" is your user name and "....." is the folder where you cloned this repository.
+Save and close. To test whether it is working, open new terminal and in interactive python console (e.g ipython3) type::
+
+	ipython3
+	from nanoindentation import Indentation, Tip
+
+It should not report back any errors.
 
 Windows
 =======
