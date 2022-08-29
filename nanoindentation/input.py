@@ -565,10 +565,11 @@ def nextHDF5Test(self):
     if converter == 'hap2hdf.cwl':
       #Fischer-Scope reset the time multiple times
       resetPoints = np.where((self.t[1:]-self.t[:-1])<0)[0]
-      self.t = self.t[resetPoints[-1]:]
-      self.h = self.h[resetPoints[-1]:]
-      self.p = self.p[resetPoints[-1]:]
-      self.valid = np.ones_like(self.t, dtype=bool)
+      if len(resetPoints)>0:
+        self.t = self.t[resetPoints[-1]:]
+        self.h = self.h[resetPoints[-1]:]
+        self.p = self.p[resetPoints[-1]:]
+        self.valid = np.ones_like(self.t, dtype=bool)
   self.identifyLoadHoldUnload()
   return True
 
