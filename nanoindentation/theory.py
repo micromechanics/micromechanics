@@ -112,11 +112,6 @@ def unloadingPowerFunc(h,B,hf,m):
   value = B*np.power(h-hf,m)
   return value
 
-#vy: separate first derivative for polymer analysis, might del later
-@staticmethod
-def unloadingPowerFuncPrime(h,B,hf,m):
-  return B*m*np.power(h-hf,m-1)
-
 
 def stiffnessFromUnloading(self, p, h, plot=False):
   """
@@ -188,19 +183,19 @@ def stiffnessFromUnloading(self, p, h, plot=False):
       m  = 1.
       opt= (B,hf,m)
       powerlawFit.append(False)
-    #vy: to access fitting parameters more easily
-    self.opt = opt
-    self.unloadStart = unloadStart
-    self.unloadEnd = unloadEnd
-    self.loadStart = loadStart
-    self.loadEnd = loadEnd
 
-    stiffnessPlot = B*m*math.pow( (h[unloadStart]-hf), m-1)
+
+    if self.evaluateStiffnessAtMax:
+      stiffnessPlot = B*m*math.pow( (h[unloadStart]-hf), m-1)
+      stiffnessValue= p[unloadStart]-stiffnessPlot*h[unloadStart]
+      validMask[unloadStart]=True
+    else:
+      stiffnessPlot = B*m*math.pow( (h[mask][0]-hf), m-1)
+      stiffnessValue= p[mask][0]-stiffnessPlot*h[mask][0]
+      validMask[ np.where(mask)[0][0] ]=True
     stiffness.append(stiffnessPlot)
-    validMask[unloadStart]=True
     if plot:
       plt.plot(h[mask],   self.unloadingPowerFunc(h[mask],B,hf,m),'m-')
-      stiffnessValue= p[unloadStart]-stiffnessPlot*h[unloadStart]
       plt.plot(h[mask],   stiffnessPlot*h[mask]+stiffnessValue, 'r--', lw=3)
   if plot:
     plt.xlim(left=0)

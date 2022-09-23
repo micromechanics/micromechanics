@@ -35,7 +35,7 @@ class Indentation:
   from .main import calcYoungsModulus, calcHardness, calcStiffness2Force, analyse, \
     identifyLoadHoldUnload, identifyLoadHoldUnloadCSM, nextTest, saveToUserMeta
   from .theory import YoungsModulus, ReducedModulus, OliverPharrMethod, inverseOliverPharrMethod,\
-    stiffnessFromUnloading, unloadingPowerFunc, unloadingPowerFuncPrime
+    stiffnessFromUnloading, unloadingPowerFunc
   from .hertz import popIn, hertzFit
   from .plot import plotTestingMethod, plot, plotAsDepth, plotAll
   from .calibration import calibration, calibrateStiffness
@@ -61,6 +61,7 @@ class Indentation:
     self.method    = Method.ISO                             #iso default: csm uses different methods
     self.onlyLoadingSegment = False                         #use all data by default
     self.newFileRead = True                                 #file was just loaded
+    self.evaluateStiffnessAtMax = True                      #evaluate stiffness at maximum or at end of power-law fit domain
 
     if tip is None:
       tip = Tip()

@@ -66,9 +66,12 @@ def plot(self, saveFig=False, show=True):
     if len(self.hc)<2:
       ax.plot(h_[0],p_[0],'og',)
       ax.plot(h_[-1],p_[-1],'og', label="fit domain")
-      stiffnessPlot= self.p[self.valid]-self.slope*self.h[self.valid]
       h_ = np.linspace(self.hc,self.h[self.valid],10)
-      ax.plot(h_,   self.slope*h_+stiffnessPlot, 'r--', lw=2, label='stiffness')
+      if self.evaluateStiffnessAtMax:
+        stiffnessLineInterceptY = self.p[self.valid]-self.slope*self.h[self.valid]
+      else:
+        stiffnessLineInterceptY = self.p[maskUnload][0]-self.slope*self.h[maskUnload][0]
+      ax.plot(h_,   self.slope*h_+stiffnessLineInterceptY, 'r--', lw=2, label='stiffness')
     ax.legend(loc=0, numpoints=1)
   else:
     ax.plot(self.h[self.iLHU[0]],self.p[self.iLHU[0]],"or",label="specific", markersize=10)
