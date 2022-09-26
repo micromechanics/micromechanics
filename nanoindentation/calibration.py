@@ -155,7 +155,7 @@ def calibrateStiffness(self,critDepth=0.5,critForce=0.0001,plotStiffness=True, r
         x = 1./np.sqrt(self.p[self.valid]-np.min(self.p[self.valid])+0.001) #add 1nm:prevent runtime error
         y = 1./self.slope
         h = self.h[self.valid]
-      else:
+      elif np.count_nonzero(self.valid)>0:
         x = np.hstack((x,    1./np.sqrt(self.p[self.valid]-np.min(self.p[self.valid])+0.001) ))
         y = np.hstack((y,    1./self.slope))
         h = np.hstack((h, self.h[self.valid]))

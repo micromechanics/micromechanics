@@ -77,7 +77,7 @@ def calcHardness(self, minDepth=-1, plot=False):
     plt.legend(loc=0)
     plt.show()
   self.hardness = hardness
-  return           # pylint error: useless return
+  return
 
 
 def calcStiffness2Force(self, minDepth=0.01, plot=True, calibrate=False):
@@ -154,7 +154,7 @@ def analyse(self):
   self.calcYoungsModulus()
   self.calcHardness()
   self.saveToUserMeta()
-  return          # pylint warning: useless return
+  return
 
 
 def identifyLoadHoldUnload(self,plot=False):
@@ -257,7 +257,13 @@ def identifyLoadHoldUnloadCSM(self):
     iHold    = np.max(np.where( self.p-np.max(self.p)*0.999>0 ))
     if iHold==iLoad:
       iHold += 1
-    hist,bins= np.histogram( self.p[iHold:] , bins=1000)
+    try:
+      hist,bins= np.histogram( self.p[iHold:] , bins=1000)
+    except:
+      print('**ERROR identifyLoadHoldUnloadCSM: 1')
+      self.iLHU = []
+      self.iDrift = []
+      return
     pDrift   = bins[np.argmax(hist)+1]
     pCloseToDrift = np.logical_and(self.p>pDrift*0.999,self.p<pDrift/0.999)
     pCloseToDrift[:iHold] = False
@@ -278,7 +284,7 @@ def identifyLoadHoldUnloadCSM(self):
     iDriftE   = len(self.p)-1
   self.iLHU   = [[iSurface,iLoad,iHold,iDriftS]]
   self.iDrift = [iDriftS,iDriftE]
-  return        # pylint warning: useless return
+  return
 
 
 def nextTest(self, newTest=True, plotSurface=False):
@@ -357,10 +363,13 @@ def saveToUserMeta(self):
   save results to user-metadata
   """
   if self.method == Method.CSM:
-    i = -1 # only last value is saved
-    meta = {"S_mN/um":[self.slope[i]], "hMax_um":[self.h[self.valid][i]], "pMax_mN":[self.p[self.valid][i]],\
-            "modulusRed_GPa":[self.modulusRed[i]], "A_um2":[self.Ac[i]], "hc_um":[self.hc[i]],\
-            "E_GPa":[self.modulus[i]],"H_GPa":[self.hardness[i]],"segment":[str(i+1)] }
+    if len(self.slope)>0:
+      i = -1 # only last value is saved
+      meta = {"S_mN/um":[self.slope[i]], "hMax_um":[self.h[self.valid][i]], "pMax_mN":[self.p[self.valid][i]],\
+              "modulusRed_GPa":[self.modulusRed[i]], "A_um2":[self.Ac[i]], "hc_um":[self.hc[i]],\
+              "E_GPa":[self.modulus[i]],"H_GPa":[self.hardness[i]],"segment":[str(i+1)] }
+    else:
+      meta = {}
   else:
     segments = [str(i+1) for i in range(len(self.slope))]
     meta = {"S_mN/um":list(self.slope), "hMax_um":list(self.h[self.valid]), \
