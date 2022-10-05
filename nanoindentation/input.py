@@ -503,7 +503,8 @@ def loadHDF5(self,fileName):
   if 'json' in self.metaVendor:
     metaVendor = json.loads(self.metaVendor['json'])
     if 'SAMPLE' in metaVendor:  #G200X data
-      if 'Dynamic' in metaVendor['SAMPLE']['@TEMPLATENAME']:
+      templateName = metaVendor['SAMPLE']['@TEMPLATENAME']
+      if 'Dynamic' in templateName or 'Essential' in templateName or 'Displacement' in templateName:
         self.method = Method.CSM
   converter = self.datafile['converter'].attrs['uri'].split('/')[-1]
   if converter == 'hap2hdf.cwl':
