@@ -21,6 +21,7 @@ Coding rules:
 - Change all variables: do not keep original-depth as can be reread and makes code less readable
 """
 import os
+import numpy as np
 from .definitions import Method, Vendor, FileType
 #import definitions
 from .tip import Tip
@@ -41,7 +42,6 @@ class Indentation:
   from .calibration import calibration, calibrateStiffness
   from .verification import verifyOneData, verifyOneData1, verifyReadCalc
   from .seldomUsedFunctions import tareDepthForce, analyseDrift
-  #pylint: enable=import-outside-toplevel
 
   def __init__(self, fileName, nuMat= 0.3, tip=None, surfaceFind={'_':None}, verbose=2):
     """
@@ -53,6 +53,7 @@ class Indentation:
        tip:  tip class to use; None=perfect
        verbose: the higher, the more information printed: 2=default, 1=minimal, 0=print nothing
     """
+    np.seterr(divide='ignore', invalid='ignore')
     self.nuMat = nuMat                                      #nuMat: material's Posson ratio
     self.nuTip      = 0.07
     self.modulusTip = 1140                                  #GPa from Oliver,Pharr Method paper

@@ -291,6 +291,8 @@ def nextTest(self, newTest=True, plotSurface=False):
   """
   Wrapper for all next test for all vendors
   """
+  import scipy.signal as signal
+  from scipy.ndimage import gaussian_filter1d
   if newTest:
     if self.vendor == Vendor.Agilent:
       success = self.nextAgilentTest(newTest)
@@ -307,32 +309,39 @@ def nextTest(self, newTest=True, plotSurface=False):
     success = True
 
   #SURFACE FIND
-  if 'gradient' in self.surfaceFind:
-    optGrad = self.surfaceFind['gradient']
-    h,p = self.h, self.p
-    y = np.gradient(p, h)
-    if 'filt' in self.surfaceFind:
-      y = ndimage.gaussian_filter1d(y, self.surfaceFind['filt'])
-    if isinstance(optGrad, list):
-      #if domain given, use that to backward extrapolate
-      mask = np.logical_and(optGrad[0]<y, y<optGrad[1])
-      data = np.where(mask)[0]                               #where is true
-      data = np.split(data, np.where(np.diff(data)!=1)[0]+1) #find consecutive areas
-      #use first sufficiently large-domain for fitting
-      for iData in data:
-        if len(iData)>3:
-          mask=iData #[iData]=True
-          break
-      fit = np.polyfit(h[mask],y[mask],1)
-      surface = np.argmin(np.abs(h-np.roots(fit)[0]))
-      if np.min(y[mask]) < y[surface]:
-        surface = np.argmin(y[mask])+mask[0]
-      #since scatter in h, find largest value in prox
-      # surface = np.argmax(self.h[surface-4:surface+5])+surface-4
+  if not '_' in self.surfaceFind:
+    if 'load' in self.surfaceFind:
+      thresValues = self.p
+      thresValue  = self.surfaceFind['load']
+    elif 'stiffness' in self.surfaceFind:
+      thresValues = self.slope
+      thresValue  = self.surfaceFind['stiffness']
+    elif 'phase angle' in self.surfaceFind:
+      thresValues = self.phase
+      thresValue  = self.surfaceFind['phase angle']
+    elif 'abs(dp/dh)' in self.surfaceFind:
+      thresValues = np.abs(np.gradient(self.p,self.h))
+      thresValue  = self.surfaceFind['abs(dp/dh)']
+    elif 'dp/dt' in self.surfaceFind:
+      thresValues = np.gradient(self.p,self.t)
+      thresValue  = self.surfaceFind['dp/dt']
+
+    #interpolate nan with neighboring values
+    nans, tempX = np.isnan(thresValues), lambda z: z.nonzero()[0]
+    thresValues[nans]= np.interp(tempX(nans), tempX(~nans), thresValues[~nans])
+
+    #filter this data
+    if 'median filter' in self.surfaceFind:
+      thresValues = medfilt(thresValues, self.surfaceFind['median filter'])
+    elif 'gauss filter' in self.surfaceFind:
+      thresValues = gaussian_filter1d(thresValues, self.surfaceFind['gauss filter'])
+    elif 'butterfilter' in self.surfaceFind:
+      b, a = signal.butter(*self.surfaceFind['butterfilter'])
+      thresValues = signal.filtfilt(b, a, thresValues)
+    if 'phase angle' in self.surfaceFind:
+      surface  = np.where(thresValues<thresValue)[0][0]
     else:
-      surface = np.where(y>optGrad)[0][0]
-      mask    = np.zeros_like(y, dtype=bool)
-      fit     = None
+      surface  = np.where(thresValues>thresValue)[0][0]
     if plotSurface or 'plot' in self.surfaceFind:
       _, ax1 = plt.subplots()
       ax1.plot(h,y, 'C0o-')
@@ -342,7 +351,7 @@ def nextTest(self, newTest=True, plotSurface=False):
       ax1.plot(h[surface], y[surface], 'C9o', markersize=14)
       ax1.axhline(0,linestyle='dashed')
       ax1.set_ylim(bottom=0, top=np.percentile(y,80))
-      ax1.set_xlabel('depth [$\mu m$]')  # pylint: disable=anomalous-backslash-in-string
+      ax1.set_xlabel(r'depth [$\mu m$]')
       ax1.set_ylabel('gradient [mN]', color='C0')
       ax1.grid()
 
@@ -353,8 +362,7 @@ def nextTest(self, newTest=True, plotSurface=False):
       ax2.set_ylim(bottom=0)
       ax2.set_ylabel('force [mN]', color='C3')
       plt.show()
-    self.h -= self.h[surface]
-    self.p -= self.p[surface]
+    self.h -= self.h[surface]  #only change surface, not force
   return success
 
 
