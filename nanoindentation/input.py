@@ -1,5 +1,6 @@
 """All instrument specific input functions"""
 import io, re, json
+from pathlib import Path
 from zipfile import ZipFile
 import h5py
 import numpy as np
@@ -492,31 +493,41 @@ def loadHDF5(self,fileName):
   self.datafile = h5py.File(fileName)
   if self.verbose>1:
     print("Open hdf5-file: "+fileName)
-  self.testList = []
-  for key in self.datafile:
-    if re.match(r'Test \d+',key):
-      self.testList.append(key)
   self.fileName = fileName
   self.metaVendor = {}
-  for key in self.datafile['metadata'].attrs:
-    self.metaVendor[key] = self.datafile['metadata'].attrs[key]
+  self.testList = []
+  if 'version' not in self.datafile.attrs or self.datafile.attrs['version']!='2.0':
+    print("**ERROR** Only hdf5 version 2 supported")
+    return
+  for key in self.datafile:
+    if re.match(r'test_\d+',key):
+      self.testList.append(key)
+  for key in self.datafile['instrument'].attrs:
+    if isinstance(self.datafile['instrument'].attrs[key], dict):
+      self.metaVendor = self.datafile['instrument'].attrs[key]
+    else:
+      self.metaVendor[key] = self.datafile['instrument'].attrs[key]
+  converter = self.datafile.attrs['uri'].split('/')[-1]
   if 'json' in self.metaVendor:
     metaVendor = json.loads(self.metaVendor['json'])
     if 'SAMPLE' in metaVendor:  #G200X data
       templateName = metaVendor['SAMPLE']['@TEMPLATENAME']
       if 'Dynamic' in templateName or 'Essential' in templateName or 'Displacement' in templateName:
         self.method = Method.CSM
-  converter = self.datafile['converter'].attrs['uri'].split('/')[-1]
-  if converter == 'hap2hdf.cwl':
-    self.metaUser = {'measurementType': 'Fischer-Scope Indentation HDF5'}
+  if converter == 'hap2hdf.py':
+    self.metaUser = {'measurementType': 'Fischer Scope Indentation HDF5'}
     self.unloadPMax = 0.99
     self.unloadPMin = 0.21
-  elif converter == 'Micromaterials2hdf.cwl':
+  elif converter == 'Micromaterials2hdf.py':
     self.metaUser = {'measurementType': 'Micromaterials Indentation HDF5'}
     self.unloadPMax = 0.99
     self.unloadPMin = 0.5
-  elif converter == 'nmd2hdf.cwl':
-    self.metaUser = {'measurementType': 'Agilent Indentation HDF5'}
+  elif converter == 'nmd2hdf.py':
+    self.metaUser = {'measurementType': 'KLA Indentation HDF5'}
+    self.unloadPMax = 0.99
+    self.unloadPMin = 0.5
+  elif converter == 'xls2hdf.py':
+    self.metaUser = {'measurementType': 'MTS / Agilent Indentation HDF5'}
     self.unloadPMax = 0.99
     self.unloadPMin = 0.5
   else:
@@ -532,45 +543,28 @@ def nextHDF5Test(self):
   """
   if len(self.testList)==0: #no sheet left
     return False
-  converter = self.datafile['converter'].attrs['uri'].split('/')[-1]
   self.testName = self.testList.pop(0)
-  branch = self.datafile[self.testName]
-  if 'loading' in branch:  #for Micromaterials Indenter
-    self.t = np.hstack((np.array(branch['loading']['time']),
-                        np.array(branch['hold at max']['time'])+branch['loading']['time'][-1],
-                        np.array(branch['unloading']['time'])))
-    self.h = np.hstack((np.array(branch['loading']['displacement']),
-                        np.array(branch['hold at max']['displacement']),
-                        np.array(branch['unloading']['displacement'])))/1.e3
-    self.p = np.hstack((np.array(branch['loading']['force']),
-                        np.array(branch['hold at max']['force']),
-                        np.array(branch['unloading']['force'])))
-    self.valid = np.ones_like(self.t, dtype=bool)
+  branch = self.datafile[self.testName]['data']
+  inFile = list(branch.keys())
+  code   = json.load(open(Path(__file__).parent/'names.json'))
+  if self.metaUser['measurementType'].split()[0] in code:
+    code = code[self.metaUser['measurementType'].split()[0]]
   else:
-    if converter == 'nmd2hdf.cwl':   #G200X data has capital letters and is in SI units
-      self.t = np.array(branch['Time'])
-      self.h = np.array(branch['Displacement'])*1.e6
-      self.p = np.array(branch['Force'])*1.e3
-      self.p -= np.min(self.p)     #prevent negative forces
-      if self.method==Method.CSM:
-        self.slope = np.array(branch['DynamicStiffness'])/1.e3
-        self.valid = ~np.isnan(self.slope)
-        self.slope = self.slope[self.valid]
-      else:
-        self.valid = np.ones_like(self.t, dtype=bool)
-    else:
-      self.t = np.array(branch['time'])
-      self.h = np.array(branch['displacement'])
-      self.p = np.array(branch['force'])
-      self.valid = np.ones_like(self.t, dtype=bool)
-    if converter == 'hap2hdf.cwl':
-      #Fischer-Scope reset the time multiple times
-      resetPoints = np.where((self.t[1:]-self.t[:-1])<0)[0]
-      if len(resetPoints)>0:
-        self.t = self.t[resetPoints[-1]:]
-        self.h = self.h[resetPoints[-1]:]
-        self.p = self.p[resetPoints[-1]:]
-        self.valid = np.ones_like(self.t, dtype=bool)
+    print("**ERROR instrument not in names.json", self.metaUser['measurementType'].split()[0])
+  for key in code:
+    valueList = code[key]
+    for name, multiplyer in valueList:
+      if name in branch:
+        data = np.array(branch[name])
+        data = data[np.isfinite(data)]
+        setattr(self, key, data*multiplyer)
+        inFile.remove(name)
+        break
+  if len(inFile)>0:
+    print("**WARNING: these fields are not imported",inFile)
+  self.valid = np.isfinite(self.slope)
+  if hasattr(self, 'slope'):
+    self.method = Method.CSM
   self.identifyLoadHoldUnload()
   return True
 
