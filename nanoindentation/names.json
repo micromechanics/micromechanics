@@ -1,10 +1,10 @@
 {
   "MTS": {
-    "h": [["displacementintosurfaceg200", 1.0e-3],["displacement_into_surface", 1.0e-3]],
-    "hardness": [["hardnessg200",1],["hardness", 1]],
+    "h": [["displacement_into_surface", 1.0e-3]],
+    "hardness": [["hardness", 1]],
     "slope": [["harmonic_contact_stiffness", 1.0e-3]],
-    "p": [["loadonsampleg200", 1],["load_on_sample", 1]],
-    "modulus": [["modulusg200", 1], ["modulus", 1]],
+    "p": [["load_on_sample", 1]],
+    "modulus": [["modulus", 1]],
     "t": [["time_on_sample", 1]]
   }
 }

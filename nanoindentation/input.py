@@ -121,7 +121,7 @@ def nextAgilentTest(self, newTest=True):
     else:
       data = data[validFull]
     setattr(self, index, data)
-    # print(index, len(data))
+
   self.valid = self.valid[validFull]
   #  now all fields (incl. p) are full and defined
 
@@ -540,29 +540,37 @@ def loadHDF5(self,fileName):
 def nextHDF5Test(self):
   """
   Go to next branch in HDF5 file
+
+  TODO this should be also reworked for non CSM
   """
   if len(self.testList)==0: #no sheet left
     return False
   self.testName = self.testList.pop(0)
   branch = self.datafile[self.testName]['data']
   inFile = list(branch.keys())
-  code   = json.load(open(Path(__file__).parent/'names.json'))
-  if self.metaUser['measurementType'].split()[0] in code:
-    code = code[self.metaUser['measurementType'].split()[0]]
+  nameDict   = json.load(open(Path(__file__).parent/'names.json'))
+  if self.metaUser['measurementType'].split()[0] in nameDict:
+    nameDict = nameDict[self.metaUser['measurementType'].split()[0]]
   else:
     print("**ERROR instrument not in names.json", self.metaUser['measurementType'].split()[0])
-  for key in code:
-    valueList = code[key]
-    for name, multiplyer in valueList:
+  for key in nameDict:
+    for name, multiplyer in nameDict[key]:
       if name in branch:
-        data = np.array(branch[name])
-        data = data[np.isfinite(data)]
+        data = np.array(branch[name], dtype=np.float64)
+        if key=="slope":
+          print("1",data[:10])
+        data = data[data<1.e300]
+        if key=="slope":
+          print("2",data[:10])
         setattr(self, key, data*multiplyer)
         inFile.remove(name)
         break
   if len(inFile)>0:
-    print("**WARNING: these fields are not imported",inFile)
-  self.valid = np.isfinite(self.slope)
+    print("**INFO: these fields are not imported",inFile)
+  self.valid = np.logical_and(self.slope<1.e300, self.slope>0.)
+        if key=="slope":
+          print("2",data[:10])
+  self.slope = self.slope[self.valid]
   if hasattr(self, 'slope'):
     self.method = Method.CSM
   self.identifyLoadHoldUnload()
