@@ -106,7 +106,6 @@ def nextAgilentTest(self, newTest=True):
   else:
     self.valid = validFull
   for index in self.indicies:
-    #pylint convention: Consider iterating with .items() (951:4) [consider-using-dict-items]
     data = np.array(df[self.indicies[index]][1:-1], dtype=np.float64)
     mask = np.isfinite(data)
     mask[mask] = data[mask]<1e99
@@ -114,7 +113,6 @@ def nextAgilentTest(self, newTest=True):
 
   #Run through all items again and crop to only valid data
   for index in self.indicies:
-    #pylint convention: Consider iterating with .items() (951:4) [consider-using-dict-items]
     data = np.array(df[self.indicies[index]][1:-1], dtype=np.float64)
     if not index in self.fullData:
       data = data[self.valid]
@@ -543,6 +541,7 @@ def nextHDF5Test(self):
 
   TODO this should be also reworked for non CSM
   """
+  #organize general data
   if len(self.testList)==0: #no sheet left
     return False
   self.testName = self.testList.pop(0)
@@ -553,24 +552,39 @@ def nextHDF5Test(self):
     nameDict = nameDict[self.metaUser['measurementType'].split()[0]]
   else:
     print("**ERROR instrument not in names.json", self.metaUser['measurementType'].split()[0])
+
+  #determine valid masks: loop through all entries and ensure that they all make sense
+  self.valid = None
+  for key in nameDict:
+    for name, _ in nameDict[key]:
+      if name in branch:
+        data = np.array(branch[name], dtype=np.float64)
+        mask = np.logical_and(np.isfinite(data), data<1e99)
+        if self.valid is None:
+          self.valid = mask
+        else:
+          self.valid = np.logical_and(self.valid, mask) #adopt/reduce mask continously
+        if key=='slope':
+          self.valid = np.logical_and(self.valid, data>0.0)
+        if key=='h':
+          validFull = np.isfinite(np.array(branch[name], dtype=np.float64))
+        break
+
+  #Run through all items again and crop to only valid data
   for key in nameDict:
     for name, multiplyer in nameDict[key]:
       if name in branch:
         data = np.array(branch[name], dtype=np.float64)
-        if key=="slope":
-          print("1",data[:10])
-        data = data[data<1.e300]
-        if key=="slope":
-          print("2",data[:10])
+        if not key in ['h','p','t']:
+          data = data[self.valid]
+        else:
+          data = data[validFull]
         setattr(self, key, data*multiplyer)
         inFile.remove(name)
         break
+  self.valid = self.valid[validFull]
   if len(inFile)>0:
     print("**INFO: these fields are not imported",inFile)
-  self.valid = np.logical_and(self.slope<1.e300, self.slope>0.)
-        if key=="slope":
-          print("2",data[:10])
-  self.slope = self.slope[self.valid]
   if hasattr(self, 'slope'):
     self.method = Method.CSM
   self.identifyLoadHoldUnload()
