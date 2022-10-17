@@ -2,7 +2,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy import ndimage
+from scipy import ndimage, signal
 from scipy.optimize import fmin_l_bfgs_b
 from .definitions import Vendor, Method
 #import definitions
@@ -325,6 +325,8 @@ def nextTest(self, newTest=True, plotSurface=False):
     elif 'dp/dt' in self.surfaceFind:
       thresValues = np.gradient(self.p,self.t)
       thresValue  = self.surfaceFind['dp/dt']
+    else:
+      print('**ERROR UNDEFINED THRESHOLD')
 
     #interpolate nan with neighboring values
     nans, tempX = np.isnan(thresValues), lambda z: z.nonzero()[0]
@@ -332,32 +334,27 @@ def nextTest(self, newTest=True, plotSurface=False):
 
     #filter this data
     if 'median filter' in self.surfaceFind:
-      thresValues = medfilt(thresValues, self.surfaceFind['median filter'])
+      thresValues = signal.medfilt(thresValues, self.surfaceFind['median filter'])
     elif 'gauss filter' in self.surfaceFind:
       thresValues = gaussian_filter1d(thresValues, self.surfaceFind['gauss filter'])
     elif 'butterfilter' in self.surfaceFind:
       b, a = signal.butter(*self.surfaceFind['butterfilter'])
       thresValues = signal.filtfilt(b, a, thresValues)
+
     if 'phase angle' in self.surfaceFind:
-      surface  = np.where(thresValues<thresValue)[0][0]
+      surface  = np.where(thresValues<thresValue)[0][0]+np.nonzero(self.valid)[0][0]
     else:
       surface  = np.where(thresValues>thresValue)[0][0]
     if plotSurface or 'plot' in self.surfaceFind:
       _, ax1 = plt.subplots()
-      ax1.plot(h,y, 'C0o-')
-      ax1.plot(h[mask], y[mask],'C0o', markersize=10)
-      if fit is not None:
-        ax1.plot(h[mask], np.polyval(fit,h[mask]), '-k', linewidth=2)
-      ax1.plot(h[surface], y[surface], 'C9o', markersize=14)
-      ax1.axhline(0,linestyle='dashed')
-      ax1.set_ylim(bottom=0, top=np.percentile(y,80))
+      ax1.plot(self.h[self.valid], thresValues, 'C0o-')
+      ax1.set_ylim(bottom=0)
       ax1.set_xlabel(r'depth [$\mu m$]')
-      ax1.set_ylabel('gradient [mN]', color='C0')
+      ax1.set_ylabel(r'values [~]', color='C0')
       ax1.grid()
 
       ax2 = ax1.twinx()
       ax2.plot(self.h, self.p,'C3-o')
-      ax2.plot(self.h[mask], self.p[mask],'C3o', markersize=10)
       ax2.plot(self.h[surface], self.p[surface],'C1o', markersize=14)
       ax2.set_ylim(bottom=0)
       ax2.set_ylabel('force [mN]', color='C3')

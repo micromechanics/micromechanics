@@ -7,7 +7,7 @@ import lmfit
 #import definitions
 from .definitions import Method
 
-def calibration(self,eTarget=72.0,numPolynomial=3,critDepth=1.0,critForce=1.0,plotStiffness=False,\
+def calibration(self,eTarget=72.0,numPolynomial=3,critDepthStiffness=1.0, critForce=1.0, critDepthTip=0.0, plotStiffness=False,\
   plotTip=False, **kwargs):
   """
   Calibrate by first frame-stiffness and then area-function calibration
@@ -15,9 +15,8 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepth=1.0,critForce=1.0,pl
   Args:
       eTarget: target Young's modulus (not reduced), nu is known
       numPolynomial: number of area function polynomial; if None: return interpolation function
-      critDepth: frame stiffness: what is the minimum depth of data used; area function:
-                what is the maximum depth of data used
-                (if deep data is used for area function, this data can scew the area function)
+      critDepthStiffness: what is the minimum depth of data used
+      critDepthTip: area function what is the minimum depth of data used
       critForce: frame stiffness: what is the minimum force used for fitting
       plotStiffness: plot stiffness graph with compliance
       pltTip: plot tip shape after fitting
@@ -25,7 +24,7 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepth=1.0,critForce=1.0,pl
       returnArea: return contact depth and area
   """
   constantTerm = kwargs.get('constantTerm', False)
-  frameCompliance = self.calibrateStiffness(critDepth=critDepth,critForce=critForce,
+  frameCompliance = self.calibrateStiffness(critDepth=critDepthStiffness,critForce=critForce,
     plotStiffness=plotStiffness)
 
   ## re-create data-frame of all files
@@ -56,7 +55,7 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepth=1.0,critForce=1.0,pl
       self.nextTest()
 
   #depth has to be positive
-  mask = h>0.000
+  mask = h>critDepthTip
   slope = slope[mask]
   h = h[mask]
   p = p[mask]
@@ -75,9 +74,10 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepth=1.0,critForce=1.0,pl
     windowSize = int(len(Ac)/20) if int(len(Ac)/20)%2==1 else int(len(Ac)/20)-1
     output = savgol_filter(data,windowSize,3)
     interpolationFunct = interpolate.interp1d(output[0,:],output[1,:])
-    hc_ = np.logspace(np.log(0.0001),np.log(np.max(output[0,:])),num=30,base=np.exp(1))
+    hc_ = np.logspace(np.log(0.0001),np.log(np.max(output[0,:])),num=50,base=np.exp(1))
     Ac_ = interpolationFunct(hc_)
     interpolationFunct = interpolate.interp1d(hc_, Ac_)
+    self.tip.setInterpolationFunction(interpolationFunct)
     del output, data
   else:
     #It is possible to crop only interesting contact depth: hc>1nm
@@ -109,8 +109,6 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepth=1.0,critForce=1.0,pl
     print("    standard error",['NaN' if x is None else round(x,2) for x in stderr])
 
   if plotTip:
-    if numPolynomial is None:
-      self.tip.setInterpolationFunction(interpolationFunct)
     rNonPerfect = np.sqrt(Ac/np.pi)
     plt.plot(rNonPerfect, hc,'C0o', label='data')
     self.tip.plotIndenterShape(maxDepth=1.5)

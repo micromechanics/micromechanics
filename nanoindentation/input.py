@@ -556,6 +556,7 @@ def nextHDF5Test(self):
         self.slope = np.array(branch['DynamicStiffness'])/1.e3
         self.valid = ~np.isnan(self.slope)
         self.slope = self.slope[self.valid]
+        self.phase = np.array(branch['DynamicPhase'])[self.valid]
       else:
         self.valid = np.ones_like(self.t, dtype=bool)
     else:
