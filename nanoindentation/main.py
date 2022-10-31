@@ -3,6 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import ndimage
+import h5py
 from scipy.optimize import fmin_l_bfgs_b
 from .definitions import Vendor, Method
 #import definitions
@@ -385,4 +386,20 @@ def saveToUserMeta(self):
             "hc_um":list(self.hc), "E_GPa":list(self.modulus),"H_GPa":list(self.hardness),"segment":segments}
   self.metaUser.update(meta)
   self.metaUser['code'] = __file__.split('/')[-1]
-  return        #pylint warning: useless return
+  return
+
+
+def saveConfig(self, config):
+  """
+  save config to hdf5 file
+  - if test is ignored
+  - the surface index of each test
+  - what was surface identification criteria
+  """
+  if isinstance(self.datafile, h5py._hl.files.File):
+    if 'post_test_analysis' not in self.datafile:
+      self.datafile.create_group('post_test_analysis')
+    if 'com_github_micromechanics' not in self.datafile['post_test_analysis']:
+      self.datafile['post_test_analysis'].create_group('com_github_micromechanics')
+    self.datafile['post_test_analysis']['com_github_micromechanics'].attrs['config'] = str(config)
+  return

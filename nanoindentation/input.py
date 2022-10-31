@@ -21,7 +21,7 @@ def loadAgilent(self, fileName):
   self.indicies = {}
   workbook = pd.read_excel(fileName,sheet_name='Required Inputs')
   self.metaVendor.update( dict(workbook.iloc[-1]) )
-  if self.metaVendor['Poissons Ratio']!=self.nuMat:
+  if self.metaVendor['Poissons Ratio']!=self.nuMat and self.verbose>0:
     print("*WARNING*: Poisson Ratio different than in file.",self.nuMat,self.metaVendor['Poissons Ratio'])
   self.datafile = pd.read_excel(fileName, sheet_name=None)
   tagged = []
@@ -328,7 +328,7 @@ def loadHysitron(self, fileName, plotContact=False):
 
 def loadMicromaterials(self, fileName):
   """
-  Load Micromaterials txt file for processing, contains only one test
+  Load Micromaterials txt/zip file for processing, contains only one test
 
   Args:
       fileName: file name or file-content
@@ -352,10 +352,13 @@ def loadMicromaterials(self, fileName):
     self.identifyLoadHoldUnload()
   elif fileName.endswith('.zip'):
     #if zip-archive of multilpe files
-    if self.verbose>1:
-      print("Open Micromaterials zip-file: "+fileName)
     self.datafile = ZipFile(fileName)
     self.testList = self.datafile.namelist()
+    if len(np.nonzero([not i.endswith('txt') for i in self.datafile.namelist()])[0])>0:
+      print('Not a Micromaterials zip of txt-files')
+      return False
+    if self.verbose>1:
+      print("Open Micromaterials zip of txt-files: "+fileName)
     self.allTestList =  list(self.testList)
     self.fileName = fileName
     self.metaUser = {'measurementType': 'Micromaterials Indentation ZIP'}
@@ -488,7 +491,7 @@ def loadHDF5(self,fileName):
   Args:
     fileName: file name
   """
-  self.datafile = h5py.File(fileName)
+  self.datafile = h5py.File(fileName, mode='r+', locking=False)
   if self.verbose>1:
     print("Open hdf5-file: "+fileName)
   self.fileName = fileName
@@ -539,7 +542,7 @@ def nextHDF5Test(self):
   """
   Go to next branch in HDF5 file
 
-  TODO this should be also reworked for non CSM
+  TODO check for non CSM
   """
   #organize general data
   if len(self.testList)==0: #no sheet left
@@ -556,6 +559,8 @@ def nextHDF5Test(self):
   #determine valid masks: loop through all entries and ensure that they all make sense
   self.valid = None
   for key in nameDict:
+    if key in ['__ignore__','__note__']:
+      continue
     for name, _ in nameDict[key]:
       if name in branch:
         data = np.array(branch[name], dtype=np.float64)
@@ -568,23 +573,33 @@ def nextHDF5Test(self):
           self.valid = np.logical_and(self.valid, data>0.0)
         if key=='h':
           validFull = np.isfinite(np.array(branch[name], dtype=np.float64))
+        print(name, len(self.valid[self.valid]))
         break
 
   #Run through all items again and crop to only valid data
   for key in nameDict:
+    if key in ['__ignore__','__note__']:
+      continue
     for name, multiplyer in nameDict[key]:
       if name in branch:
         data = np.array(branch[name], dtype=np.float64)
-        if not key in ['h','p','t']:
-          data = data[self.valid]
-        else:
+        if key in ['h','p','t']:
           data = data[validFull]
+        else:
+          data = data[self.valid]
         setattr(self, key, data*multiplyer)
         inFile.remove(name)
         break
+
+  # Test if essential items exist
+  for attrib in ['h','t','p']:
+    if not hasattr(self, attrib) or len(getattr(self, attrib))==0:
+      print('Missing information for',self.metaUser['measurementType'].split()[0],': ',attrib)
+      print('Keys exist',inFile)
   self.valid = self.valid[validFull]
+  inFile = [element for element in inFile if element not in nameDict['__ignore__']]
   if len(inFile)>0:
-    print("**INFO: these fields are not imported",inFile)
+    print("**INFO on",self.metaUser['measurementType'].split()[0],"fields not imported:",inFile)
   if hasattr(self, 'slope'):
     self.method = Method.CSM
   self.identifyLoadHoldUnload()
