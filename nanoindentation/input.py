@@ -573,7 +573,6 @@ def nextHDF5Test(self):
           self.valid = np.logical_and(self.valid, data>0.0)
         if key=='h':
           validFull = np.isfinite(np.array(branch[name], dtype=np.float64))
-        print(name, len(self.valid[self.valid]))
         break
 
   #Run through all items again and crop to only valid data
@@ -600,7 +599,7 @@ def nextHDF5Test(self):
   inFile = [element for element in inFile if element not in nameDict['__ignore__']]
   if len(inFile)>0:
     print("**INFO on",self.metaUser['measurementType'].split()[0],"fields not imported:",inFile)
-  if hasattr(self, 'slope'):
+  if hasattr(self, 'phase'):
     self.method = Method.CSM
   self.identifyLoadHoldUnload()
   return True

@@ -37,8 +37,8 @@
     "__ignore__" : []
   },
   "KLA":{
-    "h": [["show_depth",1.0e6],["displacement",1.0e6]],
-    "p": [["show_load",1.0e3],["load",1.0e3],["force",1.0e3]],
+    "h": [["depth",1.0e6],["show_depth",1.0e6],["displacement",1.0e6]],
+    "p": [["load",1.0e3],["force",1.0e3],["show_load",1.0e3]],
     "t": [["time_on_sample",1.0],["time",1.0]],
     "slope": [["show_stiffness",1.0e-3]],
     "phase": [["dynamic_phase",1.0]],
