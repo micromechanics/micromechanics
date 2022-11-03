@@ -500,6 +500,11 @@ def loadHDF5(self,fileName):
   if 'version' not in self.datafile.attrs or self.datafile.attrs['version']!='2.0':
     print("**ERROR** Only hdf5 version 2 supported")
     return
+  #read config and convert to dictionary
+  self.config = self.datafile['post_test_analysis']['com_github_micromechanics'].attrs['config']
+  self.config = json.loads(self.config)
+  if "_" in self.surfaceFind:
+    self.surfaceFind = { i:self.config[i] for i in self.config if not i.startswith('test_')}
   for key in self.datafile:
     if re.match(r'test_\d+',key):
       self.testList.append(key)
@@ -547,7 +552,10 @@ def nextHDF5Test(self):
   #organize general data
   if len(self.testList)==0: #no sheet left
     return False
-  self.testName = self.testList.pop(0)
+  while len(self.testList)>0:
+    self.testName = self.testList.pop(0)
+    if self.testName not in self.config or 'ignore' not in self.config[self.testName]:
+      break
   branch = self.datafile[self.testName]['data']
   inFile = list(branch.keys())
   nameDict   = json.load(open(Path(__file__).parent/'names.json'))
@@ -568,7 +576,7 @@ def nextHDF5Test(self):
         if self.valid is None:
           self.valid = mask
         else:
-          self.valid = np.logical_and(self.valid, mask) #adopt/reduce mask continously
+          self.valid = np.logical_and(self.valid, mask) #adopt/reduce mask continuously
         if key=='slope':
           self.valid = np.logical_and(self.valid, data>0.0)
         if key=='h':

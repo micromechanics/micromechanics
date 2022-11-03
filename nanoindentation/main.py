@@ -3,10 +3,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import ndimage
-import h5py
+import h5py, json
 from scipy.optimize import fmin_l_bfgs_b
-from .definitions import Vendor, Method
-#import definitions
+from .definitions import Vendor, Method, NpEncoder
 
 
 def calcYoungsModulus(self, minDepth=-1, plot=False):
@@ -310,7 +309,10 @@ def nextTest(self, newTest=True, plotSurface=False):
     success = True
 
   #SURFACE FIND
-  if not '_' in self.surfaceFind:
+  if self.testName in self.config and 'surfaceIdx' in self.config[self.testName]:
+    surface = self.config[self.testName]['surfaceIdx']
+    self.h -= self.h[surface]  #only change surface, not force
+  elif not '_' in self.surfaceFind:
     if 'load' in self.surfaceFind:
       thresValues = self.p
       thresValue  = self.surfaceFind['load']
@@ -353,7 +355,7 @@ def nextTest(self, newTest=True, plotSurface=False):
       ax1.axhline(0,linestyle='dashed')
       ax1.set_ylim(bottom=0, top=np.percentile(y,80))
       ax1.set_xlabel(r'depth [$\mu m$]')
-      ax1.set_ylabel('gradient [mN]', color='C0')
+      ax1.set_ylabel(r'gradient [mN]', color='C0')
       ax1.grid()
 
       ax2 = ax1.twinx()
@@ -401,5 +403,6 @@ def saveConfig(self, config):
       self.datafile.create_group('post_test_analysis')
     if 'com_github_micromechanics' not in self.datafile['post_test_analysis']:
       self.datafile['post_test_analysis'].create_group('com_github_micromechanics')
-    self.datafile['post_test_analysis']['com_github_micromechanics'].attrs['config'] = str(config)
+    config = json.dumps(config, cls=NpEncoder)
+    self.datafile['post_test_analysis']['com_github_micromechanics'].attrs['config'] = config
   return
