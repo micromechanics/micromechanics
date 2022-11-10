@@ -491,7 +491,7 @@ def loadHDF5(self,fileName):
   Args:
     fileName: file name
   """
-  self.datafile = h5py.File(fileName, mode='r+', locking=False)
+  self.datafile = h5py.File(fileName, mode='r') #mode='r+', locking=False)
   if self.verbose>1:
     print("Open hdf5-file: "+fileName)
   self.fileName = fileName
@@ -501,9 +501,17 @@ def loadHDF5(self,fileName):
     print("**ERROR** Only hdf5 version 2 supported")
     return
   #read config and convert to dictionary
-  self.config = self.datafile['post_test_analysis']['com_github_micromechanics'].attrs['config']
-  self.config = json.loads(self.config)
-  if "_" in self.surfaceFind:
+  try:
+    if 'post_test_analysis' in self.datafile and \
+      'com_github_micromechanics' in self.datafile['post_test_analysis'] and \
+      'config' in self.datafile['post_test_analysis']['com_github_micromechanics'].attrs:
+      self.config = self.datafile['post_test_analysis']['com_github_micromechanics'].attrs['config']
+      self.config = json.loads(self.config)
+    else:
+      self.config = {}
+  except:
+    self.config = {}
+  if "_" in self.surfaceFind and bool(self.config):
     self.surfaceFind = { i:self.config[i] for i in self.config if not i.startswith('test_')}
   for key in self.datafile:
     if re.match(r'test_\d+',key):
@@ -524,6 +532,7 @@ def loadHDF5(self,fileName):
     self.metaUser = {'measurementType': 'Fischer Scope Indentation HDF5'}
     self.unloadPMax = 0.99
     self.unloadPMin = 0.21
+    self.zeroGradDelta = 0.02  #reduced accuracy
   elif converter == 'Micromaterials2hdf.py':
     self.metaUser = {'measurementType': 'Micromaterials Indentation HDF5'}
     self.unloadPMax = 0.99
@@ -532,12 +541,18 @@ def loadHDF5(self,fileName):
     self.metaUser = {'measurementType': 'KLA Indentation HDF5'}
     self.unloadPMax = 0.99
     self.unloadPMin = 0.5
+    self.zeroGradDelta = 0.005  #enhanced accuracy
   elif converter == 'xls2hdf.py':
     self.metaUser = {'measurementType': 'MTS / Agilent Indentation HDF5'}
     self.unloadPMax = 0.99
     self.unloadPMin = 0.5
+  elif converter == 'converter_tdm.py':
+    self.metaUser = {'measurementType': 'HysitronInsitu Indentation HDF5'}
+    self.unloadPMax = 0.99
+    self.unloadPMin = 0.5
+    self.zeroGradDelta = 0.04
   else:
-    print("ERROR UNKNOWN CONVERTER")
+    print("ERROR UNKNOWN CONVERTER",converter)
   self.allTestList =  list(self.testList)
   self.nextTest()
   return True
@@ -604,10 +619,20 @@ def nextHDF5Test(self):
       print('Missing information for',self.metaUser['measurementType'].split()[0],': ',attrib)
       print('Keys exist',inFile)
   self.valid = self.valid[validFull]
+
+  #cleaning
+  self.p -= self.p[0]
+  converter = self.datafile.attrs['uri'].split('/')[-1]
+  if converter == 'hap2hdf.py':
+    mask = np.array(self.h)>=0
+    self.h = np.array(self.h)[mask]
+    self.p = np.array(self.p)[mask]
+    self.t = np.array(self.t)[mask]
+    self.valid = self.valid[mask]
   inFile = [element for element in inFile if element not in nameDict['__ignore__']]
   if len(inFile)>0:
     print("**INFO on",self.metaUser['measurementType'].split()[0],"fields not imported:",inFile)
-  if hasattr(self, 'phase'):
+  if hasattr(self, 'slope') and len(self.slope)>30: #if more than 30: CSM
     self.method = Method.CSM
   self.identifyLoadHoldUnload()
   return True

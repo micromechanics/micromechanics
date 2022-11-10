@@ -29,17 +29,3 @@ class FileType(Enum):
   """
   Single = 1  #single test in file                                              # pylint: disable=invalid-name
   Multi  = 2  #multiple tests in file                                           # pylint: disable=invalid-name
-
-
-class NpEncoder(json.JSONEncoder):
-  """
-  to encode into json-strings
-  """
-  def default(self, obj):
-    if isinstance(obj, np.integer):
-      return int(obj)
-    if isinstance(obj, np.floating):
-      return float(obj)
-    if isinstance(obj, np.ndarray):
-      return obj.tolist()
-    return super(NpEncoder, self).default(obj)

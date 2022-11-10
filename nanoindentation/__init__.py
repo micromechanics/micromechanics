@@ -34,7 +34,7 @@ class Indentation:
   from .input import loadAgilent, nextAgilentTest, loadHysitron, loadMicromaterials, nextMicromaterialsTest, \
     loadFischerScope, nextFischerScopeTest, loadHDF5, nextHDF5Test, restartFile
   from .main import calcYoungsModulus, calcHardness, calcStiffness2Force, analyse, \
-    identifyLoadHoldUnload, identifyLoadHoldUnloadCSM, nextTest, saveToUserMeta, saveConfig
+    identifyLoadHoldUnload, identifyLoadHoldUnloadCSM, nextTest, saveToUserMeta
   from .theory import YoungsModulus, ReducedModulus, OliverPharrMethod, inverseOliverPharrMethod,\
     stiffnessFromUnloading, unloadingPowerFunc
   from .hertz import popIn, hertzFit
@@ -63,6 +63,7 @@ class Indentation:
     self.onlyLoadingSegment = False                         #use all data by default
     self.newFileRead = True                                 #file was just loaded
     self.evaluateStiffnessAtMax = True                      #evaluate stiffness at maximum or at end of power-law fit domain
+    self.config = {}                                        #storage for surface index, ignored tests, thresholds for surface
 
     if tip is None:
       tip = Tip()
