@@ -2,10 +2,11 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy import ndimage, signal
+from scipy import ndimage
+import h5py, json
+import scipy.signal as signal
 from scipy.optimize import fmin_l_bfgs_b
 from .definitions import Vendor, Method
-#import definitions
 
 
 def calcYoungsModulus(self, minDepth=-1, plot=False):
@@ -167,7 +168,7 @@ def identifyLoadHoldUnload(self,plot=False):
   if self.method==Method.CSM:
     self.identifyLoadHoldUnloadCSM()
     return False
-  #identify point in time, which are too close ~0
+  #identify point in time, which are too close (~0) to eachother
   gradTime = np.diff(self.t)
   maskTooClose = gradTime < np.percentile(gradTime,80)/1.e3
   self.t     = self.t[1:][~maskTooClose]
@@ -175,7 +176,8 @@ def identifyLoadHoldUnload(self,plot=False):
   self.h     = self.h[1:][~maskTooClose]
   self.valid = self.valid[1:][~maskTooClose]
   #use force-rate to identify load-hold-unload
-  rate = np.gradient(self.p, self.t)
+  p = signal.medfilt(self.p, 5)
+  rate = np.gradient(p, self.t)
   rate /= np.max(rate)
   loadMask  = rate >  self.zeroGradDelta
   unloadMask= rate < -self.zeroGradDelta
@@ -190,7 +192,7 @@ def identifyLoadHoldUnload(self,plot=False):
     plt.show()
   #clean small fluctuations
   if len(loadMask)>100 and len(unloadMask)>100:
-    size = 7
+    size = 10
     loadMask = ndimage.binary_closing(loadMask, structure=np.ones((size,)) )
     unloadMask = ndimage.binary_closing(unloadMask, structure=np.ones((size,)))
     loadMask = ndimage.binary_opening(loadMask, structure=np.ones((size,)))
@@ -203,6 +205,10 @@ def identifyLoadHoldUnload(self,plot=False):
   if len(unloadIdx) == len(loadIdx)+2 and np.all(unloadIdx[-4:]>loadIdx[-1]):
     #for drift: partial unload-hold-full unload
     unloadIdx = unloadIdx[:-2]
+  while len(unloadIdx) < len(loadIdx) and loadIdx[2]<unloadIdx[0]:
+    #clean loading front
+    loadIdx = loadIdx[2:]
+
   if plot:     # verify visually
     plt.plot(self.p,'o')
     plt.plot(loadIdx[::2],  self.p[loadIdx[::2]],  'o',label='load',markersize=12)
@@ -213,7 +219,7 @@ def identifyLoadHoldUnload(self,plot=False):
     except IndexError:
       pass
     plt.legend(loc=0)
-    plt.xlabel('time incr. []')
+    plt.xlabel(r'time incr. []')
     plt.ylabel(r'force [$\mathrm{mN}$]')
     plt.show()
   #store them in a list [[loadStart1, loadEnd1, unloadStart1, unloadEnd1], [loadStart2, loadEnd2, unloadStart2, unloadEnd2],.. ]
@@ -309,57 +315,70 @@ def nextTest(self, newTest=True, plotSurface=False):
     success = True
 
   #SURFACE FIND
-  if not '_' in self.surfaceFind:
+  if self.testName in self.config and 'surfaceIdx' in self.config[self.testName]:
+    surface = self.config[self.testName]['surfaceIdx']
+    self.h -= self.h[surface]  #only change surface, not force
+  else:
+    found = False
     if 'load' in self.surfaceFind:
       thresValues = self.p
       thresValue  = self.surfaceFind['load']
+      found = True
     elif 'stiffness' in self.surfaceFind:
       thresValues = self.slope
       thresValue  = self.surfaceFind['stiffness']
+      found = True
     elif 'phase angle' in self.surfaceFind:
       thresValues = self.phase
       thresValue  = self.surfaceFind['phase angle']
+      found = True
     elif 'abs(dp/dh)' in self.surfaceFind:
       thresValues = np.abs(np.gradient(self.p,self.h))
       thresValue  = self.surfaceFind['abs(dp/dh)']
+      found = True
     elif 'dp/dt' in self.surfaceFind:
       thresValues = np.gradient(self.p,self.t)
       thresValue  = self.surfaceFind['dp/dt']
-    else:
-      print('**ERROR UNDEFINED THRESHOLD')
+      found = True
 
-    #interpolate nan with neighboring values
-    nans, tempX = np.isnan(thresValues), lambda z: z.nonzero()[0]
-    thresValues[nans]= np.interp(tempX(nans), tempX(~nans), thresValues[~nans])
+    if found:
+      #interpolate nan with neighboring values
+      nans, tempX = np.isnan(thresValues), lambda z: z.nonzero()[0]
+      thresValues[nans]= np.interp(tempX(nans), tempX(~nans), thresValues[~nans])
 
-    #filter this data
-    if 'median filter' in self.surfaceFind:
-      thresValues = signal.medfilt(thresValues, self.surfaceFind['median filter'])
-    elif 'gauss filter' in self.surfaceFind:
-      thresValues = gaussian_filter1d(thresValues, self.surfaceFind['gauss filter'])
-    elif 'butterfilter' in self.surfaceFind:
-      b, a = signal.butter(*self.surfaceFind['butterfilter'])
-      thresValues = signal.filtfilt(b, a, thresValues)
+      #filter this data
+      if 'median filter' in self.surfaceFind:
+        thresValues = signal.medfilt(thresValues, self.surfaceFind['median filter'])
+      elif 'gauss filter' in self.surfaceFind:
+        thresValues = gaussian_filter1d(thresValues, self.surfaceFind['gauss filter'])
+      elif 'butterfilter' in self.surfaceFind:
+        b, a = signal.butter(*self.surfaceFind['butterfilter'])
+        thresValues = signal.filtfilt(b, a, thresValues)
+      if 'phase angle' in self.surfaceFind:
+        surface  = np.where(thresValues<thresValue)[0][0]
+      else:
+        surface  = np.where(thresValues>thresValue)[0][0]
+      if plotSurface or 'plot' in self.surfaceFind:
+        _, ax1 = plt.subplots()
+        ax1.plot(h,y, 'C0o-')
+        ax1.plot(h[mask], y[mask],'C0o', markersize=10)
+        if fit is not None:
+          ax1.plot(h[mask], np.polyval(fit,h[mask]), '-k', linewidth=2)
+        ax1.plot(h[surface], y[surface], 'C9o', markersize=14)
+        ax1.axhline(0,linestyle='dashed')
+        ax1.set_ylim(bottom=0, top=np.percentile(y,80))
+        ax1.set_xlabel(r'depth [$\mu m$]')
+        ax1.set_ylabel(r'gradient [mN]', color='C0')
+        ax1.grid()
 
-    if 'phase angle' in self.surfaceFind:
-      surface  = np.where(thresValues<thresValue)[0][0]+np.nonzero(self.valid)[0][0]
-    else:
-      surface  = np.where(thresValues>thresValue)[0][0]
-    if plotSurface or 'plot' in self.surfaceFind:
-      _, ax1 = plt.subplots()
-      ax1.plot(self.h[self.valid], thresValues, 'C0o-')
-      ax1.set_ylim(bottom=0)
-      ax1.set_xlabel(r'depth [$\mu m$]')
-      ax1.set_ylabel(r'values [~]', color='C0')
-      ax1.grid()
-
-      ax2 = ax1.twinx()
-      ax2.plot(self.h, self.p,'C3-o')
-      ax2.plot(self.h[surface], self.p[surface],'C1o', markersize=14)
-      ax2.set_ylim(bottom=0)
-      ax2.set_ylabel('force [mN]', color='C3')
-      plt.show()
-    self.h -= self.h[surface]  #only change surface, not force
+        ax2 = ax1.twinx()
+        ax2.plot(self.h, self.p,'C3-o')
+        ax2.plot(self.h[mask], self.p[mask],'C3o', markersize=10)
+        ax2.plot(self.h[surface], self.p[surface],'C1o', markersize=14)
+        ax2.set_ylim(bottom=0)
+        ax2.set_ylabel('force [mN]', color='C3')
+        plt.show()
+      self.h -= self.h[surface]  #only change surface, not force
   return success
 
 
@@ -382,4 +401,4 @@ def saveToUserMeta(self):
             "hc_um":list(self.hc), "E_GPa":list(self.modulus),"H_GPa":list(self.hardness),"segment":segments}
   self.metaUser.update(meta)
   self.metaUser['code'] = __file__.split('/')[-1]
-  return        #pylint warning: useless return
+  return

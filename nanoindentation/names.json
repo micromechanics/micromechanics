@@ -1,0 +1,66 @@
+{
+  "MTS": {
+    "h": [["displacementintosurfaceg200",1.0e-3],["displacement_into_surface",1.0e-3]],
+    "hardness": [["hardnessg200",1.0],["hardness",1.0]],
+    "slope": [["harmonic_contact_stiffness",1.0e-3],["stiffness",1.0e-3]],
+    "p": [["loadonsampleg200",1.0],["load_on_sample",1.0]],
+    "modulus": [["modulusg200",1.0],["modulus",1.0]],
+    "t": [["time_on_sample",1.0]],
+    "Ac": [["contact_area",1.0e-6]],
+    "hc": [["contact_depth",1.0e-3]],
+    "phase": [["phase_angle",1.0]],
+    "k2p": [["stiffness_squared_over_load",1.0]],
+    "modulusRed": [["reduced_modulus",1.0]],
+    "miscCsmStatus": [["csm_status",1.0]],
+    "miscDynamicH": [["harmonic_displacement",1.0e-3]],
+    "miscDynamicFreqency": [["harmonic_frequency",1.0]],
+    "miscDynamicP": [["harmonic_load",1.0]],
+    "miscDynamicSlope": [["harmonic_stiffness",1.0e-3]],
+    "miscDynamic_dp_dh": [["load_vs_disp_slope",1.0e-3]],
+    "misc_dp_dt": [["dpdt",1.0]],
+    "misc_abs_dp_dt": [["abs_val_dpdt",1.0]],
+    "misc_max_p": [["max_load",1.0]],
+    "miscDynamicContactDamping": [["harmonic_contact_damping",1.0]],
+    "miscDynamicSystemDamping": [["harmonic_system_damping",1.0]],
+    "miscDynamicSystemStiffness": [["harmonic_system_stiffness",1.0e-3]],
+    "miscDynamicFrameStiffness": [["harmonic_frame_stiffness",1.0]],
+    "miscRawH": [["raw_displacement",1.0e-3]],
+    "miscRawP": [["raw_load",1.0]],
+    "miscRawT": [["time",1.0]],
+    "miscPositionX": [["x_position",1.0]],
+    "miscPositionY": [["y_position",1.0]],
+    "miscSpringStiffness": [["support_spring_stiffness",1.0e-3]],
+    "miscFrameStiffness": [["frame_stiffness",1.0e-3]],
+    "miscSegmentNumber": [["segment_number",1.0]],
+    "miscSegmentType": [["segment_type",1.0]],
+    "miscPointsInStiffnessFit": [["points_in_stiffness_fit",1.0]],
+    "__ignore__" : []
+  },
+  "KLA":{
+    "h": [["depth",1.0e6],["show_depth",1.0e6],["displacement",1.0e6]],
+    "p": [["load",1.0e3],["force",1.0e3],["show_load",1.0e3]],
+    "t": [["time_on_sample",1.0],["time",1.0]],
+    "slope": [["show_stiffness",1.0e-3]],
+    "phase": [["dynamic_phase",1.0]],
+    "__note__" : "do not incl. modulus and hardness as they further crop self.valid for small values for which they were not evalated",
+    "__ignore__" : ["show_depth", "show_load","modulus","hardness","dynamic_stiffness","corrected_dynamic_stiffness", "depth", "displacement", "displacement_average", "displacement_derivative_of_force", "displacement_volts", "dynamic_ac", "dynamic_damping", "dynamic_displacement", "dynamic_e", "dynamic_er", "dynamic_force", "dynamic_frequency", "dynamic_h", "dynamic_load_constant", "dynamic_load_over_dynamic_displacement", "dynamic_load_required", "dynamic_stiffness_squared_over_load", "dynamichc", "extension", "filtered_depth_with_dynamics", "force", "force_for_hold", "index", "load", "load_with_dynamics", "loading_rate_required", "pdot_over_p", "spring_stiffness", "surface_trigger_counter", "time", "time_derivative_of_displacement", "time_derivative_of_force", "tip_temperature", "x_axis", "y_axis","dynamic_displacement_volts","cycle_begin_stiffness_data_index", "cycle_contact_area_from_unload", "cycle_contact_depth", "cycle_end_of_loading_index", "cycle_end_stiffness_data_index", "cycle_endof_holdat_load_index", "cycle_hardness_from_unload", "cycle_maximum_depth", "cycle_maximum_load", "cycle_modulus_from_unload", "cycle_number_channel", "cycle_reduced_modulus_from_unload", "cycle_s_q_r_stiffness_over_load", "cycle_stiffness_from_unload", "filtered_displacement","index__reverse", "stiffness_approach_for_s_i","error_dynamics_vs_broad_band", "fast_measured_static_spring_constant", "measured_dynamic_spring_constant", "measured_static_spring_constant", "percent_error_dynamics_vs_static", "percent_error_staticvs_calibration", "time_derivative_of_displacment", "time_derivative_of_displacment_no_dynamics"]
+  },
+  "Fischer":{
+    "h": [["displacement",1.0]],
+    "p": [["force",1.0]],
+    "t": [["time",1.0]],
+    "__ignore__": []
+  },
+  "HysitronInsitu":{
+    "h": [["indent_disp",1.0]],
+    "p": [["indent_load",1.0]],
+    "t": [["test_time",1.0]],
+    "__ignore__": ["indent_act_load_volt", "indent_act_output_volt", "indent_disp", "indent_disp_volt", "indent_load", "segment_begin_demand", "segment_begin_time", "segment_end_demand", "segment_end_time", "segment_fb_mode", "segment_points", "segment_time", "segment_type", "test_time"]
+  },
+  "Micromaterials":{
+    "h": [["displacement",1.0]],
+    "p": [["force",1.0]],
+    "t": [["time",1.0]],
+    "__ignore__": ["indices"]
+  }
+}

@@ -1,5 +1,6 @@
 """All instrument specific input functions"""
 import io, re, json
+from pathlib import Path
 from zipfile import ZipFile
 import h5py
 import numpy as np
@@ -20,7 +21,7 @@ def loadAgilent(self, fileName):
   self.indicies = {}
   workbook = pd.read_excel(fileName,sheet_name='Required Inputs')
   self.metaVendor.update( dict(workbook.iloc[-1]) )
-  if self.metaVendor['Poissons Ratio']!=self.nuMat:
+  if self.metaVendor['Poissons Ratio']!=self.nuMat and self.verbose>0:
     print("*WARNING*: Poisson Ratio different than in file.",self.nuMat,self.metaVendor['Poissons Ratio'])
   self.datafile = pd.read_excel(fileName, sheet_name=None)
   tagged = []
@@ -105,7 +106,6 @@ def nextAgilentTest(self, newTest=True):
   else:
     self.valid = validFull
   for index in self.indicies:
-    #pylint convention: Consider iterating with .items() (951:4) [consider-using-dict-items]
     data = np.array(df[self.indicies[index]][1:-1], dtype=np.float64)
     mask = np.isfinite(data)
     mask[mask] = data[mask]<1e99
@@ -113,14 +113,13 @@ def nextAgilentTest(self, newTest=True):
 
   #Run through all items again and crop to only valid data
   for index in self.indicies:
-    #pylint convention: Consider iterating with .items() (951:4) [consider-using-dict-items]
     data = np.array(df[self.indicies[index]][1:-1], dtype=np.float64)
     if not index in self.fullData:
       data = data[self.valid]
     else:
       data = data[validFull]
     setattr(self, index, data)
-    # print(index, len(data))
+
   self.valid = self.valid[validFull]
   #  now all fields (incl. p) are full and defined
 
@@ -329,7 +328,7 @@ def loadHysitron(self, fileName, plotContact=False):
 
 def loadMicromaterials(self, fileName):
   """
-  Load Micromaterials txt file for processing, contains only one test
+  Load Micromaterials txt/zip file for processing, contains only one test
 
   Args:
       fileName: file name or file-content
@@ -353,10 +352,13 @@ def loadMicromaterials(self, fileName):
     self.identifyLoadHoldUnload()
   elif fileName.endswith('.zip'):
     #if zip-archive of multilpe files
-    if self.verbose>1:
-      print("Open Micromaterials zip-file: "+fileName)
     self.datafile = ZipFile(fileName)
     self.testList = self.datafile.namelist()
+    if len(np.nonzero([not i.endswith('txt') for i in self.datafile.namelist()])[0])>0:
+      print('Not a Micromaterials zip of txt-files')
+      return False
+    if self.verbose>1:
+      print("Open Micromaterials zip of txt-files: "+fileName)
     self.allTestList =  list(self.testList)
     self.fileName = fileName
     self.metaUser = {'measurementType': 'Micromaterials Indentation ZIP'}
@@ -489,38 +491,68 @@ def loadHDF5(self,fileName):
   Args:
     fileName: file name
   """
-  self.datafile = h5py.File(fileName)
+  self.datafile = h5py.File(fileName, mode='r') #mode='r+', locking=False)
   if self.verbose>1:
     print("Open hdf5-file: "+fileName)
-  self.testList = []
-  for key in self.datafile:
-    if re.match(r'Test \d+',key):
-      self.testList.append(key)
   self.fileName = fileName
   self.metaVendor = {}
-  for key in self.datafile['metadata'].attrs:
-    self.metaVendor[key] = self.datafile['metadata'].attrs[key]
+  self.testList = []
+  if 'version' not in self.datafile.attrs or self.datafile.attrs['version']!='2.0':
+    print("**ERROR** Only hdf5 version 2 supported")
+    return
+  #read config and convert to dictionary
+  try:
+    if 'post_test_analysis' in self.datafile and \
+      'com_github_micromechanics' in self.datafile['post_test_analysis'] and \
+      'config' in self.datafile['post_test_analysis']['com_github_micromechanics'].attrs:
+      self.config = self.datafile['post_test_analysis']['com_github_micromechanics'].attrs['config']
+      self.config = json.loads(self.config)
+    else:
+      self.config = {}
+  except:
+    self.config = {}
+  if "_" in self.surfaceFind and bool(self.config):
+    self.surfaceFind = { i:self.config[i] for i in self.config if not i.startswith('test_')}
+  for key in self.datafile:
+    if re.match(r'test_\d+',key):
+      self.testList.append(key)
+  for key in self.datafile['instrument'].attrs:
+    if isinstance(self.datafile['instrument'].attrs[key], dict):
+      self.metaVendor = self.datafile['instrument'].attrs[key]
+    else:
+      self.metaVendor[key] = self.datafile['instrument'].attrs[key]
+  converter = self.datafile.attrs['uri'].split('/')[-1]
   if 'json' in self.metaVendor:
     metaVendor = json.loads(self.metaVendor['json'])
     if 'SAMPLE' in metaVendor:  #G200X data
       templateName = metaVendor['SAMPLE']['@TEMPLATENAME']
       if 'Dynamic' in templateName or 'Essential' in templateName or 'Displacement' in templateName:
         self.method = Method.CSM
-  converter = self.datafile['converter'].attrs['uri'].split('/')[-1]
-  if converter == 'hap2hdf.cwl':
-    self.metaUser = {'measurementType': 'Fischer-Scope Indentation HDF5'}
+  if converter == 'hap2hdf.py':
+    self.metaUser = {'measurementType': 'Fischer Scope Indentation HDF5'}
     self.unloadPMax = 0.99
     self.unloadPMin = 0.21
-  elif converter == 'Micromaterials2hdf.cwl':
+    self.zeroGradDelta = 0.02  #reduced accuracy
+  elif converter == 'Micromaterials2hdf.py':
     self.metaUser = {'measurementType': 'Micromaterials Indentation HDF5'}
     self.unloadPMax = 0.99
     self.unloadPMin = 0.5
-  elif converter == 'nmd2hdf.cwl':
-    self.metaUser = {'measurementType': 'Agilent Indentation HDF5'}
+  elif converter == 'nmd2hdf.py':
+    self.metaUser = {'measurementType': 'KLA Indentation HDF5'}
     self.unloadPMax = 0.99
     self.unloadPMin = 0.5
+    self.zeroGradDelta = 0.005  #enhanced accuracy
+  elif converter == 'xls2hdf.py':
+    self.metaUser = {'measurementType': 'MTS / Agilent Indentation HDF5'}
+    self.unloadPMax = 0.99
+    self.unloadPMin = 0.5
+  elif converter == 'converter_tdm.py':
+    self.metaUser = {'measurementType': 'HysitronInsitu Indentation HDF5'}
+    self.unloadPMax = 0.99
+    self.unloadPMin = 0.5
+    self.zeroGradDelta = 0.04
   else:
-    print("ERROR UNKNOWN CONVERTER")
+    print("ERROR UNKNOWN CONVERTER",converter)
   self.allTestList =  list(self.testList)
   self.nextTest()
   return True
@@ -529,49 +561,79 @@ def loadHDF5(self,fileName):
 def nextHDF5Test(self):
   """
   Go to next branch in HDF5 file
+
+  TODO check for non CSM
   """
+  #organize general data
   if len(self.testList)==0: #no sheet left
     return False
-  converter = self.datafile['converter'].attrs['uri'].split('/')[-1]
-  self.testName = self.testList.pop(0)
-  branch = self.datafile[self.testName]
-  if 'loading' in branch:  #for Micromaterials Indenter
-    self.t = np.hstack((np.array(branch['loading']['time']),
-                        np.array(branch['hold at max']['time'])+branch['loading']['time'][-1],
-                        np.array(branch['unloading']['time'])))
-    self.h = np.hstack((np.array(branch['loading']['displacement']),
-                        np.array(branch['hold at max']['displacement']),
-                        np.array(branch['unloading']['displacement'])))/1.e3
-    self.p = np.hstack((np.array(branch['loading']['force']),
-                        np.array(branch['hold at max']['force']),
-                        np.array(branch['unloading']['force'])))
-    self.valid = np.ones_like(self.t, dtype=bool)
+  while len(self.testList)>0:
+    self.testName = self.testList.pop(0)
+    if self.testName not in self.config or 'ignore' not in self.config[self.testName]:
+      break
+  branch = self.datafile[self.testName]['data']
+  inFile = list(branch.keys())
+  nameDict   = json.load(open(Path(__file__).parent/'names.json'))
+  if self.metaUser['measurementType'].split()[0] in nameDict:
+    nameDict = nameDict[self.metaUser['measurementType'].split()[0]]
   else:
-    if converter == 'nmd2hdf.cwl':   #G200X data has capital letters and is in SI units
-      self.t = np.array(branch['Time'])
-      self.h = np.array(branch['Displacement'])*1.e6
-      self.p = np.array(branch['Force'])*1.e3
-      self.p -= np.min(self.p)     #prevent negative forces
-      if self.method==Method.CSM:
-        self.slope = np.array(branch['DynamicStiffness'])/1.e3
-        self.valid = ~np.isnan(self.slope)
-        self.slope = self.slope[self.valid]
-        self.phase = np.array(branch['DynamicPhase'])[self.valid]
-      else:
-        self.valid = np.ones_like(self.t, dtype=bool)
-    else:
-      self.t = np.array(branch['time'])
-      self.h = np.array(branch['displacement'])
-      self.p = np.array(branch['force'])
-      self.valid = np.ones_like(self.t, dtype=bool)
-    if converter == 'hap2hdf.cwl':
-      #Fischer-Scope reset the time multiple times
-      resetPoints = np.where((self.t[1:]-self.t[:-1])<0)[0]
-      if len(resetPoints)>0:
-        self.t = self.t[resetPoints[-1]:]
-        self.h = self.h[resetPoints[-1]:]
-        self.p = self.p[resetPoints[-1]:]
-        self.valid = np.ones_like(self.t, dtype=bool)
+    print("**ERROR instrument not in names.json", self.metaUser['measurementType'].split()[0])
+
+  #determine valid masks: loop through all entries and ensure that they all make sense
+  self.valid = None
+  for key in nameDict:
+    if key in ['__ignore__','__note__']:
+      continue
+    for name, _ in nameDict[key]:
+      if name in branch:
+        data = np.array(branch[name], dtype=np.float64)
+        mask = np.logical_and(np.isfinite(data), data<1e99)
+        if self.valid is None:
+          self.valid = mask
+        else:
+          self.valid = np.logical_and(self.valid, mask) #adopt/reduce mask continuously
+        if key=='slope':
+          self.valid = np.logical_and(self.valid, data>0.0)
+        if key=='h':
+          validFull = np.isfinite(np.array(branch[name], dtype=np.float64))
+        break
+
+  #Run through all items again and crop to only valid data
+  for key in nameDict:
+    if key in ['__ignore__','__note__']:
+      continue
+    for name, multiplyer in nameDict[key]:
+      if name in branch:
+        data = np.array(branch[name], dtype=np.float64)
+        if key in ['h','p','t']:
+          data = data[validFull]
+        else:
+          data = data[self.valid]
+        setattr(self, key, data*multiplyer)
+        inFile.remove(name)
+        break
+
+  # Test if essential items exist
+  for attrib in ['h','t','p']:
+    if not hasattr(self, attrib) or len(getattr(self, attrib))==0:
+      print('Missing information for',self.metaUser['measurementType'].split()[0],': ',attrib)
+      print('Keys exist',inFile)
+  self.valid = self.valid[validFull]
+
+  #cleaning
+  self.p -= self.p[0]
+  converter = self.datafile.attrs['uri'].split('/')[-1]
+  if converter == 'hap2hdf.py':
+    mask = np.array(self.h)>=0
+    self.h = np.array(self.h)[mask]
+    self.p = np.array(self.p)[mask]
+    self.t = np.array(self.t)[mask]
+    self.valid = self.valid[mask]
+  inFile = [element for element in inFile if element not in nameDict['__ignore__']]
+  if len(inFile)>0:
+    print("**INFO on",self.metaUser['measurementType'].split()[0],"fields not imported:",inFile)
+  if hasattr(self, 'slope') and len(self.slope)>30: #if more than 30: CSM
+    self.method = Method.CSM
   self.identifyLoadHoldUnload()
   return True
 

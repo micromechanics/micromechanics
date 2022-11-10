@@ -4,18 +4,22 @@ import matplotlib.pyplot as plt
 from .definitions import Method
 #import definitions
 
-def plotTestingMethod(self, saveFig=False, show=True):
+def plotTestingMethod(self, saveFig=False, show=True, double=False):
   """
   plot testing method
 
   Args:
     saveFig: save plot to file [use known filename plus extension png]
     show: show figure, else do not show
+    double: show also stiffness and phase an function of time
   """
-  _, ax1 = plt.subplots()
-  ax2 = ax1.twinx()
+  if double:
+    _, [ax1, ax2] = plt.subplots(2, sharex=True, figsize=(6,6))
+  else:
+    _, ax1, = plt.subplots()
+  ax1b = ax1.twinx()
   ax1.plot(self.t, self.p,'C0')
-  ax2.plot(self.t, self.h,'C1')
+  ax1b.plot(self.t, self.h,'C1')
   for mask in self.iLHU:
     ax1.plot(self.t[mask][0], self.p[mask][0], 'C0s')
     ax1.plot(self.t[mask][1], self.p[mask][1], 'C0x')
@@ -23,11 +27,19 @@ def plotTestingMethod(self, saveFig=False, show=True):
     ax1.plot(self.t[mask][3], self.p[mask][3], 'C0o')
   ax1.plot(self.t[self.iDrift], self.p[self.iDrift], 'k.')
   ax1.axhline(0,color='C0', linestyle='dashed')
-  ax2.axhline(0,color='C1', linestyle='dashed')
+  ax1b.axhline(0,color='C1', linestyle='dashed')
   ax1.set_xlabel(r"time [$\mathrm{s}$]")
-  ax2.set_ylabel(r"depth [$\mathrm{\mu m}$]", color='C1', fontsize=14)
+  ax1b.set_ylabel(r"depth [$\mathrm{\mu m}$]", color='C1', fontsize=14)
   ax1.set_ylabel(r"force [$\mathrm{mN}$]", color='C0', fontsize=14)
+  if double:
+    ax2b = ax2.twinx()
+    ax2.plot(self.t[self.valid], self.slope,'C0')
+    ax2b.plot(self.t[self.valid], self.phase,'C1')
+    ax2.set_xlabel(r"time [$\mathrm{s}$]")
+    ax2b.set_ylabel(r"phase [$\mathrm{rad}$]", color='C1', fontsize=14)
+    ax2.set_ylabel(r"stiffness [$\mathrm{mN/\mu m}$]", color='C0', fontsize=14)
   plt.grid()
+  plt.subplots_adjust(hspace=0)
   plt.show()
   if saveFig:
     plt.savefig(self.fileName.split('.')[0]+".png", dpi=150, bbox_inches='tight')

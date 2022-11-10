@@ -63,6 +63,7 @@ class Indentation:
     self.onlyLoadingSegment = False                         #use all data by default
     self.newFileRead = True                                 #file was just loaded
     self.evaluateStiffnessAtMax = True                      #evaluate stiffness at maximum or at end of power-law fit domain
+    self.config = {}                                        #storage for surface index, ignored tests, thresholds for surface
 
     if tip is None:
       tip = Tip()
