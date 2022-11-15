@@ -84,6 +84,7 @@ class Indentation:
     #initialize and load first data set
     #set default parameters
     success = False
+    self.zeroGradFilter = 'median'
     if not os.path.exists(fileName) and fileName!='':
       print("*ERROR* __init__: file does not exist",fileName)
       return

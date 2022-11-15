@@ -52,13 +52,15 @@
     "__ignore__": []
   },
   "HysitronInsitu":{
-    "h": [["indent_disp",1.0]],
-    "p": [["indent_load",1.0]],
-    "t": [["test_time",1.0]],
-    "__ignore__": ["indent_act_load_volt", "indent_act_output_volt", "indent_disp", "indent_disp_volt", "indent_load", "segment_begin_demand", "segment_begin_time", "segment_end_demand", "segment_end_time", "segment_fb_mode", "segment_points", "segment_time", "segment_type", "test_time"]
+    "h": [["indent_disp",1.0e-3],["normal_disp",1.0e-3]],
+    "p": [["indent_load",1.0e-3],["normal_force",1.0e-3]],
+    "t": [["test_time",1.0],["time",1.0]],
+    "phase": [["phase_shift",1.0]],
+    "slope": [["complex_stiff",1.0]],
+    "__ignore__": ["indent_act_load_volt", "indent_act_output_volt", "indent_disp", "indent_disp_volt", "indent_load", "segment_begin_demand", "segment_begin_time", "segment_end_demand", "segment_end_time", "segment_fb_mode", "segment_points", "segment_time", "segment_type", "test_time","x_piezo", "y_piezo", "z_piezo","complex_mod", "complex_stiff", "contact_area", "contact_depth", "damping", "disp_amp", "disp_amp_volt", "dynamic_comp", "dynamic_freq", "hardness", "indent_act_load", "load_amp", "load_amp_volt", "loss_mod", "loss_stiff", "phase_shift", "raw_ch1_voltage", "raw_ch2_voltage", "raw_lia_dynamic_output_volt", "raw_phase_shift", "storage_mod", "storage_stiff", "tan_delta","indent_piezo_volt", "load_cell", "piezo_displacement","friction", "lateral_disp", "lateral_force", "normal_disp", "normal_force", "piezo_displacement", "piezo_voltage", "scratch_x_force", "scratch_x_motor_position", "scratch_y_force", "scratch_y_motor_position", "time", "x_act_force", "x_disp", "y_act_force", "z_act_force", "z_disp"]
   },
   "Micromaterials":{
-    "h": [["displacement",1.0]],
+    "h": [["displacement",1.0e-3]],
     "p": [["force",1.0]],
     "t": [["time",1.0]],
     "__ignore__": ["indices"]

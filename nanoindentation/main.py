@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from scipy import ndimage
 import h5py, json
 import scipy.signal as signal
+from scipy.ndimage import gaussian_filter1d
 from scipy.optimize import fmin_l_bfgs_b
 from .definitions import Vendor, Method
 
@@ -176,7 +177,10 @@ def identifyLoadHoldUnload(self,plot=False):
   self.h     = self.h[1:][~maskTooClose]
   self.valid = self.valid[1:][~maskTooClose]
   #use force-rate to identify load-hold-unload
-  p = signal.medfilt(self.p, 5)
+  if self.zeroGradFilter=='median':
+    p = signal.medfilt(self.p, 5)
+  else:
+    p = gaussian_filter1d(self.p, 5)
   rate = np.gradient(p, self.t)
   rate /= np.max(rate)
   loadMask  = rate >  self.zeroGradDelta
@@ -251,16 +255,19 @@ def identifyLoadHoldUnload(self,plot=False):
   return True
 
 
-def identifyLoadHoldUnloadCSM(self):
+def identifyLoadHoldUnloadCSM(self, plot=False):
   """
   internal method: identify load - hold - unload segment in CSM data
 
   Backup: if identifyLoadHoldUnload fails
+
+  Args:
+    plot: plot values
   """
   iSurface = np.min(np.where( self.h>=0                     ))
-  iLoad    = np.min(np.where( self.p-np.max(self.p)*0.999>0 ))
+  iLoad    = np.min(np.where( self.p-np.max(self.p)*self.unloadPMax>0 ))
   if iLoad<len(self.p)-1:
-    iHold    = np.max(np.where( self.p-np.max(self.p)*0.999>0 ))
+    iHold    = np.max(np.where( self.p-np.max(self.p)*self.unloadPMax>0 ))
     if iHold==iLoad:
       iHold += 1
     try:
@@ -271,7 +278,7 @@ def identifyLoadHoldUnloadCSM(self):
       self.iDrift = []
       return
     pDrift   = bins[np.argmax(hist)+1]
-    pCloseToDrift = np.logical_and(self.p>pDrift*0.999,self.p<pDrift/0.999)
+    pCloseToDrift = np.logical_and(self.p>pDrift*self.unloadPMax,self.p<pDrift/self.unloadPMax)
     pCloseToDrift[:iHold] = False
     if len(pCloseToDrift[pCloseToDrift])>3:
       iDriftS  = np.min(np.where( pCloseToDrift ))
@@ -290,6 +297,16 @@ def identifyLoadHoldUnloadCSM(self):
     iDriftE   = len(self.p)-1
   self.iLHU   = [[iSurface,iLoad,iHold,iDriftS]]
   self.iDrift = [iDriftS,iDriftE]
+
+  if plot:
+    plt.plot(self.h, self.p)
+    plt.plot(self.h[iSurface], self.p[iSurface], 'o', markersize=10, label='surface')
+    plt.plot(self.h[iLoad], self.p[iLoad], 'o', markersize=10, label='load')
+    plt.plot(self.h[iHold], self.p[iHold], 'o', markersize=10, label='hold')
+    plt.plot(self.h[iDriftS], self.p[iDriftS], 'o', markersize=10, label='drift start')
+    plt.plot(self.h[iDriftE], self.p[iDriftE], 'o', markersize=10, label='drift end')
+    plt.legend(loc=0)
+    plt.show()
   return
 
 
@@ -297,8 +314,6 @@ def nextTest(self, newTest=True, plotSurface=False):
   """
   Wrapper for all next test for all vendors
   """
-  import scipy.signal as signal
-  from scipy.ndimage import gaussian_filter1d
   if newTest:
     if self.vendor == Vendor.Agilent:
       success = self.nextAgilentTest(newTest)

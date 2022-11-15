@@ -632,7 +632,7 @@ def nextHDF5Test(self):
   inFile = [element for element in inFile if element not in nameDict['__ignore__']]
   if len(inFile)>0:
     print("**INFO on",self.metaUser['measurementType'].split()[0],"fields not imported:",inFile)
-  if hasattr(self, 'slope') and len(self.slope)>30: #if more than 30: CSM
+  if hasattr(self, 'slope') and len(self.slope)>60: #if more than 30: CSM
     self.method = Method.CSM
   self.identifyLoadHoldUnload()
   return True
