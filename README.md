@@ -5,9 +5,14 @@ In source_code folder:
 # Documentation
 The documentation is at [Read the docs](https://micromechanics.readthedocs.io/en/main/)
 
-# To upload to Pypi
+## To upload to github
+
+## To upload to Pypi
+``` bash
 python3 -m build
 python3 -m twine upload dist/*
+rm dist/*
+```
 
 # Contributors
 - Steffen Brinckmann
