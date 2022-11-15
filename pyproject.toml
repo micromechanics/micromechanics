@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "Nanoindentation"
+version = "0.9.0"
+authors = [
+  { name="Steffen Brinckmann", email="sbrinckm@gmail.com"},
+]
+description = "Investigation of nanoindentation data"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/micromechanics/main"
+"Bug Tracker" = "https://github.com/micromechanics/main/issues"
