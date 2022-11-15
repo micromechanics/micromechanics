@@ -1,7 +1,5 @@
 """Definitions used in the nanoindent functions"""
 from enum import Enum
-import json
-import numpy as np
 
 # enum classes: make code more readable
 class Method(Enum):

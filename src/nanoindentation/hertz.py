@@ -19,23 +19,23 @@ def hertzEquation(h,h0,E,R=1):
   return 4./3. * E * np.sqrt(R*h**3)
 
 
-def hertzFit(self, forceRange=[1,25], correctH=True, plot=True):
+def hertzFit(self, forceRange=(1, 25), correctH=True, plot=True):
   """
   Fit the initial force displacement curve to the Hertzian curve
   """
   fitMask = np.logical_and(forceRange[0]<self.p, self.p<forceRange[1])
   fitMask[np.argmax(self.p):] = False
   depthRange = [self.h[fitMask].min(), self.h[fitMask].max()]
-  p0 = [0., 5000.]
+  para0 = [0., 5000.]
   bounds = [[-depthRange[0],0],[depthRange[0], 50000.]]
-  fitElast, _ = curve_fit(hertzEquation, self.h[fitMask], self.p[fitMask], p0=p0, bounds=bounds)
+  fitElast, _ = curve_fit(hertzEquation, self.h[fitMask], self.p[fitMask], p0=para0, bounds=bounds) # pylint: disable=unbalanced-tuple-unpacking
   if self.verbose>1:
     print('Depth range', depthRange)
     print('Optimal parameters (h0,prefactor)',fitElast)
   if plot:
     plt.plot(self.h,self.p)
     h_ = np.linspace(depthRange[0], depthRange[1])
-    plt.plot(h_, hertzEquation(h_,*p0))
+    plt.plot(h_, hertzEquation(h_,*para0))
     plt.ylim([0,forceRange[1]*1.2])
     plt.xlim([depthRange[0]-0.01,depthRange[1]+0.01])
     plt.show()
@@ -90,10 +90,7 @@ def popIn(self, correctH=True, plot=True, removeInitialNM=2.):
     else:
       diff[diff<0.0] = 0.0
     return prefactor* (diff)**(3./2.)
-  fitElast, pcov = curve_fit(funct, h[iMin:iJump], p[iMin:iJump], p0=[100.,0.])
-  # pylint warning: Possible unbalanced tuple unpacking with sequence defined at line 837 of
-  # scipy.optimize.minpack: left side has 2 label(s), right side has 5 value(s) (389:4)
-  # [unbalanced-tuple-unpacking]
+  fitElast, pcov = curve_fit(funct, h[iMin:iJump], p[iMin:iJump], p0=[100.,0.])    # pylint: disable=unbalanced-tuple-unpacking
   slopeElast= (funct(h[iJump],*fitElast) - funct(h[iJump]*0.9,*fitElast)) / (h[iJump]*0.1)
   fPopIn    = p[iJump]
   certainty = {"deltaRate":depthRate[iJump], "prefactor":fitElast[0], "h0":fitElast[1], \

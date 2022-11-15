@@ -136,7 +136,6 @@ def nextAgilentTest(self, newTest=True):
   if "Ac" in self.indicies         : self.Ac /= 1.e6  #from nm in um
   if "slope" in self.indicies       : self.slope /= 1.e3 #from N/m in mN/um
   if "slopeSupport" in self.indicies: self.slopeSupport /= 1.e3 #from N/m in mN/um
-  # pylint error: slopeSupport is not defined
   if 'hc' in self.indicies         : self.hc /= 1.e3  #from nm in um
   if 'hRaw' in self.indicies        : self.hRaw /= 1.e3  #from nm in um
   if not "k2p" in self.indicies and 'slope' in self.indicies:
@@ -176,7 +175,7 @@ def loadHysitron(self, fileName, plotContact=False):
         try:
           data = line.split(":")[1].split(" ")
           value = float(data[1])
-        except:     # pylint warning: No exception type(s) specified (1,024:8) [bare-except]
+        except:
           value = line.split(":")[1].rstrip()
         #pylint: disable=multiple-statements
         if label == "Sample Approach Data Points": break
@@ -450,7 +449,6 @@ def loadFischerScope(self,fileName):
         self.metaVendor['epsilon'] += [float(line.split()[-1])]
         self.metaVendor['fit range'] += [' '.join(line.split()[:-3])]
       elif ( len(dataInLine)==3 or len(dataInLine)==5 ) and not None in dataInLine:
-        # pylint convention: Unnecessary parens after 'not' keyword (1,305:0) [superfluous-parens]
         block.append( dataInLine )
     ## add last dataframe
     if np.array(block).shape[1]==5:
@@ -499,7 +497,7 @@ def loadHDF5(self,fileName):
   self.testList = []
   if 'version' not in self.datafile.attrs or self.datafile.attrs['version']!='2.0':
     print("**ERROR** Only hdf5 version 2 supported")
-    return
+    return False
   #read config and convert to dictionary
   try:
     if 'post_test_analysis' in self.datafile and \

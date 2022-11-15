@@ -43,7 +43,7 @@ class Indentation:
   from .verification import verifyOneData, verifyOneData1, verifyReadCalc
   from .seldomUsedFunctions import tareDepthForce, analyseDrift
 
-  def __init__(self, fileName, nuMat= 0.3, tip=None, surfaceFind={'_':None}, verbose=2):
+  def __init__(self, fileName, nuMat= 0.3, tip=None, surfaceFind=None, verbose=2):
     """
     Initialize indentation experiment data
 
@@ -68,6 +68,8 @@ class Indentation:
     if tip is None:
       tip = Tip()
     self.tip = tip
+    if surfaceFind is None:
+      surfaceFind = {}
     self.surfaceFind = surfaceFind
     self.iLHU   = [ [-1,-1,-1,-1] ]                         #indicies of Load-Hold-Unload cycles
                                                             #(StartLoad-StartHold-StartUnload-EndLoad)

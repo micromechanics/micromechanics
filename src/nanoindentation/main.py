@@ -3,7 +3,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import ndimage
-import h5py, json
 import scipy.signal as signal
 from scipy.ndimage import gaussian_filter1d
 from scipy.optimize import fmin_l_bfgs_b
@@ -96,7 +95,7 @@ def calcStiffness2Force(self, minDepth=0.01, plot=True, calibrate=False):
   compliance0 = self.tip.compliance
   prefactors = None
   def errorFunction(compliance):
-    stiffness   = 1./(1./self.sRaw-compliance)            # pylint error: sRaw isn't defined
+    stiffness   = 1./(1./self.sRaw-compliance)
     stiffness2load = np.divide(np.multiply(stiffness,stiffness),self.p)
     h   = self.hRaw-compliance*self.p
     h_ = h[ h>minDepth ]
@@ -144,8 +143,6 @@ def analyse(self):
     self.slope = 1./(1./self.slope-self.tip.compliance)
   else:
     self.slope, self.valid, _, _ , _= self.stiffnessFromUnloading(self.p, self.h)
-    # pylint warning: Possible unbalanced tuple unpacking with sequence defined at line 279:
-    # left side has 5 label(s), right side has 4 value(s) (615:6) [unbalanced-tuple-unpacking]
     self.slope = np.array(self.slope)
   try:
     self.k2p = self.slope*self.slope/self.p[self.valid]
@@ -367,31 +364,21 @@ def nextTest(self, newTest=True, plotSurface=False):
       elif 'gauss filter' in self.surfaceFind:
         thresValues = gaussian_filter1d(thresValues, self.surfaceFind['gauss filter'])
       elif 'butterfilter' in self.surfaceFind:
-        b, a = signal.butter(*self.surfaceFind['butterfilter'])
-        thresValues = signal.filtfilt(b, a, thresValues)
+        valueB, valueA = signal.butter(*self.surfaceFind['butterfilter'])
+        thresValues = signal.filtfilt(valueB, valueA, thresValues)
       if 'phase angle' in self.surfaceFind:
         surface  = np.where(thresValues<thresValue)[0][0]
       else:
         surface  = np.where(thresValues>thresValue)[0][0]
       if plotSurface or 'plot' in self.surfaceFind:
         _, ax1 = plt.subplots()
-        ax1.plot(h,y, 'C0o-')
-        ax1.plot(h[mask], y[mask],'C0o', markersize=10)
-        if fit is not None:
-          ax1.plot(h[mask], np.polyval(fit,h[mask]), '-k', linewidth=2)
-        ax1.plot(h[surface], y[surface], 'C9o', markersize=14)
+        ax1.plot(self.h,thresValues, 'C0o-')
+        ax1.plot(self.h[surface], thresValues[surface], 'C9o', markersize=14)
         ax1.axhline(0,linestyle='dashed')
-        ax1.set_ylim(bottom=0, top=np.percentile(y,80))
+        ax1.set_ylim(bottom=0, top=np.percentile(thresValues,80))
         ax1.set_xlabel(r'depth [$\mu m$]')
         ax1.set_ylabel(r'gradient [mN]', color='C0')
         ax1.grid()
-
-        ax2 = ax1.twinx()
-        ax2.plot(self.h, self.p,'C3-o')
-        ax2.plot(self.h[mask], self.p[mask],'C3o', markersize=10)
-        ax2.plot(self.h[surface], self.p[surface],'C1o', markersize=14)
-        ax2.set_ylim(bottom=0)
-        ax2.set_ylabel('force [mN]', color='C3')
         plt.show()
       self.h -= self.h[surface]  #only change surface, not force
   return success

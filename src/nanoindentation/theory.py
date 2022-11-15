@@ -164,9 +164,9 @@ def stiffnessFromUnloading(self, p, h, plot=False):
     # hf0 = h[mask][0] - P[mask][0]/B0
     # m0  = 1.5 #to get of axis
     try:
-      opt, _ = curve_fit(self.unloadingPowerFunc, h[mask],p[mask],
-                          p0=[B0,hf0,m0], bounds=bounds,
-                          ftol=1e-4, maxfev=3000 )#set ftol to 1e-4 if accept more and fail less
+      opt, _ = curve_fit(self.unloadingPowerFunc, h[mask],p[mask],      # pylint: disable=unbalanced-tuple-unpacking
+                         p0=[B0,hf0,m0], bounds=bounds,
+                         ftol=1e-4, maxfev=3000 )#set ftol to 1e-4 if accept more and fail less
       if self.verbose>2:
         print("Optimal values", opt)
       B,hf,m = opt

@@ -29,7 +29,6 @@ def tareDepthForce(self, slopeThreshold=100, compareRead=False, plot=False):
   h = self.hRaw   - self.hRaw[iSurface]                   #tare to point of contact
   p = self.pRaw   - self.pRaw[iSurface]
   t = self.tTotal - self.tTotal[iSurface]
-  #pylint error: "pVsHSlope", "pRaw", "tTotal", "frameStiffness" are not defined
   h-= p/self.frameStiffness                               #compensate depth for instrument deflection
   maskDrift = np.zeros_like(h, dtype=bool)
   maskDrift[self.iDrift[0]:self.iDrift[1]]   =  True
@@ -42,7 +41,6 @@ def tareDepthForce(self, slopeThreshold=100, compareRead=False, plot=False):
   print("Drift rate: %.3f nm/s"%(driftRate*1e3))
   h-= driftRate*t                                          #compensate thermal drift
   #compensate supporting mechanism (use original data since h changed)
-  # #pylint error: "slopeSupport" is not defined
   p-= self.slopeSupport*(self.hRaw-self.hRaw[iSurface])
   if compareRead:
     mask = self.h>0.010                                    #10nm
@@ -53,7 +51,7 @@ def tareDepthForce(self, slopeThreshold=100, compareRead=False, plot=False):
     error = (t[mask]-self.t[mask])/self.t[mask]
     print("Error in t: {0:.2f}%".format(np.linalg.norm(error)/len(error)*100.) )
   if plot:
-    fig, ax1 = plt.subplots()    # pylint warning: fig is unused variable
+    _, ax1 = plt.subplots()
     ax2 = ax1.twinx()
     ax1.plot(t,p, label='new')
     ax1.plot(self.t,self.p, label='read')
@@ -72,7 +70,6 @@ def tareDepthForce(self, slopeThreshold=100, compareRead=False, plot=False):
 
 def isFusedSilica(self, bounds=[[610,700],[71,73],[8.9,10.1]], numPoints=50):
   # -> how useful
-  # pylint warning: Dangerous default value [] as argument (1,796:2) [dangerous-default-value]
   """
   Plot K2P, Modulus, Hardness plot to determine, if test if made on fused silica
 
@@ -83,7 +80,7 @@ def isFusedSilica(self, bounds=[[610,700],[71,73],[8.9,10.1]], numPoints=50):
   """
   value      = ['k2p',      'modulus',   'hardness']
   plotBounds = [ [j-(j-i)*4,i+(j-i)*4] for [i,j] in bounds]
-  fig, ax = plt.subplots(1,3,figsize=(10,5))        # pylint warning: unused "fig"
+  _, ax = plt.subplots(1,3,figsize=(10,5))
   result = {'vendor':{ 'average':[],'in boundaries':[]},\
     'recalibration':{ 'average':[],'in boundaries':[]} }
 
@@ -117,7 +114,6 @@ def isFusedSilica(self, bounds=[[610,700],[71,73],[8.9,10.1]], numPoints=50):
     inBounds= round(inBounds.sum()*1.0 / len(inBounds),2)
     result['vendor']['in boundaries'].append(inBounds)
     success = bounds[j][0]<=average and average<=bounds[j][1]
-    #pylint warning: Simplify chained comparison between the operands (1,840:16) [chained-comparison]
     result['vendor']['success'] = success
     print('  Average '+value[j]+':',average,'[GPa] in boundary:',round(inBounds*100),'%','success:',success)
   print()
