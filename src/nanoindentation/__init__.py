@@ -21,6 +21,7 @@ Coding rules:
 - Change all variables: do not keep original-depth as can be reread and makes code less readable
 """
 import os
+from pathlib import Path
 import numpy as np
 from .definitions import Method, Vendor, FileType
 #import definitions
@@ -43,7 +44,7 @@ class Indentation:
   from .verification import verifyOneData, verifyOneData1, verifyReadCalc
   from .seldomUsedFunctions import tareDepthForce, analyseDrift
 
-  def __init__(self, fileName, nuMat= 0.3, tip=None, surfaceFind=None, verbose=2):
+  def __init__(self, fileName=None, nuMat= 0.3, tip=None, surfaceFind=None, verbose=2):
     """
     Initialize indentation experiment data
 
@@ -87,6 +88,9 @@ class Indentation:
     #set default parameters
     success = False
     self.zeroGradFilter = 'median'
+
+    if fileName is None:
+      fileName = str(Path(__file__).parent/'data/Example.xls')
     if not os.path.exists(fileName) and fileName!='':
       print("*ERROR* __init__: file does not exist",fileName)
       return
