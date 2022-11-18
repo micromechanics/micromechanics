@@ -30,8 +30,8 @@ If you want to contribute to the development, we develop at [github](https://git
 - Ruomeng (Nicole) Chen
 
 
-## Information for developers
-### Please first test the code
+# Information for developers
+## Please first test the code
 ``` bash
 pylint src/nanoindentation/
 python tests/testAgilent_xls.py
@@ -46,13 +46,13 @@ Then upload/create-pull-request to github, via
 git commit -a -m 'my message'
 ```
 
-### For publication on pypi
+## For publication on pypi
 1. Increase version number in pyproject.toml
 2. do the following steps in shell
 ``` bash
 python3 -m build
 python3 -m twine upload dist/*
 rm dist/*
-git commit -a -m 'Version 0.9.8'
+git commit -a -m 'Version 1.0.0'
 git push
 ```

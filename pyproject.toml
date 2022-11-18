@@ -28,4 +28,4 @@ dependencies = [
 
 [project.urls]
 "Homepage" = "https://micromechanics.readthedocs.io/en/main/"
-"Bug Tracker" = "https://github.com/micromechanics/main/issues"
+"Bug Tracker" = "https://github.com/micromechanics/nanoindentation/issues"
