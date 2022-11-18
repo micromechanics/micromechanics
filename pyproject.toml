@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "nanoindentation"
-version = "0.9.5"
+version = "0.9.6"
 authors = [
   { name="Steffen Brinckmann", email="sbrinckm@gmail.com"},
 ]
