@@ -7,6 +7,18 @@ The library can read:
 - zip-files which include all the files of the Micromaterials NanoXtreme
 - some common format which is based on the NeXus common data format
 
+Install by
+``` bash
+pip install nanoindentation
+```
+
+Run test using the default data
+``` python
+from nanoindentation import Indentation
+i = Indentation()
+i.plotAll()
+```
+
 More information as well as tutorials can be found at: [Read the docs](https://micromechanics.readthedocs.io/en/main/)
 
 If you want to contribute to the development, we develop at [github](https://github.com/micromechanics/main)
