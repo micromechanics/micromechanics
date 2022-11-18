@@ -41,6 +41,6 @@ git commit -a -m 'my message'
 python3 -m build
 python3 -m twine upload dist/*
 rm dist/*
-git commit -a -m 'Version 0.9.4'
+git commit -a -m 'Version 0.9.5'
 git push
 ```
