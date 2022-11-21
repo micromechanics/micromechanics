@@ -569,6 +569,8 @@ def nextHDF5Test(self):
     self.testName = self.testList.pop(0)
     if self.testName not in self.config or 'ignore' not in self.config[self.testName]:
       break
+  if self.testName in self.config and 'ignore' in self.config[self.testName]:  #handle last test
+    return False
   branch = self.datafile[self.testName]['data']
   inFile = list(branch.keys())
   nameDict   = json.load(open(Path(__file__).parent/'names.json'))

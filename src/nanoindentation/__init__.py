@@ -155,7 +155,9 @@ class Indentation:
       if self.newFileRead:                                  #skip/redo first run through
         self.newFileRead=False
       else:
-        self.nextTest()
+        reply = self.nextTest()
+        if not reply:
+          raise StopIteration
     else:
       raise StopIteration
     return self.testName
