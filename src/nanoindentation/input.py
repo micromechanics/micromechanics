@@ -621,14 +621,24 @@ def nextHDF5Test(self):
   self.valid = self.valid[validFull]
 
   #cleaning
-  self.p -= self.p[0]
   converter = self.datafile.attrs['uri'].split('/')[-1]
   if converter == 'hap2hdf.py':
-    mask = np.array(self.h)>=0
-    self.h = np.array(self.h)[mask]
-    self.p = np.array(self.p)[mask]
-    self.t = np.array(self.t)[mask]
-    self.valid = self.valid[mask]
+    ## Old and correct approach
+    #Fischer-Scope reset the time multiple times
+    resetPoints = np.where((self.t[1:]-self.t[:-1])<0)[0]
+    if len(resetPoints)>0:
+      self.t = self.t[resetPoints[-1]:]
+      self.h = self.h[resetPoints[-1]:]
+      self.p = self.p[resetPoints[-1]:]
+      self.valid = np.ones_like(self.t, dtype=bool)
+    ##Wrong approach: crop off neg. depth
+    # mask = np.array(self.h)>=0
+    # self.h = np.array(self.h)[mask]
+    # self.p = np.array(self.p)[mask]
+    # self.t = np.array(self.t)[mask]
+    # self.valid = self.valid[mask]
+  else:
+    self.p -= self.p[0]
   inFile = [element for element in inFile if element not in nameDict['__ignore__']]
   if len(inFile)>0:
     print("**INFO on",self.metaUser['measurementType'].split()[0],"fields not imported:",inFile)
