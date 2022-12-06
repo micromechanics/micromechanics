@@ -509,8 +509,10 @@ def loadHDF5(self,fileName):
       self.config = {}
   except:
     self.config = {}
-  if "_" in self.surfaceFind and bool(self.config):
+  if (not bool(self.surfaceFind)) and bool(self.config):
     self.surfaceFind = { i:self.config[i] for i in self.config if not i.startswith('test_')}
+  else:
+    self.config = { i:self.surfaceFind[i] for i in self.surfaceFind if i.startswith('test_')}
   for key in self.datafile:
     if re.match(r'test_\d+',key):
       self.testList.append(key)
