@@ -22,7 +22,7 @@ def calcYoungsModulus(self, minDepth=-1, plot=False):
       average Young's modulus, minDepth>0
   """
   self.modulusRed, self.Ac, self.hc = \
-    self.OliverPharrMethod(self.slope, self.p[self.valid], self.h[self.valid])
+    self.OliverPharrMethod(self.slope, self.p[self.valid], self.h[self.valid], self.nonMetal)
   modulus = self.YoungsModulus(self.modulusRed)
   if minDepth>0:
     #eAve = np.average(       self.modulusRed[ self.h>minDepth ] )
@@ -60,7 +60,7 @@ def calcHardness(self, minDepth=-1, plot=False):
       plot: plot comparison this calculation to data read from file
   """
   #use area function
-  hardness=self.p[self.valid]/self.OliverPharrMethod(self.slope, self.p[self.valid], self.h[self.valid])[1]
+  hardness=self.p[self.valid]/self.OliverPharrMethod(self.slope, self.p[self.valid], self.h[self.valid], self.nonMetal)[1]
   if plot:
     mark = '-' if len(hardness)>1 else 'o'
     plt.plot(self.h[self.valid], hardness, mark+'b', label='calc')
@@ -403,4 +403,11 @@ def saveToUserMeta(self):
             "hc_um":list(self.hc), "E_GPa":list(self.modulus),"H_GPa":list(self.hardness),"segment":segments}
   self.metaUser.update(meta)
   self.metaUser['code'] = __file__.split('/')[-1]
+  return
+
+
+def correctThermalDrift(self):
+  """
+  not perfectly implemented
+  """
   return

@@ -35,7 +35,7 @@ class Indentation:
   from .input import loadAgilent, nextAgilentTest, loadHysitron, loadMicromaterials, nextMicromaterialsTest, \
     loadFischerScope, nextFischerScopeTest, loadHDF5, nextHDF5Test, restartFile
   from .main import calcYoungsModulus, calcHardness, calcStiffness2Force, analyse, \
-    identifyLoadHoldUnload, identifyLoadHoldUnloadCSM, nextTest, saveToUserMeta
+    identifyLoadHoldUnload, identifyLoadHoldUnloadCSM, nextTest, saveToUserMeta, correctThermalDrift
   from .theory import YoungsModulus, ReducedModulus, OliverPharrMethod, inverseOliverPharrMethod,\
     stiffnessFromUnloading, unloadingPowerFunc
   from .hertz import popIn, hertzFit
@@ -44,7 +44,7 @@ class Indentation:
   from .verification import verifyOneData, verifyOneData1, verifyReadCalc
   from .seldomUsedFunctions import tareDepthForce, analyseDrift
 
-  def __init__(self, fileName=None, nuMat= 0.3, tip=None, surfaceFind=None, verbose=2):
+  def __init__(self, fileName=None, nuMat= 0.3, tip=None, surfaceFind=None, nonMetal=1., verbose=2):
     """
     Initialize indentation experiment data
 
@@ -59,6 +59,7 @@ class Indentation:
     self.nuTip      = 0.07
     self.modulusTip = 1140                                  #GPa from Oliver,Pharr Method paper
     self.beta = 0.75                                        #beta: contact depth coefficient
+    self.nonMetal = nonMetal                                #switch between metal=0 and nonMetal=default=1.
     self.verbose = verbose
     self.method    = Method.ISO                             #iso default: csm uses different methods
     self.onlyLoadingSegment = False                         #use all data by default

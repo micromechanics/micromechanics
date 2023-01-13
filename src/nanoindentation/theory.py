@@ -30,9 +30,8 @@ def ReducedModulus(self, modulus, nuThis=-1):
   Calculate the reduced modulus from the Youngs modulus
 
   Args:
-      modulus (float): Youngs modulus [GPa]
-
-      nuThis (float): use a non-standard Young's modulus
+    - modulus (float): Youngs modulus [GPa]
+    - nuThis (float): use a non-standard Young's modulus
 
   Returns:
       float: Reduced Young's modulus
@@ -44,39 +43,34 @@ def ReducedModulus(self, modulus, nuThis=-1):
   return modulusRed
 
 
-def OliverPharrMethod(self, stiffness, pMax, h):
+def OliverPharrMethod(self, stiffness, pMax, h, nonMetal=1.):
   """
   Conventional Oliver-Pharr indentation method to calculate reduced Modulus modulusRed
 
   The following equations are used in that order:
-
-    hc = h-beta pMax/stiffness
-
-    Ac = hc(prefactors)
-
-    stiffness = 2/sqrt(pi) sqrt(Ac) modulusRed
-
-    Ac the contact area, hc the contact depth
+  - hc = h-beta pMax/stiffness
+  - Ac = hc(prefactors)
+  - stiffness = 2/sqrt(pi) sqrt(Ac) modulusRed
+  - Ac the contact area, hc the contact depth
 
   Args:
       stiffness (float): stiffness = slope dP/dh
-
       pMax (float): maximal force
-
       h (float): total penetration depth
+      nonMetal (float): ability to change between metal=0 and nonMetal=1
 
   Returns:
       list: modulusRed, Ac, hc
   """
   threshAc = 1.e-12  #units in um: threshold = 1pm^2
-  hc = h - self.beta*pMax/stiffness
+  hc = h - nonMetal*self.beta*pMax/stiffness
   Ac   = self.tip.areaFunction(hc)
   Ac[Ac< threshAc] = threshAc  # prevent zero or negative area that might lock sqrt
   modulus   = stiffness / (2.0*np.sqrt(Ac)/np.sqrt(np.pi))
   return [modulus, Ac, hc]
 
 
-def inverseOliverPharrMethod(self, stiffness, pMax, modulusRed):
+def inverseOliverPharrMethod(self, stiffness, pMax, modulusRed, nonMetal=1.):
   """
   Inverse Oliver-Pharr indentation method to calculate contact area Ac
 
@@ -85,10 +79,9 @@ def inverseOliverPharrMethod(self, stiffness, pMax, modulusRed):
 
   Args:
       stiffness (float): slope dP/dh at the maximum load pMax
-
       pMax (float): maximal force
-
       modulusRed (float): modulusRed
+      nonMetal (float): ability to change between metal=0 and nonMetal=1
 
   Returns:
       float: h penetration depth
@@ -96,7 +89,7 @@ def inverseOliverPharrMethod(self, stiffness, pMax, modulusRed):
   Ac = math.pow( stiffness / (2.0*modulusRed/math.sqrt(math.pi))  ,2)
   hc0 = math.sqrt(Ac / 24.494)           # first guess: perfect Berkovich
   hc = self.tip.areaFunctionInverse(Ac, hc0=hc0)
-  h = hc + self.beta*pMax/stiffness
+  h = hc + nonMetal*self.beta*pMax/stiffness
   return h.flatten()
 
 
@@ -154,10 +147,10 @@ def stiffnessFromUnloading(self, p, h, plot=False):
     #initial values of fitting
     hf0    = h[mask][-1]/2.0
     m0     = 2
-    B0     = max(abs(p[0] / np.power(h[0]-hf0,m0)), 0.001)  #prevent neg. or zero
+    B0     = max(abs(p[mask][0] / np.power(h[mask][0]-hf0,m0)), 0.001)  #prevent neg. or zero
     bounds = [[0,0,0.8],[np.inf, max(np.min(h[mask]),hf0), 10]]
     if self.verbose>2:
-      print("Initial fitting values", hf0, m0, B0)
+      print("Initial fitting values B,hf,m", B0,hf0,m0)
       print("Bounds", bounds)
     # Old linear assumptions
     # B0  = (P[mask][-1]-P[mask][0])/(h[mask][-1]-h[mask][0])
@@ -168,7 +161,7 @@ def stiffnessFromUnloading(self, p, h, plot=False):
                          p0=[B0,hf0,m0], bounds=bounds,
                          ftol=1e-4, maxfev=3000 )#set ftol to 1e-4 if accept more and fail less
       if self.verbose>2:
-        print("Optimal values", opt)
+        print("Optimal values B,hf,m", opt)
       B,hf,m = opt
       if np.isnan(B):
         raise ValueError("NAN after fitting")
@@ -195,8 +188,10 @@ def stiffnessFromUnloading(self, p, h, plot=False):
       validMask[ np.where(mask)[0][0] ]=True
     stiffness.append(stiffnessPlot)
     if plot:
-      plt.plot(h[mask],   self.unloadingPowerFunc(h[mask],B,hf,m),'m-')
-      plt.plot(h[mask],   stiffnessPlot*h[mask]+stiffnessValue, 'r--', lw=3)
+      x_ = np.linspace(0.5*h[mask].max(), h[mask].max(), 10)
+      plt.plot(x_,   self.unloadingPowerFunc(x_,B,hf,m),'m-')
+      plt.plot(x_,   self.unloadingPowerFunc(x_,B0,hf0,m0),'g-')
+      plt.plot(x_,   stiffnessPlot*x_+stiffnessValue, 'r--', lw=3)
   if plot:
     plt.xlim(left=0)
     plt.ylim(bottom=0)
