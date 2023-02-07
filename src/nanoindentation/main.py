@@ -410,4 +410,5 @@ def correctThermalDrift(self):
   """
   not perfectly implemented
   """
+  print(self)
   return
