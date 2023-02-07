@@ -21,7 +21,7 @@ def loadAgilent(self, fileName):
   self.indicies = {}
   workbook = pd.read_excel(fileName,sheet_name='Required Inputs')
   self.metaVendor.update( dict(workbook.iloc[-1]) )
-  if self.metaVendor['Poissons Ratio']!=self.nuMat and self.verbose>0:
+  if 'Poissons Ratio' in self.metaVendor and self.metaVendor['Poissons Ratio']!=self.nuMat and self.verbose>0:
     print("*WARNING*: Poisson Ratio different than in file.",self.nuMat,self.metaVendor['Poissons Ratio'])
   self.datafile = pd.read_excel(fileName, sheet_name=None)
   tagged = []
