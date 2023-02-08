@@ -18,12 +18,12 @@ sys.path.insert(0, os.path.abspath('../../src/nanoindentation'))
 # -- Project information -----------------------------------------------------
 
 project = 'micromechanics'
-copyright = '2021, VPY'
-author = 'VPY'
+copyright = u'2022-{}, PASTA-ELN team'.format(datetime.datetime.now().year)
+author = u'Micromechanics team'
 
 # The full version, including alpha/beta/rc tags
-release = '1.0.0'
-
+version = "1.1.0"
+release = version
 
 # -- General configuration ---------------------------------------------------
 
