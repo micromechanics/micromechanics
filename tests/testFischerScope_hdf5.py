@@ -9,11 +9,11 @@ class TestStringMethods(unittest.TestCase):
 	def test_main(self):
 		try:
 			### MAIN ###
-			i = Indentation('examples/FischerScope/Nafion_15_100_5.hdf5')
+			i = Indentation('../examples/FischerScope/N1_1.hdf5')
 			for testname in i:
 				i.analyse()
 			i.plot(show=3)
-			self.assertTrue((   abs(np.sum(i.modulus)-0.4132913081938913)<1e-6 ),'Calculation of modulus changed')
+			self.assertTrue((   abs(np.sum(i.modulus)-0.6530228070548203)<1e-6 ),'Calculation of modulus changed')
 			### END OF MAIN ###
 			print('\n*** DONE WITH VERIFY ***')
 

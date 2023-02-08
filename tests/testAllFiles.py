@@ -11,7 +11,7 @@ class TestMethods(unittest.TestCase):
 	def test_all_filesn(self):
 		try:
 			### MAIN ###
-			for path, _, files in os.walk('examples'):
+			for path, _, files in os.walk('../examples'):
 				if files == []:
 					continue
 				for fileName in files:
