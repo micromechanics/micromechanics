@@ -55,21 +55,20 @@ class Tif:
     #read input file and identify the type
     self.producer = "Else"
     if fileType is None:
-      fileHandle = open(self.fileName,'r', encoding='iso-8859-1') #based on ascii
-      for line in fileHandle:
-        if "SV_SERIAL_NUMBER" in line:  #file starts with 49492a0008
-          self.producer = "Zeiss"
-          break
-        if "[User]" in line:
-          self.producer = "FEI"
-          break
-        if '<Fibics version="1.0">' in line:
-          self.producer = "NPVE"
-          break
-        if 'ImageJ=' in line:
-          self.producer = 'ImageJ'  #not handled since I don't see any length or unit in it
-          break
-      fileHandle.close()
+      with open(self.fileName,'r', encoding='iso-8859-1') as fileHandle:
+        for line in fileHandle:
+          if "SV_SERIAL_NUMBER" in line:  #file starts with 49492a0008
+            self.producer = "Zeiss"
+            break
+          if "[User]" in line:
+            self.producer = "FEI"
+            break
+          if '<Fibics version="1.0">' in line:
+            self.producer = "NPVE"
+            break
+          if 'ImageJ=' in line:
+            self.producer = 'ImageJ'  #not handled since I don't see any length or unit in it
+            break
     else:
       self.producer = fileType
     if self.producer=='Else':
@@ -635,8 +634,7 @@ class Tif:
       average = imageArray.sum(axis=1) / self.widthPixel
     scale = mean / average					#scaling factor vector
     # do actual change of the pixels
-    if start<0:
-      start = 0
+    start = max(start, 0)
     if end<0:
       end = len(scale)  					#use scale here since it automatically adopts to horizontal/vertical
     for i in range (start, end):
@@ -693,7 +691,7 @@ class Tif:
       #fftImage[:,:,2][mask[:,:,0]<255] = 0
       fftImage[:,:,0] = (magnitude_spectrum*255/np.max(magnitude_spectrum)) * (mask[:,:,0])
       fftImage[:,:,0][mask[:,:,0]>250] = 0
-      if zoom<1: zoom=1
+      zoom = max(zoom, 1)
       xpad =int( self.widthPixel*(1.0-1.0/np.sqrt(zoom))/2 )
       ypad =int(self.heightPixel*(1.0-1.0/np.sqrt(zoom))/2 )
       xend =self.widthPixel-xpad
@@ -747,7 +745,7 @@ class Tif:
     imCorr = np.zeros( imArray.shape )
     for i in range(len(ysum)):
       correction = fitCurve(i)-np.average(ysum)
-      if correction>0: correction=0
+      correction = max(correction, 0)
       imCorr[i,:] = imArray[i,:]-(correction)
     imCorr[imCorr<0] = 0
     imCorr = imCorr.astype(np.uint8)

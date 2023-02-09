@@ -243,7 +243,6 @@ def loadHysitron(self, fileName, plotContact=False):
       # create loading-holding-unloading cycles
       #since the first / last point of each segment are double in both segments
       listLoading = np.where(segmentDeltaP>0.1 )[0]
-      listUnload  = np.where(segmentDeltaP<-0.1)[0]
       segmentPoints  -= 1
       segmentPoints[0]+=1
       segPnts   = np.cumsum(segmentPoints)

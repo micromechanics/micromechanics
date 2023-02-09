@@ -3,7 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import ndimage
-import scipy.signal as signal
+from scipy import signal
 from scipy.ndimage import gaussian_filter1d
 from scipy.optimize import fmin_l_bfgs_b
 from .definitions import Vendor, Method
@@ -363,7 +363,17 @@ def nextTest(self, newTest=True, plotSurface=False):
 
     if found:
       #interpolate nan with neighboring values
-      nans, tempX = np.isnan(thresValues), lambda z: z.nonzero()[0]
+      nans = np.isnan(thresValues)
+      def tempX(z):
+        """
+        Temporary function
+
+        Args:
+          z (numpy.array): input
+        Returns:
+          (numpy.array): output
+        """
+        return z.nonzero()[0]
       thresValues[nans]= np.interp(tempX(nans), tempX(~nans), thresValues[~nans])
 
       #filter this data
@@ -410,7 +420,7 @@ def saveToUserMeta(self):
             "pMax_mN":list(self.p[self.valid]),"modulusRed_GPa":list(self.modulusRed),"A_um2":list(self.Ac),\
             "hc_um":list(self.hc), "E_GPa":list(self.modulus),"H_GPa":list(self.hardness),"segment":segments}
   self.metaUser.update(meta)
-  self.metaUser['code'] = __file__.split('/')[-1]
+  self.metaUser['code'] = __file__.rsplit('/', maxsplit=1)[-1]
   return
 
 
