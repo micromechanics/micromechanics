@@ -83,7 +83,7 @@ def popIn(self, correctH=True, plot=True, removeInitialNM=2.):
   h = self.h[self.valid][mask]
   p = self.p[self.valid][mask]
 
-  depthRate = (h[1:]-h[:-1])
+  depthRate = h[1:]-h[:-1]
   x_        = np.arange(len(depthRate))
   fits      = np.polyfit(x_,depthRate,2)  #substract 2nd order fit b/c depthRate increases over time
   depthRate-= np.polyval(fits,x_)

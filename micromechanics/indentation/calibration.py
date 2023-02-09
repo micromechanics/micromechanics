@@ -2,7 +2,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import savgol_filter#, medfilt
-import scipy.interpolate as interpolate
+from scipy import interpolate
 import lmfit
 #import definitions
 from .definitions import Method
@@ -34,8 +34,8 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepthStiffness=1.0, critFo
   temp = {'method': self.method, 'onlyLoadingSegment': self.onlyLoadingSegment}
   self.restartFile()
   self.tip.compliance = frameCompliance
-  for item in temp:
-    setattr(self, item, temp[item])
+  for key, value in temp.items():
+    setattr(self, key, value)
   slope, h, p = np.array([], dtype=np.float64), np.array([],dtype=np.float64), np.array([],dtype=np.float64)
   if self.method==Method.CSM:
     self.nextTest(newTest=False)  #rerun to ensure that onlyLoadingSegment used
@@ -198,10 +198,10 @@ def calibrateStiffness(self,critDepth=0.5,critForce=0.0001,plotStiffness=True, r
   print("fit f(x)=",round(param[0],5),"*x+",round(param[1],5))
   frameStiff = 1./param[1]
   frameCompliance = param[1]
-  print("  frame compliance: %8.4e um/mN = %8.4e m/N"%(frameCompliance,frameCompliance/1000.))
+  print(f"  frame compliance: {frameCompliance:8.4e} um/mN = {frameCompliance/1000.:8.4e} m/N")
   stderrPercent = np.abs( np.sqrt(np.diag(covM)[1]) / param[1] * 100. )
-  print("  compliance and stiffness standard error in %:",round(stderrPercent,2) )
-  print("  frame stiffness: %6.0f mN/um = %6.2e N/m"%(frameStiff,1000.*frameStiff))
+  print("  compliance and stiffness standard error in %: "+round(stderrPercent,2) )
+  print(f"  frame stiffness: {frameStiff:6.0f} mN/um = {1000.*frameStiff:6.2e} N/m")
   self.tip.compliance = frameCompliance
 
   #end of function

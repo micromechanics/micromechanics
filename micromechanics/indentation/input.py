@@ -58,9 +58,11 @@ def loadAgilent(self, fileName):
         for cell in df.columns:
           if cell in code:
             self.indicies[code[cell]] = cell
-            if self.verbose>2: print("     %-30s : %-20s "%(cell,code[cell]) )
+            if self.verbose>2:
+              print(f"     {cell:<30} : {code[cell]:<20} ")
           else:
-            if self.verbose>2: print(" *** %-30s NOT USED"%cell)
+            if self.verbose>2:
+              print(f" *** {cell:<30} NOT USED")
           if "Harmonic" in cell or "Dyn. Frequency" in cell:
             self.method = Method.CSM
         #reset to ensure default values are set
@@ -247,11 +249,11 @@ def loadHysitron(self, fileName, plotContact=False):
       segPnts   = np.cumsum(segmentPoints)
       #don't use identifyLoadHoldUnload since those points are known
       self.iLHU = []
-      for idx, _ in enumerate(listLoading):
-        iSurface = segPnts[listLoading[idx]-1]+1
-        iLoad    = segPnts[listLoading[idx]]
-        iHold    = segPnts[listUnload[idx]-1]+1
-        iUnload  = segPnts[listUnload[idx]]
+      for item in listLoading:
+        iSurface = segPnts[item-1]+1
+        iLoad    = segPnts[item]
+        iHold    = segPnts[item-1]+1
+        iUnload  = segPnts[item]
         self.iLHU.append( [iSurface,iLoad,iHold,iUnload] )
 
     #### TXT FILE ###
@@ -358,7 +360,8 @@ def loadMicromaterials(self, fileName):
     self.identifyLoadHoldUnload()
   elif fileName.endswith('.zip'):
     #if zip-archive of multilpe files
-    self.datafile = ZipFile(fileName)
+    with ZipFile(fileName) as zipIn:
+      self.datafile = zipIn
     self.testList = self.datafile.namelist()
     if len(np.nonzero([not i.endswith('txt') for i in self.datafile.namelist()])[0])>0:
       print('Not a Micromaterials zip of txt-files')
@@ -594,7 +597,8 @@ def nextHDF5Test(self):
     return False
   branch = self.datafile[self.testName]['data']
   inFile = list(branch.keys())
-  nameDict   = json.load(open(Path(__file__).parent/'terms.json'))
+  with open(Path(__file__).parent/'terms.json', encoding='utf-8') as fIn:
+    nameDict   = json.load(fIn)
   if self.metaUser['measurementType'].split()[0] in nameDict:
     nameDict = nameDict[self.metaUser['measurementType'].split()[0]]
   else:
