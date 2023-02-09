@@ -91,7 +91,7 @@ def verifyReadCalc(self, plot=True):
       plt.xlim(left=0)
       plt.ylim([0,np.max(self.hc)])
       plt.xlabel('time [s]')
-      plt.ylabel('contact depth $h_c$ [$\mu m$]')
+      plt.ylabel('contact depth $h_c$ [$\mu m$]') # pylint: disable=anomalous-backslash-in-string
       plt.title(f"Error in hc: {np.linalg.norm(hc-self.hc):.2e}" )
       plt.show()
     else:
@@ -106,7 +106,7 @@ def verifyReadCalc(self, plot=True):
       plt.xlim(left=0)
       plt.ylim([0,np.max(self.Ac)])
       plt.xlabel('time [s]')
-      plt.ylabel('contact area $A_c$ [$\mu m^2$]')
+      plt.ylabel('contact area $A_c$ [$\mu m^2$]') # pylint: disable=anomalous-backslash-in-string
       plt.title(f"Error in Ac: {np.linalg.norm(Ac-self.Ac):.2e}")
       plt.show()
     else:
