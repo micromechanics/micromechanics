@@ -5,23 +5,18 @@ import matplotlib.pyplot as plt
 from scipy.optimize import newton
 
 class Tip:
-  """
-  The main class to define indenter shape and other default values.
-
-  Initialize indenter shape
-
-  Args:
-    shape: list of prefactors (defualt = "perfect");
-
-    interpFunction: tip-shape function Ac = f(hc), when it is given, other information are superseeded;
-
-    compliance: additional compliance in test [um/mN] (sensible values: 0.0001..0.01);
-
-    plot: plot indenter shape;
-
-    verbose: output;
-  """
+  """The main class to define indenter shape and other default values."""
   def __init__(self, shape="perfect", interpFunction=None, compliance=0.0, plot=False, verbose=0):
+    """
+    Initialize indenter shape
+
+    Args:
+      shape (list): list of prefactors (defualt = "perfect")
+      interpFunction (function): tip-shape function Ac = f(hc), when it is given, other information are superseeded
+      compliance (float): additional compliance in test [um/mN] (sensible values: 0.0001..0.01)
+      plot (bool): plot indenter shape
+      verbose (bool): output
+    """
     #define indenter shape: could be overwritten
     if callable(interpFunction):
       self.prefactors = None
@@ -48,6 +43,10 @@ class Tip:
 
 
   def __repr__(self):
+    """ Print tip information
+    Returns:
+      str: text representation
+    """
     outString = 'compliance: '+str(self.compliance)+';   '
     if self.prefactors is None:
       outString+= 'with interpolation function with '+str(len(self.interpFunction.x))+' points'
@@ -59,10 +58,10 @@ class Tip:
   def setInterpolationFunction(self,interpFunction):
     """
     The interpolation of tip-shape function Ac = f(hc).
-
-    From Oliver-Pharr Method, projected area of contact Ac can be obtained by measuring contact depth hc.
-
-    When the interpolation function is given, other information are superseeded.
+    - From Oliver-Pharr Method, projected area of contact Ac can be obtained by measuring contact depth hc.
+    - When the interpolation function is given, other information are superseeded.
+    Args:
+       interpFunction (function): numpy interpolation function
     """
     self.interpFunction = interpFunction
     self.prefactors = None
@@ -85,7 +84,7 @@ class Tip:
                does not account for cone at top
 
    Args:
-       h [array]: contact depth in um
+       h (numpy.array): contact depth in um
 
     Returns:
        area: projected contact area [um^2]
@@ -140,12 +139,11 @@ class Tip:
     -  "perfect" type area function of a perfect Berkovich A=3*sqrt(3)*tan(65.27)^2 hc^2 = 24.494 hc^2
 
     Args:
-       area: projected contact area
-
-       hc0: initial Guess contact depth
+       area (numpy.array): projected contact area
+       hc0 (numpy.array): initial Guess contact depth
 
     Returns:
-       h: total penetration depth
+       numpy.array: h = total penetration depth
     """
     ## define function in form f(x)-y=0
     def function(height):
@@ -167,15 +165,11 @@ class Tip:
     analytical: perfect shape is 2.792254*x
 
     Args:
-       maxDepth: maximum depth [um] to plot; default=10um
-
-       steps: number of steps for plotting
-
-       show: show figure
-
-       tipLabel: label for this tip
-
-       fileName: if given, save to file
+       maxDepth (numpy.array): maximum depth [um] to plot; default=10um
+       steps (int): number of steps for plotting
+       show (bool): show figure
+       tipLabel (str): label for this tip
+       fileName (str): if given, save to file
     """
     zoom = 0.5
     hc = np.linspace(0, maxDepth, steps)

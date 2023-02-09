@@ -49,10 +49,12 @@ class Indentation:
     Initialize indentation experiment data
 
     Args:
-       fileName: fileName to open (.xls, .hld)
-       nuMat: material's Poisson ratio.
-       tip:  tip class to use; None=perfect
-       verbose: the higher, the more information printed: 2=default, 1=minimal, 0=print nothing
+       fileName (str): fileName to open (.xls, .hld)
+       nuMat (float): material's Poisson ratio.
+       tip (tip):  tip class to use; None=perfect
+       surfaceFind (dict): dictonary describing the surface find
+       nonMetal (float): is it a metal=1 or armorphous=0
+       verbose (int): the higher, the more information printed: 2=default, 1=minimal, 0=print nothing
     """
     np.seterr(divide='ignore', invalid='ignore')
     self.nuMat = nuMat                                      #nuMat: material's Posson ratio

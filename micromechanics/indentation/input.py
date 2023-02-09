@@ -7,14 +7,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from .definitions import Method, Vendor
-#import definitions
 
 def loadAgilent(self, fileName):
   """
   Initialize G200 excel file for processing
 
   Args:
-      fileName: file name
+      fileName (str): file name
+  Returns:
+      bool: success
   """
   self.testList = []
   self.fileName = fileName    #one file can have multiple tests
@@ -88,7 +89,9 @@ def nextAgilentTest(self, newTest=True):
   - modulus, hardness and k2p always only use the one with frame correction
 
   Args:
-    newTest: take next sheet (default)
+    newTest (bool): take next sheet (default)
+  Returns:
+    bool: success
   """
   if self.vendor!=Vendor.Agilent: return False #cannot be used
   if len(self.testList)==0: return False   #no sheet left
@@ -148,9 +151,11 @@ def loadHysitron(self, fileName, plotContact=False):
   Load Hysitron hld or txt file for processing, only contains one test
 
   Args:
-      fileName: file name
+    fileName (str): file name
+    plotContact (bool): plot intial contact identification (use this method for access)
+  Returns:
+    bool: success
 
-      plotContact: plot intial contact identification (use this method for access)
   """
   from io import StringIO
   self.fileName = fileName
@@ -330,7 +335,9 @@ def loadMicromaterials(self, fileName):
   Load Micromaterials txt/zip file for processing, contains only one test
 
   Args:
-      fileName: file name or file-content
+      fileName (str): file name or file-content
+  Returns:
+      bool: success
   """
   if isinstance(fileName, io.TextIOWrapper) or fileName.endswith('.txt'):
     #if singe file or file in zip-archive
@@ -368,6 +375,9 @@ def loadMicromaterials(self, fileName):
 def nextMicromaterialsTest(self):
   """
   Go to next file in zip or hdf5-file
+
+  Returns:
+      bool: success
   """
   if self.vendor!=Vendor.Micromaterials: #cannot be used
     return False
@@ -385,7 +395,9 @@ def loadFischerScope(self,fileName):
   Initialize txt-file from Fischer-Scope for processing
 
   Args:
-    fileName: file name
+    fileName (str): file name
+  Returns:
+    bool: success
   """
   self.metaVendor = {'date':[], 'shape correction':[], 'coordinate x':[], 'coordinate y':[],
           'work elastic':[], 'work nonelastic':[], 'EIT/(1-vs^2) [GPa]':[], 'HIT [N/mm]':[],
@@ -471,6 +483,9 @@ def loadFischerScope(self,fileName):
 def nextFischerScopeTest(self):
   """
   Go to next test
+
+  Returns:
+      bool: success
   """
   df = self.workbook.pop(0)
   self.testName = self.testList.pop(0)
@@ -487,7 +502,9 @@ def loadHDF5(self,fileName):
   Initialize hdf5-file that all converters are producing
 
   Args:
-    fileName: file name
+    fileName (str): file name
+  Returns:
+    bool: success
   """
   self.datafile = h5py.File(fileName, mode='r') #mode='r+', locking=False)
   if self.verbose>1:
@@ -561,8 +578,10 @@ def loadHDF5(self,fileName):
 def nextHDF5Test(self):
   """
   Go to next branch in HDF5 file
+  - TODO check for non CSM
 
-  TODO check for non CSM
+  Returns:
+      bool: success
   """
   #organize general data
   if len(self.testList)==0: #no sheet left
@@ -655,7 +674,9 @@ def isfloat(value):
   Determine if value is float
 
   Args:
-    value: number to be tested
+    value (float): number to be tested
+  Returns:
+    bool: result
   """
   try:
     float(value)

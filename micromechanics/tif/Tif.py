@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 """
 @file
-@brief Class to allow for Zeiss TIF image loading and enhancing using python
+@brief Class to allow for Zeiss/FEI-ThermoFischer TIF image loading and enhancing using python
 # Unit: all sizes are in um: pixel-size, image-width
 # All images have an image, pixelsize, width, height
 """
-import logging, re, math, os, sys, warnings
+import logging, re, math, os, sys, warnings, codecs
+from xml.dom import minidom
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import ndimage
 from PIL import Image, ImageDraw, ImageFont
 from skimage import img_as_float, exposure
-from xml.dom import minidom
 import cv2
-import codecs
 
 class Tif:
+  """Tif class to read SEM images"""
   ##
   # @name IMPORT METHODS
   #@{
@@ -24,9 +24,11 @@ class Tif:
     Read input file, initialize things
 
     Args:
-       fileName: file name in the present directory
-       fileType: type of Tif file ("Zeiss", "NPVE", "Void", "NoQuestion"); if no type is given, the type will be identified (which takes time); NoQuestion does not ask for non-Zeiss,NPVE file type
-       pixelSize: pixel size for conventional tif-files
+       fileName (str): file name in the present directory
+       fileType (str): type of Tif file ("Zeiss", "NPVE", "Void", "NoQuestion");
+                       if no type is given, the type will be identified (which takes time);
+                       NoQuestion does not ask for non-Zeiss,NPVE file type
+       pixelSize (float): pixel size for conventional tif-files
     """
     #initialize
     fontName = 'arial.ttf'
@@ -39,8 +41,16 @@ class Tif:
     if self.fontFile is None:
       logging.error("ERROR: FOUND NO FONT FILE")
     self.fileName = fileName
+    #set default values
     self.meta = {}
+    self.image = None
+    self.origImage = None
+    self.pixelSize = -1
+    self.width = -1
+    self.widthPixel = -1
+    self.heightPixel = -1
     self.bestLength = -1
+    self.barPixel = -1
 
     #read input file and identify the type
     self.producer = "Else"
@@ -64,8 +74,8 @@ class Tif:
       self.producer = fileType
     if self.producer=='Else':
       with open(self.fileName,'rb') as fIn:   #based on initial digits
-       if fIn.read(16).hex()=='49492a0010c000005448554d42313238':
-         self.producer = 'TEM'
+        if fIn.read(16).hex()=='49492a0010c000005448554d42313238':
+          self.producer = 'TEM'
 
     logging.info("Open file: "+fileName+' producer '+self.producer)    #all other types
     if self.producer == "Zeiss":
@@ -139,7 +149,7 @@ class Tif:
     #parse the xml line in the file
     xmlLine = ""
     with open(self.fileName,'r', encoding='iso-8859-1') as fIn:
-      for line in fileHandle:
+      for line in fIn:
         if '<Fibics version="1.0">' in line:
           xmlLine = line
           break
@@ -206,7 +216,7 @@ class Tif:
     Init conventional file
 
     Args:
-       pixelSize: pixel size in um
+       pixelSize (float): pixel size in um
     """
     logging.info("  Start initConventional")
     self.origImage = Image.open(self.fileName)
@@ -227,9 +237,9 @@ class Tif:
     (image, pixelSize): image and pixelSize in a list
 
     Args:
-      image: image
-      pixelSize: pixelSize
-      copy: create backup copy. Don't do if big file
+      image (PIL): image
+      pixelSize (float): pixelSize
+      copy (bool): create backup copy. Don't do if big file
     """
     if copy:
       self.origImage = image.convert("P")
@@ -253,7 +263,7 @@ class Tif:
     Find the optimal scale-bar, if no length is given
 
     Args:
-       length: length of scale bar in um, only integer values are used
+       length (float): length of scale bar in um, only integer values are used
     """
     if length is None:
       quarter = round(self.width/4.)
@@ -274,12 +284,12 @@ class Tif:
     Add scale-bar to image
 
     Args:
-       site: where to put the scale bar<br> bottom-left "BL"<br>
+       site (str): where to put the scale bar<br> bottom-left "BL"<br>
              bottom-right "BR"<br> top-left "TL"<br> top-right "TR"<br> bottom "B"
-       length: length of scale bar in um; if not give calculate automatically
-       scale: of font and rectangle. Default: widthInPixel / 16, which is for a 1024x786 image = 64
+       length (float): length of scale bar in um; if not give calculate automatically
+       scale (int): of font and rectangle. Default: widthInPixel / 16, which is for a 1024x786 image = 64
     """
-    if self.bestLength < 0 or length!=None:
+    if self.bestLength < 0 or length is not None:
       self.findScaleBar(length)
     draw = ImageDraw.Draw(self.image)
     if scale < 0:
@@ -306,7 +316,7 @@ class Tif:
       draw.rectangle((offsetX+scale/10, offsetY+scale*7/10, offsetX+self.barPixel+scale/10, offsetY+scale*9/10), 'black')    #black bar
       draw.text( (offsetX+(self.barPixel+scale/5-textWidth)/2,offsetY), textString, 'black', font=font)
     else:
-      logging.error("image mode not supported", self.image.mode)
+      logging.error("image mode not supported "+self.image.mode)
 
 
 
@@ -349,8 +359,8 @@ class Tif:
     Show grey-scale histogram and cumulative histogram
 
     Args:
-       log: use a logarithmic scale on the y-scale
-       show: show figure
+       log (bool): use a logarithmic scale on the y-scale
+       show (bool): show figure
     """
     #create histograms
     img = img_as_float(self.image)
@@ -373,10 +383,10 @@ class Tif:
     Save file as jpg, use the same base as initial TIF image
 
     Args:
-       fileType: jpg, other options eps, png <br>
+       fileType (str): jpg, other options eps, png <br>
             alternative is to enter full filename (must be longer than 4 characters)
-       scale: scale down image by ratio
-       convertGrayscale: convert to gray-scale image
+       scale (float): scale down image by ratio
+       convertGrayscale (bool): convert to gray-scale image
     """
     if convertGrayscale: self.image = self.image.convert("L")
     fileName = os.path.splitext(self.fileName)[0]
@@ -407,10 +417,10 @@ class Tif:
     set those that you want to crop, unset ones are not altered
 
     Args:
-       xMin: minimum x-value that should be cut away
-       xMax: maximum x-value that should be cut away
-       yMin: minimum y-value that should be cut away
-       yMax: maximum y-value that should be cut away
+       xMin (int): minimum x-value that should be cut away
+       xMax (int): maximum x-value that should be cut away
+       yMin (int): minimum y-value that should be cut away
+       yMax (int): maximum y-value that should be cut away
     """
     tempArray = np.array(self.image)
     if xMin>-1  and xMax>-1:
@@ -438,7 +448,7 @@ class Tif:
     The top line cropped is the line that only contains white/black pixel
 
     Args:
-      color: color to crop black=b, white=w
+      color (str): color to crop black=b, white=w
     """
     lineAvg = np.sum(self.image, axis=1) /self.image.size[0]
     if color=='w':
@@ -461,22 +471,22 @@ class Tif:
     - read http://scikit-image.org/docs/0.9.x/auto_examples/plot_equalize.html for details
 
     Args:
-       method: 'r', 'a', 'e' <br>
+       method (str): 'r', 'a', 'e' <br>
 	      'rescale' or 'r': Automatic gray-value rescaling, default, smallest change<br>
 	      'adaptive' or 'a': Gray equalization, leads to centered Gaussian curve, medium change, favorite<br>
 	      'equalization' or 'e': Gray equalization, leads to cumulative histogram that is a line largest change
 
-       percent: percent (default: 0) to allow for clipping at the top and at the bottom<br>
+       percent (int): percent (default: 0) to allow for clipping at the top and at the bottom<br>
 	      (e.g. top 1% of values become white and bottom 1% of values become black
     """
     if self.image.mode == 'P':
-      if method=='equalization' or method=='e':
+      if method in ['equalization', 'e']:
         self.image = Image.fromarray(exposure.equalize_hist(np.array(self.image))*255).convert('P')
         print('something not correct here')
-      if method=='rescale' or method=='r':
+      if method in ['rescale', 'r']:
         pMin, pMax = np.percentile(self.image, (percent, 100-percent))
         self.image = Image.fromarray(exposure.rescale_intensity(np.array(self.image), in_range=(pMin, pMax))).convert('P')
-      if method=='adaptive' or method=='a':
+      if method in ['adaptive', 'a']:
         try:
           self.image = Image.fromarray(exposure.equalize_adapthist(np.array(self.image), clip_limit=percent/100.)*255).convert('P')
         except:
@@ -495,12 +505,12 @@ class Tif:
     Use median filter (remove single pixel noise)
 
     Args:
-       level: radius of median filter in pixel, the larger the slower the algorithm
-       recursive: subsequent iterations of filter, default=1=no recursive
+       level (int): radius of median filter in pixel, the larger the slower the algorithm
+       recursive (int): subsequent iterations of filter, default=1=no recursive
     """
     if level < 1:
       return
-    for i in range(0, recursive):
+    for _ in range(0, recursive):
       self.image = Image.fromarray(  ndimage.median_filter(self.image, level) )
     self.image = self.image.convert("P")
     return
@@ -511,12 +521,12 @@ class Tif:
     Use gaussian filter (smooth pixels, much more smoothing than median)
 
     Args:
-       level: radius of gauss filter in pixel
-       recursive: subsequent iterations of filter, default=1=no recursive
+       level (int): radius of gauss filter in pixel
+       recursive (int): subsequent iterations of filter, default=1=no recursive
     """
     if level < 1:
       return
-    for i in range(0, recursive):
+    for _ in range(0, recursive):
       self.image = Image.fromarray(  ndimage.gaussian_filter(self.image, level) )
     return
 
@@ -526,9 +536,9 @@ class Tif:
     excenturate and remove gradients
 
     Args:
-       level: radius used for leveling
-       plot: plot graphs during processing
-       save: only save once set true; allows to test varios settings before saving
+       level (int): radius used for leveling
+       plot (bool): plot graphs during processing
+       save (bool): only save once set true; allows to test varios settings before saving
     """
     level = ndimage.gaussian_filter(self.image, level)
     imArray = np.array(self.image).astype(np.float64) - level
@@ -556,13 +566,13 @@ class Tif:
     Manual contrast improvement: fast but memory expensive
 
     Args:
-       magnitude: curve curvature image: figZeiss1.png
-       offset: move neutral point up-down diagonal image: figZeiss2.png
-       yoffset: move neutral point up-down image: figZeiss3.png
-       save: save resulting contrast change
-       plot: plot the desired curve on the screen, no contrast changes are performed to the image.<br>
+       magnitude (float): curve curvature image: figZeiss1.png
+       offset (float): move neutral point up-down diagonal image: figZeiss2.png
+       yoffset (float): move neutral point up-down image: figZeiss3.png
+       save (bool): save resulting contrast change
+       plot (bool): plot the desired curve on the screen, no contrast changes are performed to the image.<br>
              this is to verify ones choice
-       points: smoothness of curve, the more the smoother
+       points (int): smoothness of curve, the more the smoother
     """
     def curve(x,magnitude,offset, yoffset):
       #print "min max",np.min(x), np.max(x), np.mean(x)
@@ -601,7 +611,7 @@ class Tif:
     return
 
 
-  def topology(self, dir="V", upperEnd=4.0, start=-1, end=-1):
+  def topology(self, axis="V", upperEnd=4.0, start=-1, end=-1):
     """
     rescale grey values such that each row/collum has the same average, cancel topological shadowing
 
@@ -611,15 +621,15 @@ class Tif:
     To still reach the given average: the grey scales are shifted (change brightness)
 
     Args:
-       dir: "V" vertical or "H" horizontal
-       upperEnd: maximum scaling allowed
-       start: start scaling only in row/collum. default=-1=scale everything
-       end: end scaling in row/collum. default=-1=scale everything
+       axis (str): "V" vertical or "H" horizontal
+       upperEnd (float): maximum scaling allowed
+       start (int): start scaling only in row/collum. default=-1=scale everything
+       end (int): end scaling in row/collum. default=-1=scale everything
     """
     imageArray = np.array(self.image)/255.  			#convert to array
     # evaluate mean (scalar) and average (collum/row vector)
     mean = imageArray.mean()		   			#get mean of original image
-    if dir=="V":
+    if axis=="V":
       average = imageArray.sum(axis=0) / self.heightPixel	#get average of every collum, this is a vector
     else:
       average = imageArray.sum(axis=1) / self.widthPixel
@@ -637,7 +647,7 @@ class Tif:
       else:
         effScale = scale[i]
       effShift = mean - average[i]*effScale
-      if dir=="V":
+      if axis=="V":
         imageArray[:,i] = imageArray[:,i]*effScale + effShift
       else:
         imageArray[i,:] = imageArray[i,:]*effScale + effShift
@@ -650,13 +660,13 @@ class Tif:
     Remove FIB curtains by FFT filtering
 
     Args:
-       xmin: minimum in x direction of filter, removes long waves
-       xmax: maximum in x direction of filter, x-direction is mirrored, removes short waves
-       ymax: maximum in y direction of filter
-       gauss: spread of corners to remove filter artifacts
-       plot: plot the original image, filter, processed image
-       zoom: zoom FFT image by factor: e.g. 4 zoom x and y by 2
-       save: only save once set true; allows to test varios settings before saving
+       xmin (int): minimum in x direction of filter, removes long waves
+       xmax (int): maximum in x direction of filter, x-direction is mirrored, removes short waves
+       ymax (int): maximum in y direction of filter
+       gauss (float): spread of corners to remove filter artifacts
+       plot (bool): plot the original image, filter, processed image
+       zoom (float): zoom FFT image by factor: e.g. 4 zoom x and y by 2
+       save (bool): only save once set true; allows to test varios settings before saving
     """
     crow, ccol = int(self.heightPixel/2), int(self.widthPixel/2)
     #do forward FFT transformation
@@ -690,9 +700,21 @@ class Tif:
       yend =self.heightPixel-ypad
       fftImage = fftImage[ypad:yend,xpad:xend,:]
       #print "shape",fftImage.shape,xpad,ypad
-      plt.subplot(131), plt.imshow(self.image , cmap='gray'), plt.xticks([]), plt.yticks([]), plt.title("Before")
-      plt.subplot(132), plt.imshow(fftImage)                , plt.xticks([]), plt.yticks([]), plt.title("Filter")
-      plt.subplot(133), plt.imshow(img_back   , cmap='gray'), plt.xticks([]), plt.yticks([]), plt.title("After")
+      plt.subplot(131)
+      plt.imshow(self.image , cmap='gray')
+      plt.xticks([])
+      plt.yticks([])
+      plt.title("Before")
+      plt.subplot(132)
+      plt.imshow(fftImage)
+      plt.xticks([])
+      plt.yticks([])
+      plt.title("Filter")
+      plt.subplot(133)
+      plt.imshow(img_back   , cmap='gray')
+      plt.xticks([])
+      plt.yticks([])
+      plt.title("After")
       plt.tight_layout(pad=-0.5, w_pad=-0.5, h_pad=-0.5)
       plt.show()
     #save
@@ -706,8 +728,8 @@ class Tif:
     remove gradient that may occur in cross sections
 
     Args:
-       save: only save once set true; allows to test varios settings before saving
-       plot: plot graphs during processing
+       save (bool): only save once set true; allows to test varios settings before saving
+       plot (bool): plot graphs during processing
     """
     imArray = np.array(self.image)
     if plot:
@@ -775,9 +797,4 @@ class Tif:
     flip image vertically
     """
     self.image = Image.fromarray(np.array(self.image)[::-1,:]).convert("P")
-
-
-
   #@}
-
-

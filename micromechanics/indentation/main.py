@@ -15,11 +15,11 @@ def calcYoungsModulus(self, minDepth=-1, plot=False):
   -  use corrected h and stiffness (do not recalculate)
 
   Args:
-      minDepth: minimum depth for fitting horizontal; if negative: no line is fitted
-      plot: plot comparison this calculation to data read from file
+      minDepth (float): minimum depth for fitting horizontal; if negative: no line is fitted
+      plot (bool): plot comparison this calculation to data read from file
 
   Returns:
-      average Young's modulus, minDepth>0
+      float: average Young's modulus, minDepth>0
   """
   self.modulusRed, self.Ac, self.hc = \
     self.OliverPharrMethod(self.slope, self.p[self.valid], self.h[self.valid], self.nonMetal)
@@ -56,8 +56,8 @@ def calcHardness(self, minDepth=-1, plot=False):
   Calculate and plot Hardness as a function of the depth
 
   Args:
-      minDepth: minimum depth for fitting horizontal; if negative: no line is fitted
-      plot: plot comparison this calculation to data read from file
+      minDepth (float): minimum depth for fitting horizontal; if negative: no line is fitted
+      plot (bool): plot comparison this calculation to data read from file
   """
   #use area function
   hardness=self.p[self.valid]/self.OliverPharrMethod(self.slope, self.p[self.valid], self.h[self.valid], self.nonMetal)[1]
@@ -86,11 +86,11 @@ def calcStiffness2Force(self, minDepth=0.01, plot=True, calibrate=False):
   Calculate and plot stiffness squared over force as a function of the depth
 
   Args:
-      minDepth: minimum depth for fitting line
-
-      plot: plot curve and slope
-
-      calibrate: calibrate additional stiffness and save value
+      minDepth (float): minimum depth for fitting line
+      plot (bool): plot curve and slope
+      calibrate (bool): calibrate additional stiffness and save value
+  Returns:
+      list: prefactors
   """
   compliance0 = self.tip.compliance
   prefactors = None
@@ -161,7 +161,9 @@ def identifyLoadHoldUnload(self,plot=False):
   internal method: identify ALL load - hold - unload segments in data
 
   Args:
-      plot: verify by plotting
+      plot (bool): verify by plotting
+  Returns:
+      bool: success
   """
   if self.method==Method.CSM:
     self.identifyLoadHoldUnloadCSM()
@@ -259,7 +261,7 @@ def identifyLoadHoldUnloadCSM(self, plot=False):
   Backup: if identifyLoadHoldUnload fails
 
   Args:
-    plot: plot values
+    plot (bool): plot values
   """
   iSurface = np.min(np.where( self.h>=0                     ))
   iLoad    = np.min(np.where( self.p-np.max(self.p)*self.unloadPMax>0 ))
@@ -310,6 +312,12 @@ def identifyLoadHoldUnloadCSM(self, plot=False):
 def nextTest(self, newTest=True, plotSurface=False):
   """
   Wrapper for all next test for all vendors
+
+  Args:
+     newTest (bool): go to next test; false=redo this one
+     plotSurface (bool): plot surface area
+  Returns:
+     bool: success
   """
   if newTest:
     if self.vendor == Vendor.Agilent:

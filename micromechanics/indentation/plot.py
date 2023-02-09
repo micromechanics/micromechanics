@@ -9,9 +9,11 @@ def plotTestingMethod(self, saveFig=False, show=True, double=False):
   plot testing method
 
   Args:
-    saveFig: save plot to file [use known filename plus extension png]
-    show: show figure, else do not show
-    double: show also stiffness and phase an function of time
+    saveFig (bool): save plot to file [use known filename plus extension png]
+    show (bool): show figure, else do not show
+    double (bool): show also stiffness and phase an function of time
+  Returns:
+    pyplot.axis: figure
   """
   if double:
     _, [ax1, ax2] = plt.subplots(2, sharex=True, figsize=(6,6))
@@ -53,8 +55,10 @@ def plot(self, saveFig=False, show=True):
   Plot force-depth curve with all data
 
   Args:
-    saveFig: save plot to file [use known filename plus extension png]
-    show: show figure, else do not show
+    saveFig (bool): save plot to file [use known filename plus extension png]
+    show (bool): show figure, else do not show
+  Returns:
+    pyplot.axis: figure
   """
   if len(self.slope)==1 and self.verbose>1:
     print("Stiffness:"+str(round(self.slope[0],1))     +"mN/um   "+\
@@ -107,8 +111,10 @@ def plotAll(self, saveFig=False, show=True):
   Plot force-depth curves of all tests in the file
 
   Args:
-    saveFig: save plot to file [use known filename plus extension png]
-    show: show figure, else do not show
+    saveFig (bool): save plot to file [use known filename plus extension png]
+    show (bool): show figure, else do not show
+  Returns:
+    pyplot.axis: figure
   """
   _, ax = plt.subplots()
   ax.axhline(0,ls="dashed",c='k')
@@ -141,7 +147,8 @@ def plotAsDepth(self, entity, hvline=None):
   Makes only sense for CSM measurements
 
   Args:
-    entity: what to plot on y-axis [E,H,K,K2P,hc,Ac,modulusRed]
+    entity (str): what to plot on y-axis [E,H,K,K2P,hc,Ac,modulusRed]
+    hvline (float): plot a horizontal line at this value
   """
   if not isinstance(entity, str):
     print("**ERROR plotAsDepth: entity=[E,H,K,K2P,hc,Ac,modulusRed]")

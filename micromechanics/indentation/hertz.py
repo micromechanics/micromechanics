@@ -9,10 +9,12 @@ def hertzEquation(h,h0,E,R=1):
   calculate the force for a given reduced Youngsmodulus, tip-radius and penetration depth
 
   Args:
-    h: depth of indent (possibly array)
-    h0: depth offset
-    E: reduced Young's modulus
-    R: radius of tip in um (default=1 for parameter fitting)
+    h (numpy.array): depth of indent (possibly array)
+    h0 (numpy.array): depth offset
+    E (numpy.array): reduced Young's modulus
+    R (float): radius of tip in um (default=1 for parameter fitting)
+  Returns:
+    numpy.array: force
   """
   h -= h0
   h[h<0] = 0
@@ -22,6 +24,13 @@ def hertzEquation(h,h0,E,R=1):
 def hertzFit(self, forceRange=(1, 25), correctH=True, plot=True):
   """
   Fit the initial force displacement curve to the Hertzian curve
+
+  Args:
+    forceRange (list): force range used for fitting in mN
+    correctH (bool): correct the depth
+    plot (bool): plot the result
+  Returns:
+    list: parameters determined by fitting
   """
   fitMask = np.logical_and(forceRange[0]<self.p, self.p<forceRange[1])
   fitMask[np.argmax(self.p):] = False
@@ -60,12 +69,12 @@ def popIn(self, correctH=True, plot=True, removeInitialNM=2.):
   Future: iterate over largest, to identify best
 
   Args:
-      correctH: correct depth such that curves aligned
-      plot: plot pop-in curve
-      removeInitialNM: remove initial nm from data as they have large scatter
+      correctH (bool): correct depth such that curves aligned
+      plot (bool): plot pop-in curve
+      removeInitialNM (float): remove initial nm from data as they have large scatter
 
   Returns:
-      pop-in force, dictionary of certainty
+      list: pop-in force, dictionary of certainty
   """
   maxPlasticFit = 150
   minElasticFit = 0.01

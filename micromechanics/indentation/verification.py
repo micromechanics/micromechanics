@@ -78,7 +78,7 @@ def verifyReadCalc(self, plot=True):
   Compare Young's modulus data saved in the file to Young's modulus data calculated by these functions
 
   Args:
-    plot: plot comparison
+    plot (bool): plot comparison
   """
   modulusRed,Ac,hc = self.OliverPharrMethod(self.slope, self.p[self.valid], self.h[self.valid])
   modulus = self.YoungsModulus(modulusRed)

@@ -13,15 +13,18 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepthStiffness=1.0, critFo
   Calibrate by first frame-stiffness and then area-function calibration
 
   Args:
-      eTarget: target Young's modulus (not reduced), nu is known
-      numPolynomial: number of area function polynomial; if None: return interpolation function
-      critDepthStiffness: what is the minimum depth of data used
-      critDepthTip: area function what is the minimum depth of data used
-      critForce: frame stiffness: what is the minimum force used for fitting
-      plotStiffness: plot stiffness graph with compliance
-      pltTip: plot tip shape after fitting
-      constantTerm: add constant term into area function
-      returnArea: return contact depth and area
+      eTarget (float): target Young's modulus (not reduced), nu is known
+      numPolynomial (int): number of area function polynomial; if None: return interpolation function
+      critDepthStiffness (float): what is the minimum depth of data used
+      critDepthTip (float): area function what is the minimum depth of data used
+      critForce (float): frame stiffness: what is the minimum force used for fitting
+      plotStiffness (bool): plot stiffness graph with compliance
+      plotTip (bool): plot tip shape after fitting
+      kwargs (dict): additional keyword arguments
+        constantTerm (bool): add constant term into area function
+        returnArea (bool): return contact depth and area
+  Returns:
+    bool: success
   """
   constantTerm = kwargs.get('constantTerm', False)
   frameCompliance = self.calibrateStiffness(critDepth=critDepthStiffness,critForce=critForce,
@@ -133,15 +136,13 @@ def calibrateStiffness(self,critDepth=0.5,critForce=0.0001,plotStiffness=True, r
   Calibrate by first frame-stiffness from K^2/P of individual measurement
 
   Args:
-      critDepth: frame stiffness: what is the minimum depth of data used
-
-      critForce: frame stiffness: what is the minimum force used for fitting
-
-      plotStiffness: plot stiffness graph with compliance
-
-      returnAxis: return axis of plot
-
-      returnData: return data for external plotting
+      critDepth (float): frame stiffness: what is the minimum depth of data used
+      critForce (float): frame stiffness: what is the minimum force used for fitting
+      plotStiffness (bool): plot stiffness graph with compliance
+      returnAxis (bool): return axis of plot
+      returnData (bool): return data for external plotting
+  Returns:
+      pyplot.axis or numpy.arary: data as chosen by arguments
   """
   print("Start compliance fitting")
   ## output representative values
