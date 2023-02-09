@@ -594,11 +594,11 @@ def nextHDF5Test(self):
     return False
   branch = self.datafile[self.testName]['data']
   inFile = list(branch.keys())
-  nameDict   = json.load(open(Path(__file__).parent/'names.json'))
+  nameDict   = json.load(open(Path(__file__).parent/'terms.json'))
   if self.metaUser['measurementType'].split()[0] in nameDict:
     nameDict = nameDict[self.metaUser['measurementType'].split()[0]]
   else:
-    print("**ERROR instrument not in names.json", self.metaUser['measurementType'].split()[0])
+    print("**ERROR instrument not in terms.json", self.metaUser['measurementType'].split()[0])
 
   #determine valid masks: loop through all entries and ensure that they all make sense
   self.valid = None
