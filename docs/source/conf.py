@@ -23,7 +23,7 @@ copyright = u'2022-{}, PASTA-ELN team'.format(datetime.datetime.now().year)
 author = u'Micromechanics team'
 
 # The full version, including alpha/beta/rc tags
-version = "1.0.2"
+version = "1.0.3"
 release = version
 
 # -- General configuration ---------------------------------------------------
@@ -68,4 +68,4 @@ def skip(app, what, name, obj, would_skip, options):
     return would_skip
 
 def setup(app):
-    app.connect("autodoc-skip-member", skip)
+    app.connect("autodoc-skip-member", skip
