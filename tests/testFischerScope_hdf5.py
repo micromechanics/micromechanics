@@ -3,13 +3,13 @@ import traceback
 import unittest
 import numpy as np
 import matplotlib.pyplot as plt
-from nanoindentation import Indentation
+from micromechanics.indentation import Indentation
 
 class TestStringMethods(unittest.TestCase):
 	def test_main(self):
 		try:
 			### MAIN ###
-			i = Indentation('../examples/FischerScope/N1_1.hdf5')
+			i = Indentation('examples/FischerScope/N1_1.hdf5')
 			for testname in i:
 				i.analyse()
 			i.plot(show=3)

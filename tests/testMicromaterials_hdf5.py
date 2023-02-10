@@ -3,17 +3,18 @@ import traceback
 import unittest
 import numpy as np
 import matplotlib.pyplot as plt
-from nanoindentation import Indentation
+from micromechanics.indentation import Indentation
 
 class TestStringMethods(unittest.TestCase):
 	def test_main(self):
 
 		try:
 			### MAIN ###
-			i = Indentation('../examples/Micromaterials/Sample1_Vac_RT.hdf5')
+			i = Indentation('examples/Micromaterials/Sample1_Vac_RT.hdf5')
 			for testname in i:
 				i.analyse()
 			i.plot(show=3)
+			print(i.modulus)
 			self.assertTrue((abs(np.sum(i.modulus)-144.39075059572392)<0.1),'Calculation of modulus changed')
 			### END OF MAIN ###
 			print('\n*** DONE WITH VERIFY ***')

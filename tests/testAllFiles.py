@@ -2,7 +2,7 @@
 import traceback, os
 import unittest
 import numpy as np
-from nanoindentation import Indentation
+from micromechanics.indentation import Indentation
 
 skipFiles = ['examples/Agilent/FS_XP_MethodInclCalibration.txt',\
 						 'examples/Agilent/ISO.txt','examples/Agilent/CSM.txt']
@@ -11,7 +11,7 @@ class TestMethods(unittest.TestCase):
 	def test_all_filesn(self):
 		try:
 			### MAIN ###
-			for path, _, files in os.walk('../examples'):
+			for path, _, files in os.walk('examples'):
 				if files == []:
 					continue
 				for fileName in files:

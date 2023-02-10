@@ -371,8 +371,9 @@ def nextTest(self, newTest=True, plotSurface=False):
 
         Args:
           z (numpy.array): input
+
         Returns:
-          (numpy.array): output
+          numpy.array: output
         """
         return z.nonzero()[0]
       thresValues[nans]= np.interp(tempX(nans), tempX(~nans), thresValues[~nans])

@@ -35,28 +35,23 @@ If you want to contribute to the development, we develop at [github](https://git
 
 
 # Information for developers
-## Please first test the code
+Test the code: linting, documentation and then the tests
 ``` bash
-pylint src/nanoindentation/
+pylint micromechanics
+make -C docs html
+python tests/testVerification.py
+```
+
+#TODO turn all tests into one github action
+Currently not successful:
+``` bash
+python tests/testAllFiles.py
+python tests/testMicromaterials_hdf5.py
 python tests/testAgilent_xls.py
 python tests/testFischerScope_hdf5.py
-python tests/testMicromaterials_hdf5.py
-python tests/testVerification.py
-python tests/testAllFiles.py
 ```
 
 Then upload/create-pull-request to github, via
 ``` bash
-git commit -a -m 'my message'
-```
-
-## For publication on pypi
-1. Increase version number in pyproject.toml
-2. do the following steps in shell
-``` bash
-python3 -m build
-python3 -m twine upload dist/*
-rm dist/*
-git commit -a -m 'Version 1.0.0'
-git push
+./commit.py 'my message'
 ```

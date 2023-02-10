@@ -1,6 +1,6 @@
 import traceback
 import unittest
-from nanoindentation import Indentation, Tip
+from micromechanics.indentation import Indentation, Tip
 
 class TestStringMethods(unittest.TestCase):
 	def test_verify1(self):
@@ -34,7 +34,7 @@ class TestStringMethods(unittest.TestCase):
 			# MAIN
 			tip = Tip(shape = [2.4695e+001,3.9577e+002,-1.6132e+001,1.3341e+002,1.0646e+002,'iso'])
 			print("**INFO: Tip-area prefactors have accuracy of 1e-4; hence area accuracy on that order")
-			i = Indentation('../examples/Agilent/FS_XP.xls', nuMat=0.18, tip=tip)
+			i = Indentation('examples/Agilent/FS_XP.xls', nuMat=0.18, tip=tip)
 			while True:
 				print('Sheet name:', i.testName)
 				i.verifyReadCalc(plot=False)
