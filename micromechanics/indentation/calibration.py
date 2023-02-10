@@ -4,11 +4,9 @@ import matplotlib.pyplot as plt
 from scipy.signal import savgol_filter#, medfilt
 from scipy import interpolate
 import lmfit
-#import definitions
 from .definitions import Method
 
-def calibration(self,eTarget=72.0,numPolynomial=3,critDepthStiffness=1.0, critForce=1.0, critDepthTip=0.0, plotStiffness=False,\
-  plotTip=False, **kwargs):
+def calibration(self,eTarget=72.0,numPolynomial=3,critDepthStiffness=1.0, critForce=1.0, critDepthTip=0.0, plotStiffness=False, plotTip=False, **kwargs):
   """
   Calibrate by first frame-stiffness and then area-function calibration
 
@@ -21,8 +19,10 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepthStiffness=1.0, critFo
       plotStiffness (bool): plot stiffness graph with compliance
       plotTip (bool): plot tip shape after fitting
       kwargs (dict): additional keyword arguments
-        constantTerm (bool): add constant term into area function
-        returnArea (bool): return contact depth and area
+
+        - constantTerm (bool): add constant term into area function
+        - returnArea (bool): return contact depth and area
+
   Returns:
     bool: success
   """
@@ -141,6 +141,7 @@ def calibrateStiffness(self,critDepth=0.5,critForce=0.0001,plotStiffness=True, r
       plotStiffness (bool): plot stiffness graph with compliance
       returnAxis (bool): return axis of plot
       returnData (bool): return data for external plotting
+
   Returns:
       pyplot.axis or numpy.arary: data as chosen by arguments
   """

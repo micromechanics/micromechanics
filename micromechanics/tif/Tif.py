@@ -2,8 +2,10 @@
 """
 @file
 @brief Class to allow for Zeiss/FEI-ThermoFischer TIF image loading and enhancing using python
-# Unit: all sizes are in um: pixel-size, image-width
-# All images have an image, pixelsize, width, height
+
+- Unit: all sizes are in um: pixel-size, image-width
+- All images have an image, pixelsize, width, height
+
 """
 import logging, re, math, os, sys, warnings, codecs
 from xml.dom import minidom
@@ -16,6 +18,7 @@ import cv2
 
 class Tif:
   """Tif class to read SEM images"""
+
   ##
   # @name IMPORT METHODS
   #@{
@@ -25,8 +28,8 @@ class Tif:
 
     Args:
        fileName (str): file name in the present directory
-       fileType (str): type of Tif file ("Zeiss", "NPVE", "Void", "NoQuestion");
-                       if no type is given, the type will be identified (which takes time);
+       fileType (str): type of Tif file ("Zeiss", "NPVE", "Void", "NoQuestion") |br|
+                       if no type is given, the type will be identified (which takes time) |br|
                        NoQuestion does not ask for non-Zeiss,NPVE file type
        pixelSize (float): pixel size for conventional tif-files
     """
@@ -231,8 +234,7 @@ class Tif:
 
   def setData(self, image, pixelSize, copy=True ):
     """
-    import data, image and pixelSize from another source
-
+    import data, image and pixelSize from another source |br|
     (image, pixelSize): image and pixelSize in a list
 
     Args:
@@ -283,8 +285,7 @@ class Tif:
     Add scale-bar to image
 
     Args:
-       site (str): where to put the scale bar<br> bottom-left "BL"<br>
-             bottom-right "BR"<br> top-left "TL"<br> top-right "TR"<br> bottom "B"
+       site (str): where to put the scale bar: bottom-left "BL", bottom-right "BR", top-left "TL", top-right "TR", bottom "B"
        length (float): length of scale bar in um; if not give calculate automatically
        scale (int): of font and rectangle. Default: widthInPixel / 16, which is for a 1024x786 image = 64
     """
@@ -382,8 +383,8 @@ class Tif:
     Save file as jpg, use the same base as initial TIF image
 
     Args:
-       fileType (str): jpg, other options eps, png <br>
-            alternative is to enter full filename (must be longer than 4 characters)
+       fileType (str): jpg, other options eps, png |br|
+          alternative is to enter full filename (must be longer than 4 characters)
        scale (float): scale down image by ratio
        convertGrayscale (bool): convert to gray-scale image
     """
@@ -411,9 +412,7 @@ class Tif:
 
   def crop(self, xMin=-1, xMax=-1, yMin=-1, yMax=-1):
     """
-    Crop image
-
-    set those that you want to crop, unset ones are not altered
+    Crop image: set those that you want to crop, unset ones are not altered
 
     Args:
        xMin (int): minimum x-value that should be cut away
@@ -464,18 +463,18 @@ class Tif:
 
   def enhance(self, method='rescale', percent=1):
     """
-    Automatic contrast improvement
-    - mode = 1 black-white
-    - mode = L grey-scale
-    - read http://scikit-image.org/docs/0.9.x/auto_examples/plot_equalize.html for details
+    Automatic contrast improvement |br|
+    mode = 1 black-white |br|
+    mode = L grey-scale |br|
+    read http://scikit-image.org/docs/0.9.x/auto_examples/plot_equalize.html for details |br|
 
     Args:
-       method (str): 'r', 'a', 'e' <br>
-	      'rescale' or 'r': Automatic gray-value rescaling, default, smallest change<br>
-	      'adaptive' or 'a': Gray equalization, leads to centered Gaussian curve, medium change, favorite<br>
-	      'equalization' or 'e': Gray equalization, leads to cumulative histogram that is a line largest change
+       method (str):
 
-       percent (int): percent (default: 0) to allow for clipping at the top and at the bottom<br>
+	      - 'rescale' or 'r': Automatic gray-value rescaling, default, smallest change
+	      - 'adaptive' or 'a': Gray equalization, leads to centered Gaussian curve, medium change, favorite
+	      - 'equalization' or 'e': Gray equalization, leads to cumulative histogram that is a line largest change
+       percent (int): percent (default: 0) to allow for clipping at the top and at the bottom
 	      (e.g. top 1% of values become white and bottom 1% of values become black
     """
     if self.image.mode == 'P':
@@ -569,7 +568,7 @@ class Tif:
        offset (float): move neutral point up-down diagonal image: figZeiss2.png
        yoffset (float): move neutral point up-down image: figZeiss3.png
        save (bool): save resulting contrast change
-       plot (bool): plot the desired curve on the screen, no contrast changes are performed to the image.<br>
+       plot (bool): plot the desired curve on the screen, no contrast changes are performed to the image.|br|
              this is to verify ones choice
        points (int): smoothness of curve, the more the smoother
     """
@@ -614,9 +613,12 @@ class Tif:
     """
     rescale grey values such that each row/collum has the same average, cancel topological shadowing
 
-    The algorithm tries to scale (change contrast) the grey-values such as that each collum (V) or row (H) has the same average grey value,<br>
-    However: It is not allowed to scaling down (<1) [because that deletes contrast] <br>
-             or scale more than upperEnd [because then the image becomes to pixely] <br>
+    The algorithm tries to scale (change contrast) the grey-values such as that each collum (V) or
+    row (H) has the same average grey value. However:
+
+    - It is not allowed to scaling down (<1) [because that deletes contrast]
+    - or scale more than upperEnd [because then the image becomes to pixely]
+
     To still reach the given average: the grey scales are shifted (change brightness)
 
     Args:

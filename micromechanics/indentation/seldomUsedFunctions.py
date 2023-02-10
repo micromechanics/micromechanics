@@ -17,9 +17,7 @@ def tareDepthForce(self, slopeThreshold=100, compareRead=False, plot=False):
 
   Args:
       slopeThreshold: threshold slope in P-h curve for contact: 200,300
-
       compareRead: compare new results to the ones from the file
-
       plot: plot comparison new data and data from file
   """
   if self.vendor!=Vendor.Agilent or self.method==Method.CSM:
@@ -75,7 +73,6 @@ def isFusedSilica(self, bounds=[[610,700],[71,73],[8.9,10.1]], numPoints=50):
 
   Args:
     bounds: min,max boundaries to determine if K2P,E,H are correct
-
     numPoints: number of points plotted in depth, used for interpolation
   """
   value      = ['k2p',      'modulus',   'hardness']
@@ -191,7 +188,6 @@ def analyseDrift(self, plot=True, fraction=None, timeStart=None):
 
   Args:
       plot: plot drift data
-
       fraction: fraction of data used for fitting (Micromaterials uses last 0.6)
       timeStart: initial timestamp used for drift analysis; e.g. after 20sec;
                 this superseeds fraction

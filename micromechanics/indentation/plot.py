@@ -12,6 +12,7 @@ def plotTestingMethod(self, saveFig=False, show=True, double=False):
     saveFig (bool): save plot to file [use known filename plus extension png]
     show (bool): show figure, else do not show
     double (bool): show also stiffness and phase an function of time
+
   Returns:
     pyplot.axis: figure
   """
@@ -57,6 +58,7 @@ def plot(self, saveFig=False, show=True):
   Args:
     saveFig (bool): save plot to file [use known filename plus extension png]
     show (bool): show figure, else do not show
+
   Returns:
     pyplot.axis: figure
   """
@@ -113,6 +115,7 @@ def plotAll(self, saveFig=False, show=True):
   Args:
     saveFig (bool): save plot to file [use known filename plus extension png]
     show (bool): show figure, else do not show
+
   Returns:
     pyplot.axis: figure
   """
@@ -142,8 +145,7 @@ def plotAll(self, saveFig=False, show=True):
 def plotAsDepth(self, entity, hvline=None):
   """
   Plot as function of depth either Young's modulus, hardness,
-  stiffnessSquaredForce, ContactDepth, Contact Area, reducedModulus
-
+  stiffnessSquaredForce, ContactDepth, Contact Area, reducedModulus  |br|
   Makes only sense for CSM measurements
 
   Args:

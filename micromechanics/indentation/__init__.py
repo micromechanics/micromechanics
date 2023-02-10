@@ -1,30 +1,28 @@
 """
 Classes to evaluate indentation data and indenter tip
 
-Indentation data: indentation experiment
-- Methods: iso (can have multiple unloading segments), csm
-- Vendor: Agilent, Hysitron
+- Methods: iso, multiple unloading segments, csm
+- Vendor: Agilent, Hysitron, FischerScope, Micromaterials
+- Indenter tip: shape of indenter tip and gantry stiffness (that what you calibrate)
 
-Indenter tip: shape of indenter tip and gantry stiffness (that what you calibrate)
+UNITS: one should use mSI units in this code, since Agilent area function is unit-dependent |br|
+[mN], [um], [GPa] (force, length, stress)
 
-UNITS: one should use mSI units in this code, since Agilent area function is unit-dependent
-mSB: [mN], [um], [GPa] (force, length, stress)
+Variables: differentiate different length
 
-
-#### Variables: differentiate different length ########
-array of full length: force, time, depth, validMask, ...  [used for plotting]
-array of valid length: E,H,Ac,hc, ... [only has the length where these values are valid]
-   force[validMask] = pMax
-   all these are vectors: OliverPharr et al methods are only vector functions
+- array of full length: force, time, depth, validMask, ...  [used for plotting]
+- array of valid length: E,H,Ac,hc, ... [only has the length where these values are valid]
+- force[validMask] = pMax
+- all these are vectors: OliverPharr et al methods are only vector functions
 
 Coding rules:
+
 - Change all variables: do not keep original-depth as can be reread and makes code less readable
 """
 import os
 from pathlib import Path
 import numpy as np
 from .definitions import Method, Vendor, FileType
-#import definitions
 from .tip import Tip
 
 class Indentation:
@@ -148,12 +146,24 @@ class Indentation:
   #https://www.programiz.com/python-programming/iterator
   #Building Custom Iterators
   def __iter__(self):
+    """
+    Python iterator
+
+    Returns:
+      indentation: iterator
+    """
     self.restartFile()
     self.newFileRead = True                                 #just read the file
     return self
 
 
   def __next__(self):
+    """
+    Go to next iterator
+
+    Returns:
+      str: test name
+    """
     if self.testList and len(self.testList)>0:
       if self.newFileRead:                                  #skip/redo first run through
         self.newFileRead=False

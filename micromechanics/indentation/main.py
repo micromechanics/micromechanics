@@ -11,8 +11,8 @@ from .definitions import Vendor, Method
 
 def calcYoungsModulus(self, minDepth=-1, plot=False):
   """
-  Calculate and plot Young's modulus as a function of the depth
-  -  use corrected h and stiffness (do not recalculate)
+  Calculate and plot Young's modulus as a function of the depth |br|
+  use corrected h and stiffness (do not recalculate)
 
   Args:
       minDepth (float): minimum depth for fitting horizontal; if negative: no line is fitted
@@ -162,6 +162,7 @@ def identifyLoadHoldUnload(self,plot=False):
 
   Args:
       plot (bool): verify by plotting
+
   Returns:
       bool: success
   """
@@ -256,8 +257,7 @@ def identifyLoadHoldUnload(self,plot=False):
 
 def identifyLoadHoldUnloadCSM(self, plot=False):
   """
-  internal method: identify load - hold - unload segment in CSM data
-
+  internal method: identify load - hold - unload segment in CSM data |br|
   Backup: if identifyLoadHoldUnload fails
 
   Args:
@@ -316,6 +316,7 @@ def nextTest(self, newTest=True, plotSurface=False):
   Args:
      newTest (bool): go to next test; false=redo this one
      plotSurface (bool): plot surface area
+
   Returns:
      bool: success
   """

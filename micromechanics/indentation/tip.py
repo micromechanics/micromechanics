@@ -57,9 +57,11 @@ class Tip:
 
   def setInterpolationFunction(self,interpFunction):
     """
-    The interpolation of tip-shape function Ac = f(hc).
+    The interpolation of tip-shape function Ac = f(hc)
+
     - From Oliver-Pharr Method, projected area of contact Ac can be obtained by measuring contact depth hc.
     - When the interpolation function is given, other information are superseeded.
+
     Args:
        interpFunction (function): numpy interpolation function
     """
@@ -70,13 +72,12 @@ class Tip:
 
   def areaFunction(self, h):
     """
-    AREA FUNCTION: from contact depth hc calculate area
-
-    all functions inside are using [nm]; the outside of this function uses [um];
-
+    AREA FUNCTION: from contact depth hc calculate area |br|
+    all functions inside are using [nm]; the outside of this function uses [um]|br|
     hence at the start and end there is conversion
 
     prefactors:
+
     - "iso" type area function A=ax^2+bx^1+cx^0.5..., [nm]
     - "perfect" type area function of a perfect Berkovich A=3*sqrt(3)*tan(65.27)^2 hc^2 = 24.494 hc^2
     - "sphere" type: A=pi(2Rh-h^2), h=depth, R indenter radius; for small h-> h^2=0
@@ -130,11 +131,11 @@ class Tip:
 
   def areaFunctionInverse(self, area, hc0=70):
     """
-    INVERSE AREA FUNCTION: from area calculate contact depth hc
-
+    INVERSE AREA FUNCTION: from area calculate contact depth hc |br|
     using Newton iteration with initial guess contact depth hc0
 
     prefactors:
+
     -  "iso" type area function A=ax^2+bx^1+cx^0.5..., [nm]
     -  "perfect" type area function of a perfect Berkovich A=3*sqrt(3)*tan(65.27)^2 hc^2 = 24.494 hc^2
 
@@ -160,8 +161,7 @@ class Tip:
 
   def plotIndenterShape(self, maxDepth=1, steps=50, show=True, tipLabel=None, fileName=None):
     """
-    check indenter shape: plot shape function against perfect Berkovich
-
+    check indenter shape: plot shape function against perfect Berkovich |br|
     analytical: perfect shape is 2.792254*x
 
     Args:

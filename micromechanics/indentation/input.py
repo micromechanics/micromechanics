@@ -14,6 +14,7 @@ def loadAgilent(self, fileName):
 
   Args:
       fileName (str): file name
+
   Returns:
       bool: success
   """
@@ -85,13 +86,16 @@ def nextAgilentTest(self, newTest=True):
   """
   Go to next sheet in worksheet and prepare indentation data
 
-  Data: _Raw: without frame stiffness correction, _Frame:  with frame stiffness correction
-    (remove postscript finally)
+  Data:
+
+  - _Raw: without frame stiffness correction,
+  - _Frame:  with frame stiffness correction (remove postscript finally)
   - only affects/applies directly depth (h) and stiffness (s)
   - modulus, hardness and k2p always only use the one with frame correction
 
   Args:
     newTest (bool): take next sheet (default)
+
   Returns:
     bool: success
   """
@@ -155,6 +159,7 @@ def loadHysitron(self, fileName, plotContact=False):
   Args:
     fileName (str): file name
     plotContact (bool): plot intial contact identification (use this method for access)
+
   Returns:
     bool: success
 
@@ -337,6 +342,7 @@ def loadMicromaterials(self, fileName):
 
   Args:
       fileName (str): file name or file-content
+
   Returns:
       bool: success
   """
@@ -398,6 +404,7 @@ def loadFischerScope(self,fileName):
 
   Args:
     fileName (str): file name
+
   Returns:
     bool: success
   """
@@ -505,6 +512,7 @@ def loadHDF5(self,fileName):
 
   Args:
     fileName (str): file name
+
   Returns:
     bool: success
   """
@@ -678,6 +686,7 @@ def isfloat(value):
 
   Args:
     value (float): number to be tested
+
   Returns:
     bool: result
   """

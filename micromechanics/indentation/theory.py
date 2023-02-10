@@ -12,7 +12,6 @@ def YoungsModulus(self, modulusRed, nuThis=-1):
 
   Args:
       modulusRed (float): reduced Youngs modulus [GPa]
-
       nuThis (float): use a non-standard Poission's ratio
 
   Returns:
@@ -30,8 +29,8 @@ def ReducedModulus(self, modulus, nuThis=-1):
   Calculate the reduced modulus from the Youngs modulus
 
   Args:
-    - modulus (float): Youngs modulus [GPa]
-    - nuThis (float): use a non-standard Young's modulus
+    modulus (float): Youngs modulus [GPa]
+    nuThis (float): use a non-standard Young's modulus
 
   Returns:
       float: Reduced Young's modulus
@@ -48,6 +47,7 @@ def OliverPharrMethod(self, stiffness, pMax, h, nonMetal=1.):
   Conventional Oliver-Pharr indentation method to calculate reduced Modulus modulusRed
 
   The following equations are used in that order:
+
   - hc = h-beta pMax/stiffness
   - Ac = hc(prefactors)
   - stiffness = 2/sqrt(pi) sqrt(Ac) modulusRed
@@ -97,6 +97,7 @@ def inverseOliverPharrMethod(self, stiffness, pMax, modulusRed, nonMetal=1.):
 def unloadingPowerFunc(h,B,hf,m):
   """
   internal function describing the unloading regime
+
   - function: p = B*(h-hf)^m
   - B:  scaling factor (no physical meaning)
   - m:  exponent       (no physical meaning)
@@ -108,18 +109,15 @@ def unloadingPowerFunc(h,B,hf,m):
 
 def stiffnessFromUnloading(self, p, h, plot=False):
   """
-  Calculate single unloading stiffness from Unloading
-  see G200 manual, p7-6
+  Calculate single unloading stiffness from Unloading; see G200 manual, p7-6
 
   Args:
       p (np.array): vector of forces
-
       h (np.array): vector of depth
-
       plot (bool): plot results
 
   Returns:
-      list: stiffness, validMask, mask, optimalVariables, powerlawFit-success
+      list: stiffness, validMask, mask, optimalVariables, powerlawFit-success |br|
         validMask is [values of p,h where stiffness is determined]
   """
   if self.method== Method.CSM:

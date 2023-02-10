@@ -13,6 +13,7 @@ def hertzEquation(h,h0,E,R=1):
     h0 (numpy.array): depth offset
     E (numpy.array): reduced Young's modulus
     R (float): radius of tip in um (default=1 for parameter fitting)
+
   Returns:
     numpy.array: force
   """
@@ -29,6 +30,7 @@ def hertzFit(self, forceRange=(1, 25), correctH=True, plot=True):
     forceRange (list): force range used for fitting in mN
     correctH (bool): correct the depth
     plot (bool): plot the result
+
   Returns:
     list: parameters determined by fitting
   """
@@ -59,6 +61,7 @@ def popIn(self, correctH=True, plot=True, removeInitialNM=2.):
   Search for pop-in by jump in depth rate
 
   Certainty:
+
   - deltaSlope: higher is better (difference in elastic - plastic slope). Great indicator
   - prefactor: higher is better (prefactor of elastic curve). Great indicator
   - secondRate: lower is better (height of second largest jump). Nice indicator 0.25*deltaRate

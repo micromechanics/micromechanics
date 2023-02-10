@@ -1,5 +1,5 @@
 dist/
 .vscode/
-
+docs/build/
 *.pyc
 *__pycache__*
