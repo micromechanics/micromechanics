@@ -21,9 +21,9 @@ i = Indentation()
 i.plotAll()
 ```
 
-More information as well as tutorials can be found at: [Read the docs](https://micromechanics.readthedocs.io/en/main/)
+More information as well as tutorials can be found at: [Read the docs](https://micromechanics.github.io/micromechanics/)
 
-If you want to contribute to the development, we develop at [github](https://github.com/micromechanics/main)
+If you want to contribute to the development, we develop at [github](https://github.com/micromechanics/micromechanics)
 
 
 # Contributors
