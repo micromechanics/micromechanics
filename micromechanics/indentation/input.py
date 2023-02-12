@@ -248,16 +248,17 @@ def loadHysitron(self, fileName, plotContact=False):
       # create loading-holding-unloading cycles
       #since the first / last point of each segment are double in both segments
       listLoading = np.where(segmentDeltaP>0.1 )[0]
+      listUnload  = np.where(segmentDeltaP<-0.1)[0]
       segmentPoints  -= 1
       segmentPoints[0]+=1
       segPnts   = np.cumsum(segmentPoints)
       #don't use identifyLoadHoldUnload since those points are known
       self.iLHU = []
-      for item in listLoading:
-        iSurface = segPnts[item-1]+1
-        iLoad    = segPnts[item]
-        iHold    = segPnts[item-1]+1
-        iUnload  = segPnts[item]
+      for idxLoad, idxUnload in zip(listLoading, listUnload):
+        iSurface = segPnts[idxLoad-1]+1
+        iLoad    = segPnts[idxLoad]
+        iHold    = segPnts[idxUnload-1]+1
+        iUnload  = segPnts[idxUnload]
         self.iLHU.append( [iSurface,iLoad,iHold,iUnload] )
 
     #### TXT FILE ###
@@ -364,9 +365,8 @@ def loadMicromaterials(self, fileName):
     self.valid = np.ones_like(self.t, dtype=bool)
     self.identifyLoadHoldUnload()
   elif fileName.endswith('.zip'):
-    #if zip-archive of multilpe files
-    with ZipFile(fileName) as zipIn:
-      self.datafile = zipIn
+    #if zip-archive of multilpe files: datafile has to remain open
+    self.datafile = ZipFile(fileName)         #pylint: disable=consider-using-with
     self.testList = self.datafile.namelist()
     if len(np.nonzero([not i.endswith('txt') for i in self.datafile.namelist()])[0])>0:
       print('Not a Micromaterials zip of txt-files')

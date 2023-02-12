@@ -41,12 +41,12 @@ pylint micromechanics
 make -C docs html
 python tests/testVerification.py
 python tests/testAgilent_xls.py
+python tests/testAllFiles.py
 ```
 
 #TODO turn all tests into one github action
 Currently not successful:
 ``` bash
-python tests/testAllFiles.py
 python tests/testMicromaterials_hdf5.py
 python tests/testFischerScope_hdf5.py
 ```
@@ -54,4 +54,22 @@ python tests/testFischerScope_hdf5.py
 Then upload/create-pull-request to github, via
 ``` bash
 ./commit.py 'my message'
+```
+
+## How to find bugs that occurred in a past commit
+Steps:
+- Git history in nice ASCII  => save in file in distant folder; along with notes
+- go to point in history (do not change the present)
+- find diff: always old^ new
+- run your tests
+- undo your changes since checkout
+- go back to present
+
+``` bash
+git log --oneline --graph
+git checkout bf0b634
+git diff e7eac50^ fed7119  #(old^ new)
+# test
+git reset --hard
+git checkout main
 ```
