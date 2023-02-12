@@ -164,11 +164,11 @@ def identifyLoadHoldUnload(self,plot=False):
       plot (bool): verify by plotting
 
   Returns:
-      bool: success
+      bool: success of identifying the load-hold-unload
   """
   if self.method==Method.CSM:
-    self.identifyLoadHoldUnloadCSM()
-    return False
+    success = self.identifyLoadHoldUnloadCSM()
+    return success
   #identify point in time, which are too close (~0) to eachother
   gradTime = np.diff(self.t)
   maskTooClose = gradTime < np.percentile(gradTime,80)/1.e3
@@ -262,6 +262,9 @@ def identifyLoadHoldUnloadCSM(self, plot=False):
 
   Args:
     plot (bool): plot values
+
+  Returns:
+    success (bool): identifying hold-load-unload sequence
   """
   iSurface = np.min(np.where( self.h>=0                     ))
   iLoad    = np.min(np.where( self.p-np.max(self.p)*self.unloadPMax>0 ))
@@ -275,7 +278,7 @@ def identifyLoadHoldUnloadCSM(self, plot=False):
       print('**ERROR identifyLoadHoldUnloadCSM: 1')
       self.iLHU = []
       self.iDrift = []
-      return
+      return False
     pDrift   = bins[np.argmax(hist)+1]
     pCloseToDrift = np.logical_and(self.p>pDrift*self.unloadPMax,self.p<pDrift/self.unloadPMax)
     pCloseToDrift[:iHold] = False
@@ -306,7 +309,7 @@ def identifyLoadHoldUnloadCSM(self, plot=False):
     plt.plot(self.h[iDriftE], self.p[iDriftE], 'o', markersize=10, label='drift end')
     plt.legend(loc=0)
     plt.show()
-  return
+  return True
 
 
 def nextTest(self, newTest=True, plotSurface=False):
@@ -318,7 +321,7 @@ def nextTest(self, newTest=True, plotSurface=False):
      plotSurface (bool): plot surface area
 
   Returns:
-     bool: success
+     bool: success of going to next sheet
   """
   if newTest:
     if self.vendor == Vendor.Agilent:

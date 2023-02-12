@@ -97,7 +97,7 @@ def nextAgilentTest(self, newTest=True):
     newTest (bool): take next sheet (default)
 
   Returns:
-    bool: success
+    bool: success of going to next sheet
   """
   if self.vendor!=Vendor.Agilent: return False #cannot be used
   if len(self.testList)==0: return False   #no sheet left
@@ -132,7 +132,7 @@ def nextAgilentTest(self, newTest=True):
   self.valid = self.valid[validFull]
   #  now all fields (incl. p) are full and defined
 
-  success = self.identifyLoadHoldUnload()
+  self.identifyLoadHoldUnload()
   if self.onlyLoadingSegment and self.method==Method.CSM:
     # print("Length test",len(self.valid), len(self.h[self.valid]), len(self.p[self.valid])  )
     iMin, iMax = 2, self.iLHU[0][1]
@@ -149,7 +149,7 @@ def nextAgilentTest(self, newTest=True):
   if 'hRaw' in self.indicies        : self.hRaw /= 1.e3  #from nm in um
   if not "k2p" in self.indicies and 'slope' in self.indicies:
     self.k2p = self.slope * self.slope / self.p[self.valid]
-  return success
+  return True
 
 
 def loadHysitron(self, fileName, plotContact=False):
@@ -385,7 +385,7 @@ def nextMicromaterialsTest(self):
   Go to next file in zip or hdf5-file
 
   Returns:
-      bool: success
+      bool: success of going to next sheet
   """
   if self.vendor!=Vendor.Micromaterials: #cannot be used
     return False
