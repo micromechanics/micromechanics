@@ -13,4 +13,4 @@ jobs:
         python-version: '3.8'
     - name: Run tests
       run: |
-        python tests/testVerification.py
+        python -m unittest tests/test*

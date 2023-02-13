@@ -47,6 +47,10 @@ python tests/testFischerScope_hdf5.py
 ```
 These tests are also executed as github action once pushed.
 
+or the short form to run all the tests
+``` bash
+python -m unittest tests/test*
+```
 
 #TODO turn all tests into one github action
 
