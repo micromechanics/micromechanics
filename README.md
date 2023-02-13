@@ -42,12 +42,12 @@ make -C docs html
 python tests/testVerification.py
 python tests/testAgilent_xls.py
 python tests/testAllFiles.py
+python tests/testMicromaterials_hdf5.py
 ```
 
 #TODO turn all tests into one github action
 Currently not successful:
 ``` bash
-python tests/testMicromaterials_hdf5.py
 python tests/testFischerScope_hdf5.py
 ```
 

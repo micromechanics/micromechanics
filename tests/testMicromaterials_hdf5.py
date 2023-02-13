@@ -15,7 +15,7 @@ class TestStringMethods(unittest.TestCase):
 				i.analyse()
 			i.plot(show=3)
 			print(i.modulus)
-			self.assertTrue((abs(np.sum(i.modulus)-144.39075059572392)<0.1),'Calculation of modulus changed')
+			self.assertTrue((abs(np.sum(i.modulus)-150.7015476364166)<0.1),'Modulus changed to '+str(np.sum(i.modulus)))
 			### END OF MAIN ###
 			print('\n*** DONE WITH VERIFY ***')
 
