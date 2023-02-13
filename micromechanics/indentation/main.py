@@ -264,7 +264,7 @@ def identifyLoadHoldUnloadCSM(self, plot=False):
     plot (bool): plot values
 
   Returns:
-    success (bool): identifying hold-load-unload sequence
+    bool: success of identifying hold-load-unload sequence
   """
   iSurface = np.min(np.where( self.h>=0                     ))
   iLoad    = np.min(np.where( self.p-np.max(self.p)*self.unloadPMax>0 ))

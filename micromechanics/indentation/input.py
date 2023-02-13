@@ -366,7 +366,8 @@ def loadMicromaterials(self, fileName):
     self.identifyLoadHoldUnload()
   elif fileName.endswith('.zip'):
     #if zip-archive of multilpe files: datafile has to remain open
-    self.datafile = ZipFile(fileName)         #pylint: disable=consider-using-with
+    #    next pylint statement for github actions
+    self.datafile = ZipFile(fileName)  # pylint: disable=consider-using-with
     self.testList = self.datafile.namelist()
     if len(np.nonzero([not i.endswith('txt') for i in self.datafile.namelist()])[0])>0:
       print('Not a Micromaterials zip of txt-files')

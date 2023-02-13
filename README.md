@@ -35,21 +35,20 @@ If you want to contribute to the development, we develop at [github](https://git
 
 
 # Information for developers
-Test the code: linting, documentation and then the tests
+Test the code: linting, documentation and then the tests from project main directory
 ``` bash
 pylint micromechanics
 make -C docs html
 python tests/testVerification.py
-python tests/testAgilent_xls.py
 python tests/testAllFiles.py
+python tests/testAgilent_xls.py
 python tests/testMicromaterials_hdf5.py
-```
-
-#TODO turn all tests into one github action
-Currently not successful:
-``` bash
 python tests/testFischerScope_hdf5.py
 ```
+These tests are also executed as github action once pushed.
+
+
+#TODO turn all tests into one github action
 
 Then upload/create-pull-request to github, via
 ``` bash
