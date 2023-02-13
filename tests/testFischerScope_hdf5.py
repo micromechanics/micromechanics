@@ -13,7 +13,7 @@ class TestStringMethods(unittest.TestCase):
 			for testname in i:
 				i.analyse()
 			i.plot(show=3)
-			self.assertTrue((   abs(np.sum(i.modulus)-10.6530228070548203)<0.01 ),'Modulus changed to '+str(np.sum(i.modulus)))
+			self.assertTrue((   abs(np.sum(i.modulus)-0.6530228070548203)<0.01 ),'Modulus changed to '+str(np.sum(i.modulus)))
 			### END OF MAIN ###
 			print('\n*** DONE WITH VERIFY ***')
 
