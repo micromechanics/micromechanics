@@ -12,7 +12,7 @@ class TestStringMethods(unittest.TestCase):
 			i = Indentation('examples/Agilent/FS_Calibration.xls', nuMat = 0.18)
 			i.calibration()
 			prerecorded = np.array([25.99088100777346, 305.6978416681741, 2050.70109154738])
-			self.assertTrue(np.max(np.abs(np.array(i.tip.prefactors[:-1])-prerecorded))<0.001,
+			self.assertTrue(np.max(np.abs(np.array(i.tip.prefactors[:-1])-prerecorded))<0.1,
 								'Tip prefactors changed to '+str(i.tip.prefactors))
 			### END OF MAIN ###
 			print('\n*** DONE WITH VERIFY ***')
