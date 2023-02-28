@@ -23,7 +23,7 @@ copyright = u'2022-{}, PASTA-ELN team'.format(datetime.datetime.now().year)
 author = u'Micromechanics team'
 
 # The full version, including alpha/beta/rc tags
-version = "1.1.1"
+version = "1.1.2"
 release = version
 
 # -- General configuration ---------------------------------------------------

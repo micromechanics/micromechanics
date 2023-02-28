@@ -455,7 +455,6 @@ class Tif:
       lineThreshold = np.where(lineAvg==0)[0]
     else:
       print('**ERROR, only know colors b,w')
-    print(lineThreshold)
     if len(lineThreshold)>0:
       self.crop(yMax=lineThreshold[0])
     return
