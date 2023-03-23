@@ -8,6 +8,7 @@
 
 """
 import logging, re, math, os, sys, warnings, codecs
+from pathlib import Path
 from xml.dom import minidom
 import numpy as np
 import matplotlib.pyplot as plt
@@ -34,15 +35,12 @@ class Tif:
        pixelSize (float): pixel size for conventional tif-files
     """
     #initialize
-    fontName = 'arial.ttf'
-    self.fontFile = None
-    for path in sys.path:
-      fontFile = os.path.join(path,fontName)
-      if os.path.isfile(fontFile):
-        self.fontFile = fontFile
-        break
-    if self.fontFile is None:
-      logging.error("ERROR: FOUND NO FONT FILE")
+    fontFile = (Path(__file__).parent)/'OpenSans-Regular.ttf'
+    if fontFile.exists():
+      self.fontFile = fontFile
+    else:
+      logging.error("**ERROR: FOUND NO FONT FILE")
+      self.fontFile = None
     self.fileName = fileName
     #set default values
     self.meta = {}
