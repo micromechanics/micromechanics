@@ -569,7 +569,7 @@ def loadHDF5(self,fileName):
     self.metaUser = {'measurementType': 'KLA Indentation HDF5'}
     self.unloadPMax = 0.99
     self.unloadPMin = 0.5
-    self.zeroGradDelta = 0.005  #enhanced accuracy
+    self.zeroGradDelta = 0.007  #enhanced accuracy
   elif converter == 'xls2hdf.py':
     self.metaUser = {'measurementType': 'MTS / Agilent Indentation HDF5'}
     self.unloadPMax = 0.99
