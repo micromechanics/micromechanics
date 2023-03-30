@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-@file
-@brief Class to allow for Zeiss/FEI-ThermoFischer TIF image loading and enhancing using python
+Class to allow for Zeiss/FEI-ThermoFischer TIF image loading and enhancing using python
 
 - Unit: all sizes are in um: pixel-size, image-width
 - All images have an image, pixelsize, width, height
