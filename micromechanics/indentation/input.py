@@ -673,11 +673,18 @@ def nextHDF5Test(self):
   else:
     self.p -= self.p[0]
   inFile = [element for element in inFile if element not in nameDict['__ignore__']]
+  self.iLHU   = []
+  self.iDrift = [-1,-1]
   if len(inFile)>0:
     print("**INFO on",self.metaUser['measurementType'].split()[0],"fields not imported:",inFile)
   if hasattr(self, 'slope') and len(self.slope)>60: #if more than 30: CSM
     self.method = Method.CSM
-  self.identifyLoadHoldUnload()
+  if self.plotAllFigs:
+    self.plotTestingMethod()
+  try:
+    self.identifyLoadHoldUnload()
+  except:
+    print('**ERROR: could not identify load-hold-unload. Suggestion: try next test')
   return True
 
 
