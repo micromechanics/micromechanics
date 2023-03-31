@@ -672,6 +672,10 @@ def nextHDF5Test(self):
     # self.valid = self.valid[mask]
   else:
     self.p -= self.p[0]
+
+  # Do drift correction 
+  self.h -= self.t*self.driftRate  #SB
+
   inFile = [element for element in inFile if element not in nameDict['__ignore__']]
   if len(inFile)>0:
     print("**INFO on",self.metaUser['measurementType'].split()[0],"fields not imported:",inFile)
