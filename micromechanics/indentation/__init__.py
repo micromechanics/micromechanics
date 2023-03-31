@@ -42,7 +42,7 @@ class Indentation:
   from .verification import verifyOneData, verifyOneData1, verifyReadCalc
   from .seldomUsedFunctions import tareDepthForce, analyseDrift
 
-  def __init__(self, fileName=None, nuMat= 0.3, tip=None, surfaceFind=None, nonMetal=1., verbose=2):
+  def __init__(self, fileName=None, nuMat= 0.3, tip=None, surfaceFind=None, nonMetal=1., verbose=2, driftRate=0):
     """
     Initialize indentation experiment data
 
@@ -53,6 +53,7 @@ class Indentation:
        surfaceFind (dict): dictonary describing the surface find
        nonMetal (float): is it a metal=1 or armorphous=0
        verbose (int): the higher, the more information printed: 2=default, 1=minimal, 0=print nothing
+       driftRate (float): drift in [µm/s]
     """
     np.seterr(divide='ignore', invalid='ignore')
     self.nuMat = nuMat                                      #nuMat: material's Posson ratio
@@ -66,6 +67,7 @@ class Indentation:
     self.newFileRead = True                                 #file was just loaded
     self.evaluateStiffnessAtMax = True                      #evaluate stiffness at maximum or at end of power-law fit domain
     self.config = {}                                        #storage for surface index, ignored tests, thresholds for surface
+    self.driftRate = driftRate
 
     if tip is None:
       tip = Tip()
