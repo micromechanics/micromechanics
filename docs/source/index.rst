@@ -20,6 +20,7 @@ Tutorials
    installation
    tutorialBasic
    tutorialAdvanced
+   tutorialTif
 
 Libraries
 =========
