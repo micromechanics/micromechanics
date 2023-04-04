@@ -29,7 +29,7 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepthStiffness=1.0, critFo
   constantTerm = kwargs.get('constantTerm', False)
   frameCompliance = self.calibrateStiffness(critDepth=critDepthStiffness,critForce=critForce,
     plotStiffness=plotStiffness)
-
+  print('frameCompliance',frameCompliance)
   ## re-create data-frame of all files
   temp = {'method': self.method, 'onlyLoadingSegment': self.onlyLoadingSegment}
   self.restartFile()
@@ -40,6 +40,9 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepthStiffness=1.0, critFo
   if self.method==Method.CSM:
     self.nextTest(newTest=False)  #rerun to ensure that onlyLoadingSegment used
     while True:
+      if self.progressBar_calibration:
+        progressBar_calibration_Value=int((3*len(self.allTestList)-len(self.testList))/(3*len(self.allTestList))*100)
+        self.progressBar_calibration.setValue(progressBar_calibration_Value)
       self.analyse()
       slope = np.hstack((slope, self.slope))
       h     = np.hstack((h,     self.h[self.valid]))
@@ -49,6 +52,9 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepthStiffness=1.0, critFo
       self.nextTest()
   else:
     while True:
+      if self.progressBar_calibration:
+        progressBar_calibration_Value=int((3*len(self.allTestList)-len(self.testList))/(3*len(self.allTestList))*100)
+        self.progressBar_calibration.setValue(progressBar_calibration_Value)
       self.analyse()
       slope = np.hstack((slope, self.metaUser['S_mN/um']))
       h     = np.hstack((h,     self.metaUser['hMax_um']))
@@ -146,6 +152,7 @@ def calibrateStiffness(self,critDepth=0.5,critForce=0.0001,plotStiffness=True, r
       pyplot.axis or numpy.arary: data as chosen by arguments
   """
   print("Start compliance fitting")
+  print('self.zeroLoadDepth',self.zeroLoadDepth)
   ## output representative values
   if self.method==Method.CSM:
     x, y, h = None, None, None
@@ -170,6 +177,12 @@ def calibrateStiffness(self,critDepth=0.5,critForce=0.0001,plotStiffness=True, r
     ## create data-frame of all files
     pAll, hAll, sAll = [], [], []
     while True:
+      if self.progressBar_calibration:
+        progressBar_Value=int((2*len(self.allTestList)-len(self.testList))/(3*len(self.allTestList))*100)
+        self.progressBar_calibration.setValue(progressBar_Value)
+      elif self.progressBar_FrameStiffness:
+        progressBar_Value=int((2*len(self.allTestList)-len(self.testList))/(2*len(self.allTestList))*100)
+        self.progressBar_FrameStiffness.setValue(progressBar_Value)
       self.analyse()
       if isinstance(self.metaUser['pMax_mN'], list):
         pAll = pAll+list(self.metaUser['pMax_mN'])
@@ -209,7 +222,10 @@ def calibrateStiffness(self,critDepth=0.5,critForce=0.0001,plotStiffness=True, r
   if returnData:
     return x,y
   if plotStiffness:
-    _, ax = plt.subplots()
+    if isinstance(plotStiffness,bool):
+      _, ax = plt.subplots()
+    else:
+      ax=plotStiffness
     ax.plot(x[~mask], y[~mask], 'o', color='#165480', fillstyle='none', markersize=1, label='excluded')
     ax.plot(x[mask], y[mask],   'C0o', markersize=5, label='for fit')
     x_ = np.linspace(0, np.max(x)*1.1, 50)
@@ -225,5 +241,6 @@ def calibrateStiffness(self,critDepth=0.5,critForce=0.0001,plotStiffness=True, r
     ax.set_xlim([0,np.max(x[mask])*1.5])
     if returnAxis:
       return ax
-    plt.show()
+    if isinstance(plotStiffness,bool):
+      plt.show()
   return frameCompliance

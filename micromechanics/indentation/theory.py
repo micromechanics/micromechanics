@@ -128,20 +128,30 @@ def stiffnessFromUnloading(self, p, h, plot=False):
   stiffness, mask, opt, powerlawFit = [], None, None, []
   validMask = np.zeros_like(p, dtype=bool)
   if plot:
-    plt.plot(h,p, '--k', label='data')
+    if isinstance(plot, bool):
+      ax = plt.subplots()
+    else:
+      ax = plot
+    ax.plot(h,p, '--k', label='data')
+  plot_with_lable=True
   for cycleNum, cycle in enumerate(self.iLHU):
     loadStart, loadEnd, unloadStart, unloadEnd = cycle
     if loadStart>loadEnd or loadEnd>unloadStart or unloadStart>unloadEnd:
       print('*ERROR* stiffnessFromUnloading: indicies not in order:',cycle)
     maskSegment = np.zeros_like(h, dtype=bool)
     maskSegment[unloadStart:unloadEnd+1] = True
+    print('loadEnd',loadEnd)
     maskForce   = np.logical_and(p<p[loadEnd]*self.unloadPMax, p>p[loadEnd]*self.unloadPMin)
     mask        = np.logical_and(maskSegment,maskForce)
     if len(mask[mask])==0:
       print('*ERROR* mask of unloading is empty. Cannot fit\n')
       return None, None, None, None, None
     if plot:
-      plt.plot(h[mask],p[mask],'-b', label='this cycle')
+      if plot_with_lable:
+        ax.plot(h[mask],p[mask],'-b', label='this cycle')
+      else:
+        ax.plot(h[mask],p[mask],'-b')
+
     #initial values of fitting
     hf0    = h[mask][-1]/2.0
     m0     = 2
@@ -186,15 +196,22 @@ def stiffnessFromUnloading(self, p, h, plot=False):
       validMask[ np.where(mask)[0][0] ]=True
     stiffness.append(stiffnessPlot)
     if plot:
-      x_ = np.linspace(0.5*h[mask].max(), h[mask].max(), 10)
-      plt.plot(x_,   self.unloadingPowerFunc(x_,B,hf,m),'m-', label='final fit')
-      plt.plot(x_,   self.unloadingPowerFunc(x_,B0,hf0,m0),'g-', label='initial fit')
-      plt.plot(x_,   stiffnessPlot*x_+stiffnessValue, 'r--', lw=3, label='linear at max')
+      x_ = np.linspace(0.5*h[mask].max(), h[mask].max(), 100)
+      if plot_with_lable:
+        ax.plot(x_,   self.unloadingPowerFunc(x_,B,hf,m),'m-', label='final fit')
+        ax.plot(x_,   self.unloadingPowerFunc(x_,B0,hf0,m0),'g-', label='initial fit')
+        ax.plot(x_,   stiffnessPlot*x_+stiffnessValue, 'r--', lw=3, label='linear at max')
+        plot_with_lable = False
+      else:
+        ax.plot(x_,   self.unloadingPowerFunc(x_,B,hf,m),'m-')
+        ax.plot(x_,   self.unloadingPowerFunc(x_,B0,hf0,m0),'g-')
+        ax.plot(x_,   stiffnessPlot*x_+stiffnessValue, 'r--', lw=3)
   if plot:
-    plt.xlim(left=0)
-    plt.ylim(bottom=0)
-    plt.legend()
-    plt.xlabel(r'depth [$\mathrm{\mu m}$]')
-    plt.ylabel(r'force [$\mathrm{mN}$]')
-    plt.show()
+    ax.set_xlim(left=0)
+    ax.set_ylim(bottom=0)
+    ax.legend()
+    ax.set_xlabel(r'depth [$\mathrm{\mu m}$]')
+    ax.set_ylabel(r'force [$\mathrm{mN}$]')
+    if isinstance(plot,bool):
+      plt.show()
   return stiffness, validMask, mask, opt, powerlawFit

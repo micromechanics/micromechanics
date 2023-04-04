@@ -21,16 +21,25 @@ def loadAgilent(self, fileName):
   self.testList = []
   self.fileName = fileName    #one file can have multiple tests
   self.indicies = {}
-  workbook = pd.read_excel(fileName,sheet_name='Required Inputs')
+  found_required_input=False
+  required_input_sheet_name_list=['Required Inputs', 'Pre-Test Inputs']
+  for required_input_sheet_name in required_input_sheet_name_list:
+    try:
+      workbook = pd.read_excel(fileName,sheet_name=required_input_sheet_name)
+    except:
+      print('%s was not found'%required_input_sheet_name)
+    else:
+      print('%s was found'%required_input_sheet_name)
+      break
   self.metaVendor.update( dict(workbook.iloc[-1]) )
   if 'Poissons Ratio' in self.metaVendor and self.metaVendor['Poissons Ratio']!=self.nuMat and self.verbose>0:
     print("*WARNING*: Poisson Ratio different than in file.",self.nuMat,self.metaVendor['Poissons Ratio'])
   self.datafile = pd.read_excel(fileName, sheet_name=None)
   tagged = []
   code = {"Load On Sample":"p", "Force On Surface":"p", "LOAD":"p"\
-        ,"_Load":"pRaw", "Raw Load":"pRaw","Force":"pRaw"\
+        ,"_Load":"pRaw", "Raw Load":"pRaw","Force":"pRaw","Load":"pRaw"\
         ,"Displacement Into Surface":"h", "DEPTH":"h"\
-        ,"_Displacement":"hRaw", "Raw Displacement":"hRaw","Displacement":"hRaw"\
+        ,"_Displacement":"hRaw", "Raw Displacement":"hRaw","Displacement":"hRaw","Depth":"hRaw"\
         ,"Time On Sample":"t", "Time in Contact":"t", "TIME":"t", "Time":"tTotal"\
         ,"Contact Area":"Ac", "Contact Depth":"hc"\
         ,"Harmonic Displacement":"hHarmonic", "Harmonic Load":"pHarmonic","Phase Angle":"phaseAngle"\
@@ -50,7 +59,20 @@ def loadAgilent(self, fileName):
   self.fullData = ['h','p','t','pVsHSlope','hRaw','pRaw','tTotal','slopeSupport']
   if self.verbose>1:
     print("Open Agilent file: "+fileName)
+  Number_dfName=0
   for dfName in self.datafile.keys():
+    if self.progressBar_calibration:
+      Number_dfName+=1
+      progressBar_Value=int((Number_dfName)/(3*len(self.datafile.keys()))*100)
+      self.progressBar_calibration.setValue(progressBar_Value)
+    elif self.progressBar_FrameStiffness:
+      Number_dfName+=1
+      progressBar_Value=int((Number_dfName)/(2*len(self.datafile.keys()))*100)
+      self.progressBar_FrameStiffness.setValue(progressBar_Value)
+    elif self.progressBar_HE:
+      Number_dfName+=1
+      progressBar_Value=int((Number_dfName)/(2*len(self.datafile.keys()))*100)
+      self.progressBar_HE.setValue(progressBar_Value)
     df    = self.datafile.get(dfName)
     if "Test " in dfName and not "Tagged" in dfName and not "Test Inputs" in dfName:
       self.testList.append(dfName)
@@ -82,7 +104,7 @@ def loadAgilent(self, fileName):
   return True
 
 
-def nextAgilentTest(self, newTest=True):
+def nextAgilentTest(self, newTest=True, **kwargs):
   """
   Go to next sheet in worksheet and prepare indentation data
 
@@ -99,6 +121,8 @@ def nextAgilentTest(self, newTest=True):
   Returns:
     bool: success of going to next sheet
   """
+  print('nextAgilentTest')
+  plot_identifyLoadHoldUnload = kwargs.get('plot_identifyLoadHoldUnload', False)
   if self.vendor!=Vendor.Agilent: return False #cannot be used
   if len(self.testList)==0: return False   #no sheet left
   if newTest:
@@ -132,7 +156,8 @@ def nextAgilentTest(self, newTest=True):
   self.valid = self.valid[validFull]
   #  now all fields (incl. p) are full and defined
 
-  self.identifyLoadHoldUnload()
+  # self.identifyLoadHoldUnload(plot=True)
+  self.identifyLoadHoldUnload(plot=plot_identifyLoadHoldUnload)
   if self.onlyLoadingSegment and self.method==Method.CSM:
     # print("Length test",len(self.valid), len(self.h[self.valid]), len(self.p[self.valid])  )
     iMin, iMax = 2, self.iLHU[0][1]
