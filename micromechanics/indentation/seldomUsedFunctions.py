@@ -179,7 +179,7 @@ def isFusedSilica(self, bounds=[[610,700],[71,73],[8.9,10.1]], numPoints=50):
   return result
 
 
-def analyseDrift(self, plot=True, fraction=None, timeStart=None):
+def analyseDrift(self, plot=True, fraction=None, timeStart=None, duration=-1):
   """
   Analyse drift segment by:
 
@@ -192,33 +192,23 @@ def analyseDrift(self, plot=True, fraction=None, timeStart=None):
       timeStart: initial timestamp used for drift analysis; e.g. after 20sec;
                 this superseeds fraction
 
+      duration: duration of drift
+
   Results:
       drift in um/s
   """
   drift = None
   if self.vendor == Vendor.Hysitron and self.fileName.endswith('.hld'):
-    t = self.dataDrift[:,0]
-    h = self.dataDrift[:,1]
-    rate = np.zeros_like(t)
+    time = self.dataDrift[:,0]
+    depth = self.dataDrift[:,1]
+    rate = np.zeros_like(time)
     rate[:] = np.nan
-    for idxEnd,ti in enumerate(t):
+    for idxEnd,ti in enumerate(time):
       if ti<20: continue
-      idxStart = np.argmin(np.abs( t[:]-(ti-20.) )  )
-      rate[idxEnd] = (h[idxEnd]-h[idxStart])/(t[idxEnd]-t[idxStart])
-    idxEnd = np.argmin(np.abs( t[:]-(40.) )  )
+      idxStart = np.argmin(np.abs( time[:]-(ti-20.) )  )
+      rate[idxEnd] = (depth[idxEnd]-depth[idxStart])/(time[idxEnd]-time[idxStart])
+    idxEnd = np.argmin(np.abs( time[:]-(40.) )  )
     drift = rate[idxEnd]
-    print("Drift:", round(drift*1.e3,3),"nm/s")
-    self.metaUser['drift'] = drift
-    if plot:
-      _, ax1 = plt.subplots()
-      ax2 = ax1.twinx()
-      ax1.plot(t,rate*1.e3,'r')
-      ax1.axhline(0.05,c='r',linestyle='dashed')
-      ax2.plot(t,h*1.e3,'b')
-      ax1.set_xlabel(r'time [$\mathrm{s}$]')
-      ax1.set_ylabel(r'drift rate [$\mathrm{nm/s}$]', color='r')
-      ax2.set_ylabel(r'depth [$\mathrm{nm}$]', color='b')
-      plt.show()
   elif self.vendor == Vendor.Micromaterials and self.fileName.endswith('hdf5'):
     branch = self.datafile[self.testName]['drift']
     time = np.array(branch['time'])
@@ -229,4 +219,31 @@ def analyseDrift(self, plot=True, fraction=None, timeStart=None):
       timeStart = (1-fraction)*time[-1]+fraction*time[0]
     inc = np.argmin(np.abs(time-timeStart))-1
     drift = np.polyfit(time[inc:],depth[inc:],1)[0]/1000.
+  elif self.fileName.endswith('hdf5'):
+    time = self.t
+    depth = self.h
+    if fraction is None:
+      fraction = 0.6
+    if timeStart is None:
+      timeStart = (1-fraction)*time[-1]+fraction*time[0]
+    incStart = np.argmin(np.abs(time-timeStart))
+    if duration>0:
+      incEnd = np.argmin(np.abs(time- (timeStart+duration) ))
+    else:
+      incEnd = -1
+    # drift = np.polyfit(time[incStart:incEnd],depth[incStart:incEnd],1)[0]
+    drift = (depth[incEnd]-depth[incStart])/(time[incEnd]-time[incStart])
+  print("Drift:", round(drift*1.e3,3),"nm/s")
+  self.metaUser['drift'] = drift
+  if plot:
+    _, ax1 = plt.subplots()
+    ax1.plot(time,depth*1.e3,'b')
+    ax1.axvline(time[incStart], c='k', linestyle='dashed')
+    ax1.plot(time[incStart],depth[incStart]*1.e3,'ok')
+    if duration>0:
+      ax1.axvline(time[incEnd], c='k', linestyle='dashed')
+    ax1.plot(time[incEnd],depth[incEnd]*1.e3,'ok')
+    ax1.set_xlabel(r'time [$\mathrm{s}$]')
+    ax1.set_ylabel(r'depth [$\mathrm{nm}$]', color='b')
+    plt.show()
   return drift

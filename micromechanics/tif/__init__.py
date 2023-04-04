@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-@file
-@brief Class to allow for Zeiss/FEI-ThermoFischer TIF image loading and enhancing using python
+Class to allow for Zeiss/FEI-ThermoFischer TIF image loading and enhancing using python
 
 - Unit: all sizes are in um: pixel-size, image-width
 - All images have an image, pixelsize, width, height
@@ -34,15 +33,12 @@ class Tif:
        pixelSize (float): pixel size for conventional tif-files
     """
     #initialize
-    fontName = 'arial.ttf'
-    self.fontFile = None
-    for path in sys.path:
-      fontFile = os.path.join(path,fontName)
-      if os.path.isfile(fontFile):
-        self.fontFile = fontFile
-        break
-    if self.fontFile is None:
-      logging.error("ERROR: FOUND NO FONT FILE")
+    fontFile = os.path.dirname(os.path.abspath(__file__))+os.sep+'OpenSans-Regular.ttf'
+    if os.path.exists(fontFile):
+      self.fontFile = fontFile
+    else:
+      logging.error("**ERROR: FOUND NO FONT FILE")
+      self.fontFile = None
     self.fileName = fileName
     #set default values
     self.meta = {}

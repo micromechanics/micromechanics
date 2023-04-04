@@ -184,12 +184,17 @@ def identifyLoadHoldUnload(self,plot=False):
     rate = signal.medfilt(rate, 5)
   else:
     p = gaussian_filter1d(self.p, 5)
-    rate = np.gradient(p, self.t)
-    rate = signal.medfilt(rate, 5)
+  rate = np.gradient(p, self.t)
+  rate /= np.max(rate)
+  loadMask  = rate >  self.zeroGradDelta
+  unloadMask= rate < -self.zeroGradDelta
+  
+  rate = np.gradient(p, self.t)
+  rate = signal.medfilt(rate, 5)
   
   loadMask  = np.logical_and((rate >  self.zeroGradDelta), (p > self.min_loading_Force))
   unloadMask= np.logical_and((rate < -self.zeroGradDelta), (p > self.min_loading_Force))
-  if plot:     # verify visually
+  if plot or self.plotAllFigs:     # verify visually
     plt.plot(rate)
     plt.axhline(0, c='k')
     plt.axhline( self.zeroGradDelta, c='k', linestyle='dashed')
@@ -197,11 +202,12 @@ def identifyLoadHoldUnload(self,plot=False):
     # plt.ylim([-8*self.zeroGradDelta, 8*self.zeroGradDelta])
     plt.xlabel('time incr. []')
     plt.ylabel(r'rate [$\mathrm{mN/sec}$]')
+    plt.title('Identify load, hold, unload: loading and unloading segments - prior to cleaning')
     plt.show()
-  #clean small fluctuations
+  #try to clean small fluctuations
   if len(loadMask)>100 and len(unloadMask)>100:
-    size = self.min_size_fluctuation
-    loadMask = ndimage.binary_closing(loadMask, structure=np.ones((size,)))
+    size = 10
+    loadMask = ndimage.binary_closing(loadMask, structure=np.ones((size,)) )
     unloadMask = ndimage.binary_closing(unloadMask, structure=np.ones((size,)))
     loadMask = ndimage.binary_opening(loadMask, structure=np.ones((size,)))
     unloadMask = ndimage.binary_opening(unloadMask, structure=np.ones((size,)))
@@ -222,13 +228,6 @@ def identifyLoadHoldUnload(self,plot=False):
     #clean loading front
     loadIdx = loadIdx[2:]
 
-  while loadIdx[0]>unloadIdx[0]:
-    #clean loading front
-    unloadIdx = unloadIdx[2:]
-  while loadIdx[-1]>unloadIdx[-1]:
-    #clean loading behind
-    loadIdx = loadIdx[:-1]
-
   if plot:     # verify visually
     plt.plot(self.p,'o')
     plt.plot(p,'x')
@@ -242,6 +241,7 @@ def identifyLoadHoldUnload(self,plot=False):
     plt.legend(loc=0)
     plt.xlabel(r'time incr. []')
     plt.ylabel(r'force [$\mathrm{mN}$]')
+    plt.title('Identified load, hold, unload')
     plt.show()
   #store them in a list [[loadStart1, loadEnd1, unloadStart1, unloadEnd1], [loadStart2, loadEnd2, unloadStart2, unloadEnd2],.. ]
   self.iLHU = []
@@ -253,7 +253,13 @@ def identifyLoadHoldUnload(self,plot=False):
   try:
     for i,_ in enumerate(loadIdx[::2]):
       if loadIdx[::2][i] < loadIdx[1::2][i] <= unloadIdx[::2][i] < unloadIdx[1::2][i]:
-        self.iLHU.append([loadIdx[::2][i],loadIdx[1::2][i],unloadIdx[::2][i],unloadIdx[1::2][i]])
+        newEntry = [loadIdx[::2][i],loadIdx[1::2][i],unloadIdx[::2][i],unloadIdx[1::2][i]]
+        if np.min(newEntry)>0 and np.max(newEntry)<len(self.h):
+          self.iLHU.append(newEntry)
+        else:
+          print("**ERROR: iLHU values out of bounds", newEntry)
+          if len(self.iLHU)>0:
+            self.iLHU.append([])
       else:
         print("**ERROR: some segment not found", loadIdx[::2][i], loadIdx[1::2][i], unloadIdx[::2][i], unloadIdx[1::2][i])
         if len(self.iLHU)>0:
@@ -320,7 +326,7 @@ def identifyLoadHoldUnloadCSM(self, plot=False):
   self.iLHU   = [[iSurface,iLoad,iHold,iDriftS]]
   self.iDrift = [iDriftS,iDriftE]
 
-  if plot:
+  if plot or self.plotAllFigs:
     plt.plot(self.h, self.p)
     plt.plot(self.h[iSurface], self.p[iSurface], 'o', markersize=10, label='surface')
     plt.plot(self.h[iLoad], self.p[iLoad], 'o', markersize=10, label='load')
@@ -328,6 +334,7 @@ def identifyLoadHoldUnloadCSM(self, plot=False):
     plt.plot(self.h[iDriftS], self.p[iDriftS], 'o', markersize=10, label='drift start')
     plt.plot(self.h[iDriftE], self.p[iDriftE], 'o', markersize=10, label='drift end')
     plt.legend(loc=0)
+    plt.title('Identify Load, Hold, Unload for CSM measurements')
     plt.show()
   return True
 

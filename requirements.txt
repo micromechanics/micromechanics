@@ -6,3 +6,5 @@ lmfit
 xlrd
 pandas
 matplotlib
+scikit-image
+opencv-python

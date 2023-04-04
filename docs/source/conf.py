@@ -10,11 +10,8 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
-import sys
-import datetime
-sys.path.insert(0, os.path.abspath('../../src/nanoindentation'))
-
+import os, sys, datetime
+sys.path.insert(0, os.path.abspath('../../micromechanics/tif'))
 
 # -- Project information -----------------------------------------------------
 
@@ -23,7 +20,7 @@ copyright = u'2022-{}, PASTA-ELN team'.format(datetime.datetime.now().year)
 author = u'Micromechanics team'
 
 # The full version, including alpha/beta/rc tags
-version = "1.1.2"
+version = "1.1.9"
 release = version
 
 # -- General configuration ---------------------------------------------------
