@@ -68,7 +68,8 @@ class Indentation:
     self.evaluateStiffnessAtMax = True                      #evaluate stiffness at maximum or at end of power-law fit domain
     self.config = {}                                        #storage for surface index, ignored tests, thresholds for surface
     self.driftRate = driftRate
-
+    self.plotAllFigs = False
+    
     # Input using **kwargs
     self.min_size_fluctuation = kwargs.get('min_size_fluctuation', 10)            #used by identifyLoadHoldUnload(self,plot=False) to clean small fluctuations                   
     self.zeroLoadDepth = kwargs.get('zeroLoadDepth', False)                       #zero Load and zero Depth at contact

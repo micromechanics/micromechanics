@@ -184,14 +184,9 @@ def identifyLoadHoldUnload(self,plot=False):
     rate = signal.medfilt(rate, 5)
   else:
     p = gaussian_filter1d(self.p, 5)
-  rate = np.gradient(p, self.t)
-  rate /= np.max(rate)
-  loadMask  = rate >  self.zeroGradDelta
-  unloadMask= rate < -self.zeroGradDelta
-  
-  rate = np.gradient(p, self.t)
-  rate = signal.medfilt(rate, 5)
-  
+    rate = np.gradient(p, self.t)
+    rate = signal.medfilt(rate, 5)
+
   loadMask  = np.logical_and((rate >  self.zeroGradDelta), (p > self.min_loading_Force))
   unloadMask= np.logical_and((rate < -self.zeroGradDelta), (p > self.min_loading_Force))
   if plot or self.plotAllFigs:     # verify visually

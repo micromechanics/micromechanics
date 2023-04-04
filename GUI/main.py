@@ -146,7 +146,7 @@ class MainWindow(QMainWindow):
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     win = MainWindow()
-    win.setWindowTitle("GUI for steffen's code")
+    win.setWindowTitle("GUI Micromechanics/indentation")
     win.show()
     win.activateWindow()
     win.raise_()

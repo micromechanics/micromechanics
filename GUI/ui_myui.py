@@ -1402,7 +1402,7 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.doubleSpinBox_zeroGradDelta_tabTipRadius.sizePolicy().hasHeightForWidth())
         self.doubleSpinBox_zeroGradDelta_tabTipRadius.setSizePolicy(sizePolicy)
         self.doubleSpinBox_zeroGradDelta_tabTipRadius.setDecimals(4)
-        self.doubleSpinBox_zeroGradDelta_tabTipRadius.setValue(0.003000000000000)
+        self.doubleSpinBox_zeroGradDelta_tabTipRadius.setValue(0.010000000000000)
 
         self.gridLayout_30.addWidget(self.doubleSpinBox_zeroGradDelta_tabTipRadius, 1, 4, 1, 1)
 
@@ -2506,7 +2506,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.tabWidget.setCurrentIndex(2)
+        self.tabWidget.setCurrentIndex(1)
         self.graphicsView_tab_TipAreaFunction.setCurrentIndex(1)
         self.tabWidget_3.setCurrentIndex(0)
         self.tabWidget_2.setCurrentIndex(1)
@@ -2514,7 +2514,7 @@ class Ui_MainWindow(object):
         self.tabWidget_4.setCurrentIndex(0)
         self.graphicsView_tab_TipAreaFunction_5.setCurrentIndex(1)
         self.tabWidget_9.setCurrentIndex(0)
-        self.tabWidget_5.setCurrentIndex(0)
+        self.tabWidget_5.setCurrentIndex(1)
         self.graphicsView_tab_TipAreaFunction_3.setCurrentIndex(1)
         self.tabWidget_6.setCurrentIndex(0)
         self.graphicsView_tab_TipAreaFunction_4.setCurrentIndex(2)
