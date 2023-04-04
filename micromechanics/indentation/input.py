@@ -698,7 +698,7 @@ def nextHDF5Test(self):
   else:
     self.p -= self.p[0]
 
-  # Do drift correction 
+  # Do drift correction
   self.h -= self.t*self.driftRate  #SB
 
   inFile = [element for element in inFile if element not in nameDict['__ignore__']]

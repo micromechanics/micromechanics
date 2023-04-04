@@ -42,7 +42,7 @@ class Indentation:
   from .verification import verifyOneData, verifyOneData1, verifyReadCalc
   from .seldomUsedFunctions import tareDepthForce, analyseDrift
 
-  def __init__(self, fileName=None, nuMat= 0.3, tip=None, surfaceFind=None, nonMetal=1., verbose=2, driftRate=0,**kwargs):
+  def __init__(self, fileName=None, nuMat= 0.3, tip=None, surfaceFind=None, nonMetal=1., driftRate=0, **kwargs):
     """
     Initialize indentation experiment data
 
@@ -52,8 +52,10 @@ class Indentation:
        tip (tip):  tip class to use; None=perfect
        surfaceFind (dict): dictonary describing the surface find
        nonMetal (float): is it a metal=1 or armorphous=0
-       verbose (int): the higher, the more information printed: 2=default, 1=minimal, 0=print nothing
-       driftRate (float): drift in [µm/s]
+       driftRate (float): drift in [um/s]
+       kwargs (dict): additional keywords
+        verbose (int) the higher, the more information printed: 2=default, 1=minimal, 0=print nothing
+        plot (bool) plot intermediate steps; helpful for debugging
     """
     np.seterr(divide='ignore', invalid='ignore')
     self.nuMat = nuMat                                      #nuMat: material's Posson ratio
@@ -61,7 +63,8 @@ class Indentation:
     self.modulusTip = 1140                                  #GPa from Oliver,Pharr Method paper
     self.beta = 0.75                                        #beta: contact depth coefficient
     self.nonMetal = nonMetal                                #switch between metal=0 and nonMetal=default=1.
-    self.verbose = verbose
+    self.verbose = kwargs.get('verbose', 2)
+    self.plotAllFigs = kwargs.get('plot',False)             #plot intermediate steps; helpful for debugging
     self.method    = Method.ISO                             #iso default: csm uses different methods
     self.onlyLoadingSegment = False                         #use all data by default
     self.newFileRead = True                                 #file was just loaded
