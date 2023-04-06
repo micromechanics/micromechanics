@@ -23,7 +23,8 @@ def loadAgilent(self, fileName):
   self.indicies = {}
   workbook = pd.read_excel(fileName,sheet_name='Required Inputs')
   self.metaVendor.update( dict(workbook.iloc[-1]) )
-  if 'Poissons Ratio' in self.metaVendor and self.metaVendor['Poissons Ratio']!=self.nuMat and self.verbose>0:
+  if 'Poissons Ratio' in self.metaVendor and self.metaVendor['Poissons Ratio']!=self.nuMat and \
+      self.output['verbose']>0:
     print("*WARNING*: Poisson Ratio different than in file.",self.nuMat,self.metaVendor['Poissons Ratio'])
   self.datafile = pd.read_excel(fileName, sheet_name=None)
   tagged = []
@@ -48,7 +49,7 @@ def loadAgilent(self, fileName):
         ,"TotalLateralForce": "L", "X Force": "pX", "_XForce": "pX", "Y Force": "pY", "_YForce": "pY"\
         ,"_XDeflection": "Ux", "_YDeflection": "Uy" }
   self.fullData = ['h','p','t','pVsHSlope','hRaw','pRaw','tTotal','slopeSupport']
-  if self.verbose>1:
+  if self.output['verbose']>1:
     print("Open Agilent file: "+fileName)
   for dfName in self.datafile.keys():
     df    = self.datafile.get(dfName)
@@ -59,10 +60,10 @@ def loadAgilent(self, fileName):
         for cell in df.columns:
           if cell in code:
             self.indicies[code[cell]] = cell
-            if self.verbose>2:
+            if self.output['verbose']>2:
               print(f"     {cell:<30} : {code[cell]:<20} ")
           else:
-            if self.verbose>2:
+            if self.output['verbose']>2:
               print(f" *** {cell:<30} NOT USED")
           if "Harmonic" in cell or "Dyn. Frequency" in cell:
             self.method = Method.CSM
@@ -70,9 +71,9 @@ def loadAgilent(self, fileName):
         if "p" not in self.indicies: self.indicies['p']=self.indicies['pRaw']
         if "h" not in self.indicies: self.indicies['h']=self.indicies['hRaw']
         if "t" not in self.indicies: self.indicies['t']=self.indicies['tTotal']
-        #if self.verbose: print("   Found column names: ",sorted(self.indicies))
+        #if self.output['verbose']: print("   Found column names: ",sorted(self.indicies))
     if "Tagged" in dfName: tagged.append(dfName)
-  if len(tagged)>0 and self.verbose>1: print("Tagged ",tagged)
+  if len(tagged)>0 and self.output['verbose']>1: print("Tagged ",tagged)
   if "t" not in self.indicies or "p" not in self.indicies or \
      "h" not in self.indicies:
     print("*WARNING*: INDENTATION: Some index is missing (t,p,h) should be there")
@@ -133,12 +134,13 @@ def nextAgilentTest(self, newTest=True):
   #  now all fields (incl. p) are full and defined
 
   self.identifyLoadHoldUnload()
-  if self.onlyLoadingSegment and self.method==Method.CSM:
-    # print("Length test",len(self.valid), len(self.h[self.valid]), len(self.p[self.valid])  )
-    iMin, iMax = 2, self.iLHU[0][1]
-    self.valid[iMax:] = False
-    self.valid[:iMin] = False
-    self.slope = self.slope[iMin:np.sum(self.valid)+iMin]
+  #TODO_P2 Why is there this code?
+  # if self.onlyLoadingSegment and self.method==Method.CSM:
+  #   # print("Length test",len(self.valid), len(self.h[self.valid]), len(self.p[self.valid])  )
+  #   iMin, iMax = 2, self.iLHU[0][1]
+  #   self.valid[iMax:] = False
+  #   self.valid[:iMin] = False
+  #   self.slope = self.slope[iMin:np.sum(self.valid)+iMin]
 
   #correct data and evaluate missing
   self.h /= 1.e3 #from nm in um
@@ -173,7 +175,7 @@ def loadHysitron(self, fileName, plotContact=False):
       if not "File Version: Hysitron" in line:
         #not a Hysitron file
         return False
-      if self.verbose>1:
+      if self.output['verbose']>1:
         print("Open Hysitron file: "+self.fileName)
 
       #read meta-data
@@ -270,7 +272,7 @@ def loadHysitron(self, fileName, plotContact=False):
       self.metaUser = {'measurementType': 'Hysitron Indentation TXT', 'dateMeasurement':line0.strip()}
       if line1 != "\n" or "Number of Points" not in line2 or not "Depth (nm)" in line3:
         return False #not a Hysitron file
-      if self.verbose>1: print("Open Hysitron file: "+self.fileName)
+      if self.output['verbose']>1: print("Open Hysitron file: "+self.fileName)
       dataTest = np.loadtxt(inFile)
       #store data
       self.t = dataTest[:,2]
@@ -353,10 +355,10 @@ def loadMicromaterials(self, fileName):
       dataTest = np.loadtxt(fileName)  #exception caught
       if not isinstance(fileName, io.TextIOWrapper):
         self.fileName = fileName
-        if self.verbose>1: print("Open Micromaterials file: "+self.fileName)
+        if self.output['verbose']>1: print("Open Micromaterials file: "+self.fileName)
         self.metaUser = {'measurementType': 'Micromaterials Indentation TXT'}
     except:
-      if self.verbose>1:
+      if self.output['verbose']>1:
         print("Is not a Micromaterials file")
       return False
     self.t = dataTest[:,0]
@@ -372,7 +374,7 @@ def loadMicromaterials(self, fileName):
     if len(np.nonzero([not i.endswith('txt') for i in self.datafile.namelist()])[0])>0:
       print('Not a Micromaterials zip of txt-files')
       return False
-    if self.verbose>1:
+    if self.output['verbose']>1:
       print("Open Micromaterials zip of txt-files: "+fileName)
     self.allTestList =  list(self.testList)
     self.fileName = fileName
@@ -478,7 +480,7 @@ def loadFischerScope(self,fileName):
     else:
       df = pd.DataFrame(np.array(block), columns=['F','h','t'] )
     self.workbook.append(df)
-  if self.verbose>2:
+  if self.output['verbose']>2:
     print("Meta information:",self.metaVendor)
     print("Number of measurements read:",len(self.workbook))
   self.metaUser['measurementType'] = 'Fischer-Scope Indentation TXT'
@@ -518,7 +520,7 @@ def loadHDF5(self,fileName):
     bool: success
   """
   self.datafile = h5py.File(fileName, mode='r') #mode='r+', locking=False)
-  if self.verbose>1:
+  if self.output['verbose']>1:
     print("Open hdf5-file: "+fileName)
   self.fileName = fileName
   self.metaVendor = {}
@@ -526,17 +528,18 @@ def loadHDF5(self,fileName):
   if 'version' not in self.datafile.attrs or self.datafile.attrs['version']!='2.0':
     print("**ERROR** Only hdf5 version 2 supported")
     return False
-  #read config and convert to dictionary
+  #read surface and convert to dictionary
   try:
     if 'post_test_analysis' in self.datafile and \
       'com_github_micromechanics' in self.datafile['post_test_analysis'] and \
       'config' in self.datafile['post_test_analysis']['com_github_micromechanics'].attrs:
-      self.config = self.datafile['post_test_analysis']['com_github_micromechanics'].attrs['config']
-      self.config = json.loads(self.config)
+      self.surface = self.datafile['post_test_analysis']['com_github_micromechanics'].attrs['config']
+      self.surface = json.loads(self.surface)
     else:
-      self.config = {}
+      self.surface = {}
   except:
-    self.config = {}
+    self.surface = {}
+  # continue
   if (not bool(self.surfaceFind)) and bool(self.config):
     self.surfaceFind = { i:self.config[i] for i in self.config if not i.startswith('test_')}
   else:
@@ -556,32 +559,8 @@ def loadHDF5(self,fileName):
       templateName = metaVendor['SAMPLE']['@TEMPLATENAME']
       if 'Dynamic' in templateName or 'Essential' in templateName or 'Displacement' in templateName:
         self.method = Method.CSM
-  if converter == 'hap2hdf.py':
-    self.metaUser = {'measurementType': 'Fischer Scope Indentation HDF5'}
-    self.unloadPMax = 0.99
-    self.unloadPMin = 0.21
-    self.zeroGradDelta = 0.02  #reduced accuracy
-  elif converter == 'Micromaterials2hdf.py':
-    self.metaUser = {'measurementType': 'Micromaterials Indentation HDF5'}
-    self.unloadPMax = 0.99
-    self.unloadPMin = 0.5
-  elif converter == 'nmd2hdf.py':
-    self.metaUser = {'measurementType': 'KLA Indentation HDF5'}
-    self.unloadPMax = 0.99
-    self.unloadPMin = 0.5
-    self.zeroGradDelta = 0.007  #enhanced accuracy
-  elif converter == 'xls2hdf.py':
-    self.metaUser = {'measurementType': 'MTS / Agilent Indentation HDF5'}
-    self.unloadPMax = 0.99
-    self.unloadPMin = 0.5
-  elif converter == 'converter_tdm.py':
-    self.metaUser = {'measurementType': 'HysitronInsitu Indentation HDF5'}
-    self.unloadPMax = 0.99
-    self.unloadPMin = 0.5
-    self.zeroGradDelta = 0.04
-  else:
-    print("ERROR UNKNOWN CONVERTER",converter)
-  self.allTestList =  list(self.testList)
+  self.fillVendorDefaults(converter)
+  self.allTestList = list(self.testList)
   self.nextTest()
   return True
 

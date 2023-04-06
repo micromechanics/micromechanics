@@ -20,7 +20,7 @@ def YoungsModulus(self, modulusRed, nuThis=-1):
   nu = self.nuMat
   if nuThis>0:
     nu = nuThis
-  modulus = (1.0-nu*nu) / ( 1.0/modulusRed - (1.0-self.nuTip*self.nuTip)/self.modulusTip)
+  modulus = (1.0-nu*nu) / ( 1.0/modulusRed - (1.0-self.model['nuTip']**2)/self.model['modulusTip'])
   return modulus
 
 
@@ -38,7 +38,7 @@ def ReducedModulus(self, modulus, nuThis=-1):
   nu = self.nuMat
   if nuThis>0:
     nu = nuThis
-  modulusRed =  1.0/(  (1.0-nu*nu)/modulus + (1.0-self.nuTip*self.nuTip)/self.modulusTip)
+  modulusRed =  1.0/(  (1.0-nu*nu)/modulus + (1.0-self.model['nuTip']**2)/self.model['modulusTip'])
   return modulusRed
 
 
@@ -63,7 +63,7 @@ def OliverPharrMethod(self, stiffness, pMax, h, nonMetal=1.):
       list: modulusRed, Ac, hc
   """
   threshAc = 1.e-12  #units in um: threshold = 1pm^2
-  hc = h - nonMetal*self.beta*pMax/stiffness
+  hc = h - nonMetal*self.model['beta']*pMax/stiffness
   Ac   = self.tip.areaFunction(hc)
   Ac[Ac< threshAc] = threshAc  # prevent zero or negative area that might lock sqrt
   modulus   = stiffness / (2.0*np.sqrt(Ac)/np.sqrt(np.pi))
@@ -89,7 +89,7 @@ def inverseOliverPharrMethod(self, stiffness, pMax, modulusRed, nonMetal=1.):
   Ac = math.pow( stiffness / (2.0*modulusRed/math.sqrt(math.pi))  ,2)
   hc0 = math.sqrt(Ac / 24.494)           # first guess: perfect Berkovich
   hc = self.tip.areaFunctionInverse(Ac, hc0=hc0)
-  h = hc + nonMetal*self.beta*pMax/stiffness
+  h = hc + nonMetal*self.model['beta']*pMax/stiffness
   return h.flatten()
 
 

@@ -40,9 +40,10 @@ class Indentation:
   from .plot import plotTestingMethod, plot, plotAsDepth, plotAll
   from .calibration import calibration, calibrateStiffness
   from .verification import verifyOneData, verifyOneData1, verifyReadCalc
+  from .definitions import _DefaultModel, _DefaultOutput, _DefaultSurface, _DefaultVendorDependent
   from .seldomUsedFunctions import tareDepthForce, analyseDrift
 
-  def __init__(self, fileName=None, nuMat= 0.3, tip=None, surfaceFind=None, nonMetal=1., driftRate=0, **kwargs):
+  def __init__(self, fileName=None, nuMat= 0.3, tip=None, surface={}, model={}, output={}):
     """
     Initialize indentation experiment data
 
@@ -50,34 +51,29 @@ class Indentation:
        fileName (str): fileName to open (.xls, .hld)
        nuMat (float): material's Poisson ratio.
        tip (tip):  tip class to use; None=perfect
-       surfaceFind (dict): dictonary describing the surface find
-       nonMetal (float): is it a metal=1 or armorphous=0
-       driftRate (float): drift in [um/s]
-       kwargs (dict): additional keywords
-        verbose (int) the higher, the more information printed: 2=default, 1=minimal, 0=print nothing
-        plot (bool) plot intermediate steps; helpful for debugging
+       surface (dict): dictionary describing the surface find
+       model (dict): numerical parameters that determine the evaluation
+       output (dict): links that descripe the output (graphs and print-to-screen)
     """
     np.seterr(divide='ignore', invalid='ignore')
-    self.nuMat = nuMat                                      #nuMat: material's Posson ratio
-    self.nuTip      = 0.07
-    self.modulusTip = 1140                                  #GPa from Oliver,Pharr Method paper
-    self.beta = 0.75                                        #beta: contact depth coefficient
-    self.nonMetal = nonMetal                                #switch between metal=0 and nonMetal=default=1.
-    self.verbose = kwargs.get('verbose', 2)
-    self.plotAllFigs = kwargs.get('plot',False)             #plot intermediate steps; helpful for debugging
-    self.method    = Method.ISO                             #iso default: csm uses different methods
-    self.onlyLoadingSegment = False                         #use all data by default
-    self.newFileRead = True                                 #file was just loaded
-    self.evaluateStiffnessAtMax = True                      #evaluate stiffness at maximum or at end of power-law fit domain
-    self.config = {}                                        #storage for surface index, ignored tests, thresholds for surface
-    self.driftRate = driftRate
+    self.nuMat   = nuMat                            # nuMat: material's Posson ratio
+    self.method  = Method.ISO                       # iso default: csm uses different methods
+    self.tip     = Tip() if tip is None else tip    # nanoindenter tip and compliance
+    self.surface = self._DefaultSurface             # dictionary describing the surface find
+    self.surface.update(surface)
+    self.model   = self._DefaultModel               # dictionary for all numerical parameters that determine the results
+    self.model.update(model)
+    self.output  = self._DefaultOutput              # dictionary for all output parameters, axis
+    self.output.update(output)
 
-    if tip is None:
-      tip = Tip()
-    self.tip = tip
-    if surfaceFind is None:
-      surfaceFind = {}
-    self.surfaceFind = surfaceFind
+    # NOT SURE should be deleted
+    # self.config = {}                                        #storage for surface index, ignored tests, thresholds for surface
+    # self.onlyLoadingSegment = False                         #use all data by default
+    # self.evaluateStiffnessAtMax = True                      #evaluate stiffness at maximum or at end of power-law fit domain
+    # self.driftRate = driftRate
+    # self.zeroGradFilter = 'median'
+
+    self.newFileRead = True                                 #file was just loaded
     self.iLHU   = [ [-1,-1,-1,-1] ]                         #indicies of Load-Hold-Unload cycles
                                                             #(StartLoad-StartHold-StartUnload-EndLoad)
     self.iDrift = [-1,-1]                                   #start and end indicies of drift segment
@@ -93,8 +89,6 @@ class Indentation:
     #initialize and load first data set
     #set default parameters
     success = False
-    self.zeroGradFilter = 'median'
-
     if fileName is None:
       fileName = str(Path(__file__).parent/'data/Example.xls')
     if not os.path.exists(fileName) and fileName!='':
@@ -104,25 +98,19 @@ class Indentation:
       # KLA, Agilent, Keysight, MTS
       self.vendor = Vendor.Agilent
       self.fileType = FileType.Multi
-      self.unloadPMax = 0.999
-      self.unloadPMin = 0.5
-      self.zeroGradDelta = 0.02
+      self.fillVendorDefaults()
       success = self.loadAgilent(fileName)
     if (fileName.endswith(".hld") or fileName.endswith(".txt")) and not success:
       # Hysitron
       self.vendor = Vendor.Hysitron
       self.fileType = FileType.Single
-      self.unloadPMax = 0.95
-      self.unloadPMin = 0.4
-      self.zeroGradDelta = 0.2
+      self.fillVendorDefaults()
       success = self.loadHysitron(fileName)
     if (fileName.endswith(".txt") or
         fileName.endswith(".zip")) and not success:
       # Micromaterials
       self.vendor = Vendor.Micromaterials
-      self.unloadPMax = 0.99
-      self.unloadPMin = 0.5
-      self.zeroGradDelta = 0.02
+      self.fillVendorDefaults()
       if fileName.endswith(".txt"):
         self.fileType = FileType.Single
       else:
@@ -132,18 +120,35 @@ class Indentation:
       # Fischer Scope
       self.vendor = Vendor.FischerScope
       self.fileType = FileType.Multi
-      self.unloadPMax = 0.95
-      self.unloadPMin = 0.21
-      self.zeroGradDelta = 0.01
+      self.fillVendorDefaults()
       success = self.loadFischerScope(fileName)
     if fileName.endswith(".hdf5") and not success:
       # Common hdf5 file
       self.vendor = Vendor.CommonHDF5
       self.fileType = FileType.Multi
-      self.unloadPMax = 0.99
-      self.unloadPMin = 0.5
-      self.zeroGradDelta = 0.02
+      self.fillVendorDefaults()
       success = self.loadHDF5(fileName)
+    return
+
+
+  def fillVendorDefaults(self, converter='', force=False):
+    """
+    fill defaults depending on vendor, if information is not yet present
+
+    Args:
+      converter (str): converter name
+      force (bool): overwrite the values
+    """
+    if converter!='' and converter in self._DefaultVendorDependent:
+      for key, value in self._DefaultVendorDependent[self.vendor].items():
+        if force or key not in self.model:
+          self.model[key]=value
+    elif self.vendor in self._DefaultVendorDependent:
+      for key, value in self._DefaultVendorDependent[self.vendor].items():
+        if force or key not in self.model:
+          self.model[key]=value
+    else:
+      print('**ERROR defaults not defined for',self.vendor)
     return
 
 

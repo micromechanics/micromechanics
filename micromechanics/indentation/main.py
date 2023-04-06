@@ -22,7 +22,7 @@ def calcYoungsModulus(self, minDepth=-1, plot=False):
       float: average Young's modulus, minDepth>0
   """
   self.modulusRed, self.Ac, self.hc = \
-    self.OliverPharrMethod(self.slope, self.p[self.valid], self.h[self.valid], self.nonMetal)
+    self.OliverPharrMethod(self.slope, self.p[self.valid], self.h[self.valid], self.model['nonMetal'])
   modulus = self.YoungsModulus(self.modulusRed)
   if minDepth>0:
     #eAve = np.average(       self.modulusRed[ self.h>minDepth ] )
@@ -60,7 +60,8 @@ def calcHardness(self, minDepth=-1, plot=False):
       plot (bool): plot comparison this calculation to data read from file
   """
   #use area function
-  hardness=self.p[self.valid]/self.OliverPharrMethod(self.slope, self.p[self.valid], self.h[self.valid], self.nonMetal)[1]
+  hardness=self.p[self.valid]/self.OliverPharrMethod(self.slope, self.p[self.valid], self.h[self.valid], \
+    self.model['nonMetal'])[1]
   if plot:
     mark = '-' if len(hardness)>1 else 'o'
     plt.plot(self.h[self.valid], hardness, mark+'b', label='calc')
@@ -296,9 +297,9 @@ def identifyLoadHoldUnloadCSM(self, plot=False):
     bool: success of identifying hold-load-unload sequence
   """
   iSurface = np.min(np.where( self.h>=0                     ))
-  iLoad    = np.min(np.where( self.p-np.max(self.p)*self.unloadPMax>0 ))
+  iLoad    = np.min(np.where( self.p-np.max(self.p)*self.model['unloadPMax']>0 ))
   if iLoad<len(self.p)-1:
-    iHold    = np.max(np.where( self.p-np.max(self.p)*self.unloadPMax>0 ))
+    iHold  = np.max(np.where( self.p-np.max(self.p)*self.model['unloadPMax']>0 ))
     if iHold==iLoad:
       iHold += 1
     try:
@@ -309,7 +310,8 @@ def identifyLoadHoldUnloadCSM(self, plot=False):
       self.iDrift = []
       return False
     pDrift   = bins[np.argmax(hist)+1]
-    pCloseToDrift = np.logical_and(self.p>pDrift*self.unloadPMax,self.p<pDrift/self.unloadPMax)
+    pCloseToDrift = np.logical_and(self.p>pDrift*self.model['unloadPMax'], \
+                                   self.p<pDrift/self.model['unloadPMax'])
     pCloseToDrift[:iHold] = False
     if len(pCloseToDrift[pCloseToDrift])>3:
       iDriftS  = np.min(np.where( pCloseToDrift ))
@@ -329,7 +331,7 @@ def identifyLoadHoldUnloadCSM(self, plot=False):
   self.iLHU   = [[iSurface,iLoad,iHold,iDriftS]]
   self.iDrift = [iDriftS,iDriftE]
 
-  if plot or self.plotAllFigs:
+  if plot or self.output['plotAll']:
     plt.plot(self.h, self.p)
     plt.plot(self.h[iSurface], self.p[iSurface], 'o', markersize=10, label='surface')
     plt.plot(self.h[iLoad], self.p[iLoad], 'o', markersize=10, label='load')
@@ -369,30 +371,30 @@ def nextTest(self, newTest=True, plotSurface=False):
     success = True
 
   #SURFACE FIND
-  if self.testName in self.config and 'surfaceIdx' in self.config[self.testName]:
-    surface = self.config[self.testName]['surfaceIdx']
+  if self.testName in self.surface['surfaceIdx']:
+    surface = self.surface['surfaceIdx'][self.testName]
     self.h -= self.h[surface]  #only change surface, not force
   else:
     found = False
-    if 'load' in self.surfaceFind:
+    if 'load' in self.surface:
       thresValues = self.p
-      thresValue  = self.surfaceFind['load']
+      thresValue  = self.surface['load']
       found = True
-    elif 'stiffness' in self.surfaceFind:
+    elif 'stiffness' in self.surface:
       thresValues = self.slope
-      thresValue  = self.surfaceFind['stiffness']
+      thresValue  = self.surface['stiffness']
       found = True
-    elif 'phase angle' in self.surfaceFind:
+    elif 'phase angle' in self.surface:
       thresValues = self.phase
-      thresValue  = self.surfaceFind['phase angle']
+      thresValue  = self.surface['phase angle']
       found = True
-    elif 'abs(dp/dh)' in self.surfaceFind:
+    elif 'abs(dp/dh)' in self.surface:
       thresValues = np.abs(np.gradient(self.p,self.h))
-      thresValue  = self.surfaceFind['abs(dp/dh)']
+      thresValue  = self.surface['abs(dp/dh)']
       found = True
-    elif 'dp/dt' in self.surfaceFind:
+    elif 'dp/dt' in self.surface:
       thresValues = np.gradient(self.p,self.t)
-      thresValue  = self.surfaceFind['dp/dt']
+      thresValue  = self.surface['dp/dt']
       found = True
 
     if found:

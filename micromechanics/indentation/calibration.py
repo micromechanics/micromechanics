@@ -31,11 +31,8 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepthStiffness=1.0, critFo
     plotStiffness=plotStiffness)
 
   ## re-create data-frame of all files
-  temp = {'method': self.method, 'onlyLoadingSegment': self.onlyLoadingSegment}
   self.restartFile()
   self.tip.compliance = frameCompliance
-  for key, value in temp.items():
-    setattr(self, key, value)
   slope, h, p = np.array([], dtype=np.float64), np.array([],dtype=np.float64), np.array([],dtype=np.float64)
   if self.method==Method.CSM:
     self.nextTest(newTest=False)  #rerun to ensure that onlyLoadingSegment used
@@ -67,7 +64,7 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepthStiffness=1.0, critFo
   #reverse OliverPharrMethod to determine area function
   modulusRedGoal = self.ReducedModulus(eTarget, self.nuMat)
   Ac = np.array( np.power( slope  / (2.0*modulusRedGoal/np.sqrt(np.pi))  ,2))
-  hc = np.array( h - self.beta*p/slope )
+  hc = np.array( h - self.model['beta']*p/slope )
   #calculate shape function as interpolation of 30 points (log-spacing)
   #  first calculate the  savgol-average using a adaptive window-size
   if numPolynomial is None:
