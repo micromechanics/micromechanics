@@ -62,7 +62,7 @@ def plot(self, saveFig=False, show=True):
   Returns:
     pyplot.axis: figure
   """
-  if len(self.slope)==1 and self.verbose>1:
+  if len(self.slope)==1 and self.output['verbose']>1:
     print("Stiffness:"+str(round(self.slope[0],1))     +"mN/um   "+\
       "hMax:"+str(round(self.h[self.valid][0],4))+"um    pMax:"+str(round(self.p[self.valid][0],2))+"mN")
     print("E*:       "+str(round(self.modulusRed[0],1))+"GPa     "+\
@@ -87,7 +87,7 @@ def plot(self, saveFig=False, show=True):
       ax.plot(h_[-1],p_[-1],'og', label="fit domain")
       try:
         h_ = np.linspace(self.hc,self.h[self.valid].max(),10)
-        if self.evaluateStiffnessAtMax:
+        if self.model['evaluateSAtMax']:
           stiffnessLineInterceptY = self.p[self.valid]-self.slope*self.h[self.valid]
         else:
           stiffnessLineInterceptY = self.p[maskUnload][0]-self.slope*self.h[maskUnload][0]

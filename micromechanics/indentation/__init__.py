@@ -66,13 +66,6 @@ class Indentation:
     self.output  = self._DefaultOutput              # dictionary for all output parameters, axis
     self.output.update(output)
 
-    # NOT SURE should be deleted
-    # self.config = {}                                        #storage for surface index, ignored tests, thresholds for surface
-    # self.onlyLoadingSegment = False                         #use all data by default
-    # self.evaluateStiffnessAtMax = True                      #evaluate stiffness at maximum or at end of power-law fit domain
-    # self.driftRate = driftRate
-    # self.zeroGradFilter = 'median'
-
     self.newFileRead = True                                 #file was just loaded
     self.iLHU   = [ [-1,-1,-1,-1] ]                         #indicies of Load-Hold-Unload cycles
                                                             #(StartLoad-StartHold-StartUnload-EndLoad)
@@ -123,27 +116,22 @@ class Indentation:
       self.fillVendorDefaults()
       success = self.loadFischerScope(fileName)
     if fileName.endswith(".hdf5") and not success:
-      # Common hdf5 file
-      self.vendor = Vendor.CommonHDF5
+      # Common hdf5 file: refined later
+      self.vendor = Vendor.Hdf5
       self.fileType = FileType.Multi
       self.fillVendorDefaults()
       success = self.loadHDF5(fileName)
     return
 
 
-  def fillVendorDefaults(self, converter='', force=False):
+  def fillVendorDefaults(self, force=False):
     """
     fill defaults depending on vendor, if information is not yet present
 
     Args:
-      converter (str): converter name
       force (bool): overwrite the values
     """
-    if converter!='' and converter in self._DefaultVendorDependent:
-      for key, value in self._DefaultVendorDependent[self.vendor].items():
-        if force or key not in self.model:
-          self.model[key]=value
-    elif self.vendor in self._DefaultVendorDependent:
+    if self.vendor in self._DefaultVendorDependent:
       for key, value in self._DefaultVendorDependent[self.vendor].items():
         if force or key not in self.model:
           self.model[key]=value

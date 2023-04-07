@@ -40,7 +40,7 @@ def hertzFit(self, forceRange=(1, 25), correctH=True, plot=True):
   para0 = [0., 5000.]
   bounds = [[-depthRange[0],0],[depthRange[0], 50000.]]
   fitElast, _ = curve_fit(hertzEquation, self.h[fitMask], self.p[fitMask], p0=para0, bounds=bounds) # pylint: disable=unbalanced-tuple-unpacking
-  if self.verbose>1:
+  if self.output['verbose']>1:
     print('Depth range', depthRange)
     print('Optimal parameters (h0,prefactor)',fitElast)
   if plot:

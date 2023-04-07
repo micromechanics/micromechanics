@@ -123,7 +123,7 @@ def stiffnessFromUnloading(self, p, h, plot=False):
   if self.method== Method.CSM:
     print("*ERROR* Should not land here: CSM method")
     return None, None, None, None, None
-  if self.verbose>2:
+  if self.output['verbose']>2:
     print("Number of unloading segments:"+str(len(self.iLHU))+"  Method:"+str(self.method))
   stiffness, mask, opt, powerlawFit = [], None, None, []
   validMask = np.zeros_like(p, dtype=bool)
@@ -135,7 +135,7 @@ def stiffnessFromUnloading(self, p, h, plot=False):
       print('*ERROR* stiffnessFromUnloading: indicies not in order:',cycle)
     maskSegment = np.zeros_like(h, dtype=bool)
     maskSegment[unloadStart:unloadEnd+1] = True
-    maskForce   = np.logical_and(p<p[loadEnd]*self.unloadPMax, p>p[loadEnd]*self.unloadPMin)
+    maskForce   = np.logical_and(p<p[loadEnd]*self.model['unloadPMax'], p>p[loadEnd]*self.model['unloadPMin'])
     mask        = np.logical_and(maskSegment,maskForce)
     if len(mask[mask])==0:
       print('*ERROR* mask of unloading is empty. Cannot fit\n')
@@ -147,7 +147,7 @@ def stiffnessFromUnloading(self, p, h, plot=False):
     m0     = 2
     B0     = max(abs(p[mask][0] / np.power(h[mask][0]-hf0,m0)), 0.001)  #prevent neg. or zero
     bounds = [[0,0,0.8],[np.inf, max(np.min(h[mask]),hf0), 10]]
-    if self.verbose>2:
+    if self.output['verbose']>2:
       print("Initial fitting values B,hf,m", B0,hf0,m0)
       print("Bounds", bounds)
     # Old linear assumptions
@@ -158,7 +158,7 @@ def stiffnessFromUnloading(self, p, h, plot=False):
       opt, _ = curve_fit(self.unloadingPowerFunc, h[mask],p[mask],      # pylint: disable=unbalanced-tuple-unpacking
                          p0=[B0,hf0,m0], bounds=bounds,
                          ftol=1e-4, maxfev=3000 )#set ftol to 1e-4 if accept more and fail less
-      if self.verbose>2:
+      if self.output['verbose']>2:
         print("Optimal values B,hf,m", opt)
       B,hf,m = opt
       if np.isnan(B):
@@ -167,7 +167,7 @@ def stiffnessFromUnloading(self, p, h, plot=False):
     except:
       #if fitting fails: often the initial bounds and initial values do not match
       print(traceback.format_exc())
-      if self.verbose>0:
+      if self.output['verbose']>0:
         print("stiffnessFrommasking: #",cycleNum," Fitting failed. use linear")
       B  = (p[mask][-1]-p[mask][0])/(h[mask][-1]-h[mask][0])
       hf = h[mask][0] -p[mask][0]/B
@@ -176,7 +176,7 @@ def stiffnessFromUnloading(self, p, h, plot=False):
       powerlawFit.append(False)
 
 
-    if self.evaluateStiffnessAtMax:
+    if self.model['evaluateSAtMax']:
       stiffnessPlot = B*m*math.pow( h[unloadStart]-hf, m-1)
       stiffnessValue= p[unloadStart]-stiffnessPlot*h[unloadStart]
       validMask[unloadStart]=True

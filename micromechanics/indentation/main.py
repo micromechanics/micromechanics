@@ -178,20 +178,20 @@ def identifyLoadHoldUnload(self,plot=False):
   self.h     = self.h[1:][~maskTooClose]
   self.valid = self.valid[1:][~maskTooClose]
   #use force-rate to identify load-hold-unload
-  if self.zeroGradFilter=='median':
+  if self.model['relForceNoiseFilter']=='median':
     p = signal.medfilt(self.p, 5)
   else:
     p = gaussian_filter1d(self.p, 5)
   rate = np.gradient(p, self.t)
   rate /= np.max(rate)
-  loadMask  = rate >  self.zeroGradDelta
-  unloadMask= rate < -self.zeroGradDelta
-  if plot or self.plotAllFigs:     # verify visually
+  loadMask  = rate >  self.model['relForceNoise']
+  unloadMask= rate < -self.model['relForceNoise']
+  if plot or self.output['plotAll']:     # verify visually
     plt.plot(rate)
     plt.axhline(0, c='k')
-    plt.axhline( self.zeroGradDelta, c='k', linestyle='dashed')
-    plt.axhline(-self.zeroGradDelta, c='k', linestyle='dashed')
-    plt.ylim([-8*self.zeroGradDelta, 8*self.zeroGradDelta])
+    plt.axhline( self.model['relForceNoise'], c='k', linestyle='dashed')
+    plt.axhline(-self.model['relForceNoise'], c='k', linestyle='dashed')
+    plt.ylim([-8*self.model['relForceNoise'], 8*self.model['relForceNoise']])
     plt.xlabel('time incr. []')
     plt.ylabel(r'rate [$\mathrm{mN/sec}$]')
     plt.title('Identify load, hold, unload: loading and unloading segments - prior to cleaning')
@@ -207,7 +207,7 @@ def identifyLoadHoldUnload(self,plot=False):
     loadMask = loadMaskTry
     unloadMask = unloadMaskTry
   # verify visually
-  if plot or self.plotAllFigs:
+  if plot or self.output['plotAll']:
     plt.plot(rate)
     plt.axhline(0, c='k')
     x_ = np.arange(len(rate))[loadMask]
@@ -216,9 +216,9 @@ def identifyLoadHoldUnload(self,plot=False):
     x_ = np.arange(len(rate))[unloadMask]
     y_ = np.zeros_like(rate)[unloadMask]
     plt.plot(x_, y_, 'C2.', label='unload mask')
-    plt.axhline( self.zeroGradDelta, c='k', linestyle='dashed')
-    plt.axhline(-self.zeroGradDelta, c='k', linestyle='dashed')
-    plt.ylim([-8*self.zeroGradDelta, 8*self.zeroGradDelta])
+    plt.axhline( self.model['relForceNoise'], c='k', linestyle='dashed')
+    plt.axhline(-self.model['relForceNoise'], c='k', linestyle='dashed')
+    plt.ylim([-8*self.model['relForceNoise'], 8*self.model['relForceNoise']])
     plt.legend()
     plt.xlabel('time incr. []')
     plt.ylabel(r'rate [$\mathrm{mN/sec}$]')
@@ -236,7 +236,7 @@ def identifyLoadHoldUnload(self,plot=False):
     #clean loading front
     loadIdx = loadIdx[2:]
 
-  if plot or self.plotAllFigs:     # verify visually
+  if plot or self.output['plotAll']:     # verify visually
     plt.plot(self.p,'o')
     plt.plot(loadIdx[::2],  self.p[loadIdx[::2]],  'o',label='load',markersize=12)
     plt.plot(loadIdx[1::2], self.p[loadIdx[1::2]], 'o',label='hold',markersize=10)
@@ -320,8 +320,12 @@ def identifyLoadHoldUnloadCSM(self, plot=False):
       iDriftS   = len(self.p)-2
       iDriftE   = len(self.p)-1
     if not iSurface < iLoad < iHold < iDriftS < iDriftE < len(self.h):
-      print("*ERROR* identifyLoadHoldUnloadCSM in identify load-hold-unloading cycles")
+      print("Warning: identifyLoadHoldUnloadCSM could not identify load-hold-unloading cycle. Only loading?")
       print(iSurface,iLoad,iHold,iDriftS,iDriftE, len(self.h))
+      iLoad     = len(self.p)-4
+      iHold     = len(self.p)-3
+      iDriftS   = len(self.p)-2
+      iDriftE   = len(self.p)-1
   else:  #This part is required
     if self.method != Method.CSM:
       print("*WARNING*: no hold or unloading segments in data")
@@ -362,7 +366,7 @@ def nextTest(self, newTest=True, plotSurface=False):
       success = self.nextMicromaterialsTest()
     elif self.vendor == Vendor.FischerScope:
       success = self.nextFischerScopeTest()
-    elif self.vendor == Vendor.CommonHDF5:
+    elif self.vendor > Vendor.Hdf5:
       success = self.nextHDF5Test()
     else:
       print("No multiple tests in file")

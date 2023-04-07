@@ -6,7 +6,7 @@ import h5py
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-from .definitions import Method, Vendor
+from .definitions import Method, Vendor, _DefaultSurface
 
 def loadAgilent(self, fileName):
   """
@@ -536,14 +536,14 @@ def loadHDF5(self,fileName):
       self.surface = self.datafile['post_test_analysis']['com_github_micromechanics'].attrs['config']
       self.surface = json.loads(self.surface)
     else:
-      self.surface = {}
+      self.surface = _DefaultSurface
   except:
-    self.surface = {}
-  # continue
-  if (not bool(self.surfaceFind)) and bool(self.config):
-    self.surfaceFind = { i:self.config[i] for i in self.config if not i.startswith('test_')}
-  else:
-    self.config = { i:self.surfaceFind[i] for i in self.surfaceFind if i.startswith('test_')}
+    self.surface = _DefaultSurface
+  # TODO_P1 still needed?
+  # if (not bool(self.surfaceFind)) and bool(self.config):
+  #   self.surfaceFind = { i:self.config[i] for i in self.config if not i.startswith('test_')}
+  # else:
+  #   self.config = { i:self.surfaceFind[i] for i in self.surfaceFind if i.startswith('test_')}
   for key in self.datafile:
     if re.match(r'test_\d+',key):
       self.testList.append(key)
@@ -553,13 +553,16 @@ def loadHDF5(self,fileName):
     else:
       self.metaVendor[key] = self.datafile['instrument'].attrs[key]
   converter = self.datafile.attrs['uri'].split('/')[-1]
+  converterList = {'hap2hdf.py':[Vendor.FischerScopeHDF5, 'Fischer Scope Indentation HDF5']}
+  self.vendor = converterList[converter][0]
+  self.metaUser = {'measurementType':converterList[converter][1] }
   if 'json' in self.metaVendor:
     metaVendor = json.loads(self.metaVendor['json'])
     if 'SAMPLE' in metaVendor:  #G200X data
       templateName = metaVendor['SAMPLE']['@TEMPLATENAME']
       if 'Dynamic' in templateName or 'Essential' in templateName or 'Displacement' in templateName:
         self.method = Method.CSM
-  self.fillVendorDefaults(converter)
+  self.fillVendorDefaults(force=True)
   self.allTestList = list(self.testList)
   self.nextTest()
   return True
@@ -578,9 +581,9 @@ def nextHDF5Test(self):
     return False
   while len(self.testList)>0:
     self.testName = self.testList.pop(0)
-    if self.testName not in self.config or 'ignore' not in self.config[self.testName]:
+    if self.testName not in self.surface['surfaceIdx'] or self.surface['surfaceIdx'][self.testName] is not None:
       break
-  if self.testName in self.config and 'ignore' in self.config[self.testName]:  #handle last test
+  if self.testName in self.surface['surfaceIdx'] and self.surface['surfaceIdx'][self.testName] is None:  #handle last test
     return False
   branch = self.datafile[self.testName]['data']
   inFile = list(branch.keys())
@@ -652,22 +655,24 @@ def nextHDF5Test(self):
   else:
     self.p -= self.p[0]
 
-  # Do drift correction
-  self.h -= self.t*self.driftRate  #SB
+  # # Do drift correction #TODO_P1
+  # self.h -= self.t*self.driftRate  #SB
 
-  inFile = [element for element in inFile if element not in nameDict['__ignore__']]
+  # inFile = [element for element in inFile if element not in nameDict['__ignore__']]
+  # if len(inFile)>0:
+  #   print("**INFO on",self.metaUser['measurementType'].split()[0],"fields not imported:",inFile)
   self.iLHU   = []
   self.iDrift = [-1,-1]
-  if len(inFile)>0:
-    print("**INFO on",self.metaUser['measurementType'].split()[0],"fields not imported:",inFile)
   if hasattr(self, 'slope') and len(self.slope)>60: #if more than 30: CSM
     self.method = Method.CSM
-  if self.plotAllFigs:
+  if self.output['plotAll']:
     self.plotTestingMethod()
   try:
     self.identifyLoadHoldUnload()
   except:
     print('**ERROR: could not identify load-hold-unload. Suggestion: try next test')
+    import traceback
+    print(traceback.format_exc())
   return True
 
 
