@@ -52,7 +52,6 @@ python tests/testVerification.py
 python tests/testAgilent_xls.py
 python tests/testMicromaterials_hdf5.py
 python tests/testFischerScope_hdf5.py
-
 python tests/testAllFiles.py
 ```
 These tests are also executed as github action once pushed.

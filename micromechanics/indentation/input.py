@@ -21,16 +21,21 @@ def loadAgilent(self, fileName):
   self.testList = []
   self.fileName = fileName    #one file can have multiple tests
   self.indicies = {}
-  workbook = pd.read_excel(fileName,sheet_name='Required Inputs')
-  self.metaVendor.update( dict(workbook.iloc[-1]) )
+  for sheetName in ['Required Inputs', 'Pre-Test Inputs']:
+    try:
+      workbook = pd.read_excel(fileName,sheet_name=sheetName)
+      self.metaVendor.update( dict(workbook.iloc[-1]) )
+      break
+    except:
+      pass #do nothing;
   if 'Poissons Ratio' in self.metaVendor and self.metaVendor['Poissons Ratio']!=self.nuMat and \
       self.output['verbose']>0:
     print("*WARNING*: Poisson Ratio different than in file.",self.nuMat,self.metaVendor['Poissons Ratio'])
   self.datafile = pd.read_excel(fileName, sheet_name=None)
   tagged = []
-  code = {"Load On Sample":"p", "Force On Surface":"p", "LOAD":"p"\
+  code = {"Load On Sample":"p", "Force On Surface":"p", "LOAD":"p", "Load":"p"\
         ,"_Load":"pRaw", "Raw Load":"pRaw","Force":"pRaw"\
-        ,"Displacement Into Surface":"h", "DEPTH":"h"\
+        ,"Displacement Into Surface":"h", "DEPTH":"h", "Depth":"h"\
         ,"_Displacement":"hRaw", "Raw Displacement":"hRaw","Displacement":"hRaw"\
         ,"Time On Sample":"t", "Time in Contact":"t", "TIME":"t", "Time":"tTotal"\
         ,"Contact Area":"Ac", "Contact Depth":"hc"\
@@ -51,7 +56,9 @@ def loadAgilent(self, fileName):
   self.fullData = ['h','p','t','pVsHSlope','hRaw','pRaw','tTotal','slopeSupport']
   if self.output['verbose']>1:
     print("Open Agilent file: "+fileName)
-  for dfName in self.datafile.keys():
+  for idx, dfName in enumerate(self.datafile.keys()):
+    if self.output['progressBar'] is not None:
+      self.output['progressBar'](int(idx/len(self.datafile)*100), 'load')
     df    = self.datafile.get(dfName)
     if "Test " in dfName and not "Tagged" in dfName and not "Test Inputs" in dfName:
       self.testList.append(dfName)

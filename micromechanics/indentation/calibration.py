@@ -37,6 +37,8 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepthStiffness=1.0, critFo
   if self.method==Method.CSM:
     self.nextTest(newTest=False)  #rerun to ensure that onlyLoadingSegment used
     while True:
+      if self.output['progressBar'] is not None:
+        self.output['progressBar'](int(1-len(self.testList)/len(self.allTestList)), 'calibration1' )
       self.analyse()
       slope = np.hstack((slope, self.slope))
       h     = np.hstack((h,     self.h[self.valid]))
@@ -46,6 +48,8 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepthStiffness=1.0, critFo
       self.nextTest()
   else:
     while True:
+      if self.output['progressBar'] is not None:
+        self.output['progressBar'](int(1-len(self.testList)/len(self.allTestList)), 'calibration2')
       self.analyse()
       slope = np.hstack((slope, self.metaUser['S_mN/um']))
       h     = np.hstack((h,     self.metaUser['hMax_um']))
@@ -127,8 +131,7 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepthStiffness=1.0, critFo
   return True
 
 
-def calibrateStiffness(self,critDepth=0.5,critForce=0.0001,plotStiffness=True, returnAxis=False,\
-  returnData=False):
+def calibrateStiffness(self,critDepth=0.5,critForce=0.0001,plotStiffness=True, returnData=False):
   """
   Calibrate by first frame-stiffness from K^2/P of individual measurement
 
@@ -136,11 +139,10 @@ def calibrateStiffness(self,critDepth=0.5,critForce=0.0001,plotStiffness=True, r
       critDepth (float): frame stiffness: what is the minimum depth of data used
       critForce (float): frame stiffness: what is the minimum force used for fitting
       plotStiffness (bool): plot stiffness graph with compliance
-      returnAxis (bool): return axis of plot
       returnData (bool): return data for external plotting
 
   Returns:
-      pyplot.axis or numpy.arary: data as chosen by arguments
+      numpy.arary: data as chosen by arguments
   """
   print("Start compliance fitting")
   ## output representative values
@@ -167,6 +169,8 @@ def calibrateStiffness(self,critDepth=0.5,critForce=0.0001,plotStiffness=True, r
     ## create data-frame of all files
     pAll, hAll, sAll = [], [], []
     while True:
+      if self.output['progressBar'] is not None:
+        self.output['progressBar'](int(1-len(self.testList)/len(self.allTestList)), 'calibrateStiffness')
       self.analyse()
       if isinstance(self.metaUser['pMax_mN'], list):
         pAll = pAll+list(self.metaUser['pMax_mN'])
@@ -205,8 +209,11 @@ def calibrateStiffness(self,critDepth=0.5,critForce=0.0001,plotStiffness=True, r
   #end of function
   if returnData:
     return x,y
-  if plotStiffness:
-    _, ax = plt.subplots()
+  if plotStiffness or self.output['ax'] is not None:
+    if plotStiffness:
+      _, ax = plt.subplots()
+    else:
+      ax = self.output['ax']
     ax.plot(x[~mask], y[~mask], 'o', color='#165480', fillstyle='none', markersize=1, label='excluded')
     ax.plot(x[mask], y[mask],   'C0o', markersize=5, label='for fit')
     x_ = np.linspace(0, np.max(x)*1.1, 50)
@@ -220,7 +227,6 @@ def calibrateStiffness(self,critDepth=0.5,critForce=0.0001,plotStiffness=True, r
     ax.legend(loc=4)
     ax.set_ylim([0,np.max(y[mask])*1.5])
     ax.set_xlim([0,np.max(x[mask])*1.5])
-    if returnAxis:
-      return ax
-    plt.show()
+    if plotStiffness:
+      plt.show()
   return frameCompliance
