@@ -38,7 +38,7 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepthStiffness=1.0, critFo
     self.nextTest(newTest=False)  #rerun to ensure that onlyLoadingSegment used
     while True:
       if self.output['progressBar'] is not None:
-        self.output['progressBar'](int(1-len(self.testList)/len(self.allTestList)), 'calibration1' )
+        self.output['progressBar'](1-len(self.testList)/len(self.allTestList), 'calibration1' )
       self.analyse()
       slope = np.hstack((slope, self.slope))
       h     = np.hstack((h,     self.h[self.valid]))
@@ -49,7 +49,7 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepthStiffness=1.0, critFo
   else:
     while True:
       if self.output['progressBar'] is not None:
-        self.output['progressBar'](int(1-len(self.testList)/len(self.allTestList)), 'calibration2')
+        self.output['progressBar'](1-len(self.testList)/len(self.allTestList), 'calibration2')
       self.analyse()
       slope = np.hstack((slope, self.metaUser['S_mN/um']))
       h     = np.hstack((h,     self.metaUser['hMax_um']))
@@ -170,7 +170,7 @@ def calibrateStiffness(self,critDepth=0.5,critForce=0.0001,plotStiffness=True, r
     pAll, hAll, sAll = [], [], []
     while True:
       if self.output['progressBar'] is not None:
-        self.output['progressBar'](int(1-len(self.testList)/len(self.allTestList)), 'calibrateStiffness')
+        self.output['progressBar'](1-len(self.testList)/len(self.allTestList), 'calibrateStiffness')
       self.analyse()
       if isinstance(self.metaUser['pMax_mN'], list):
         pAll = pAll+list(self.metaUser['pMax_mN'])
