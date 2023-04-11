@@ -71,7 +71,7 @@ _DefaultOutput = {
   'plotAll': False,      # plot intermediate steps; helpful for debugging
   'ax': None,            # matplotlib axis to use for plotting
   'plotWithLabel': False,# plot legend
-  'progressBar': None,   # function to use for plotting progress bar
+  'progressBar': None,   # callback function to use for plotting progress bar f(value, location)
   'successTest': []      # list of all test with valid load-hold-unload sequence
 }
 
