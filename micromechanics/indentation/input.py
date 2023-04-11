@@ -532,7 +532,9 @@ def loadHDF5(self,fileName):
   self.fileName = fileName
   self.metaVendor = {}
   self.testList = []
-  if 'version' not in self.datafile.attrs or self.datafile.attrs['version']!=b'2.0':
+  if 'version' not in self.datafile.attrs or \
+    (isinstance(self.datafile.attrs['version'], str) and self.datafile.attrs['version']!='2.0') or \
+    (isinstance(self.datafile.attrs['version'], bytes) and self.datafile.attrs['version']!=b'2.0'):
     print("**ERROR** Only hdf5 version 2 supported")
     return False
   #read surface and convert to dictionary
@@ -559,8 +561,10 @@ def loadHDF5(self,fileName):
       self.metaVendor = self.datafile['instrument'].attrs[key]
     else:
       self.metaVendor[key] = self.datafile['instrument'].attrs[key]
-  converter = self.datafile.attrs['uri'].split(b'/')[-1]
-  converterList = {b'hap2hdf.py':[Vendor.FischerScopeHDF5, 'Fischer Scope Indentation HDF5']}
+  converter = self.datafile.attrs['uri']
+  converter = converter.decode('utf-8') if isinstance(converter, bytes) else converter
+  converter = converter.split('/')[-1]
+  converterList = {'hap2hdf.py':[Vendor.FischerScopeHDF5, 'Fischer Scope Indentation HDF5']}
   self.vendor = converterList[converter][0]
   self.metaUser = {'measurementType':converterList[converter][1] }
   if 'json' in self.metaVendor:
@@ -643,7 +647,9 @@ def nextHDF5Test(self):
   self.valid = self.valid[validFull]
 
   #cleaning
-  converter = self.datafile.attrs['uri'].split(b'/')[-1]
+  converter = self.datafile.attrs['uri']
+  converter = converter.decode('utf-8') if isinstance(converter, bytes) else converter
+  converter = converter.split('/')[-1]
   if converter == 'hap2hdf.py':
     ## Old and correct approach
     #Fischer-Scope reset the time multiple times

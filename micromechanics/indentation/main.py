@@ -208,8 +208,9 @@ def identifyLoadHoldUnload(self,plot=False):
     loadMask = loadMaskTry
     unloadMask = unloadMaskTry
   # verify visually
-  if plot or self.output['plotAll'] or self.output['plot_identifyLoadHoldUnload']:
-    fig, ax = plt.subplots(2,1)
+  if plot or self.output['plotAll']:
+    if self.output['ax'] is None:
+      fig, ax = plt.subplots(2,1)
     ax[0].plot(rate)
     ax[0].axhline(0, c='k')
     x_ = np.arange(len(rate))[loadMask]
@@ -237,7 +238,7 @@ def identifyLoadHoldUnload(self,plot=False):
     #clean loading front
     loadIdx = loadIdx[2:]
 
-  if plot or self.output['plotAll'] or self.output['plot_identifyLoadHoldUnload']:     # verify visually
+  if plot or self.output['plotAll']:     # verify visually
     ax[1].plot(self.p,'o')
     ax[1].plot(p, 's')
     ax[1].plot(loadIdx[::2],  self.p[loadIdx[::2]],  'o',label='load',markersize=12)
@@ -252,7 +253,8 @@ def identifyLoadHoldUnload(self,plot=False):
     ax[1].set_ylabel(r'force [$\mathrm{mN}$]')
     ax[1].set_title('Identified load, hold, unload', fontsize=10)
     fig.tight_layout()
-    plt.show()
+    if self.output['ax'] is None:
+      plt.show()
   #store them in a list [[loadStart1, loadEnd1, unloadStart1, unloadEnd1], [loadStart2, loadEnd2, unloadStart2, unloadEnd2],.. ]
   self.iLHU = []
   if len(loadIdx) != len(unloadIdx):
