@@ -69,6 +69,7 @@ _DefaultVendorDependent = {
 _DefaultOutput = {
   'verbose': 2,          # the higher, the more information printed: 2=default, 1=minimal, 0=print nothing
   'plotAll': False,      # plot intermediate steps; helpful for debugging
+  'plot_identifyLoadHoldUnload': False, # plot the indentified loading-holding-unloading start-unloading end points
   'ax': None,            # matplotlib axis to use for plotting
   'plotWithLabel': False,# plot legend
   'progressBar': None,   # callback function to use for plotting progress bar f(value, location)

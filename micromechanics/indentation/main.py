@@ -208,23 +208,23 @@ def identifyLoadHoldUnload(self,plot=False):
     loadMask = loadMaskTry
     unloadMask = unloadMaskTry
   # verify visually
-  if plot or self.output['plotAll']:
-    plt.plot(rate)
-    plt.axhline(0, c='k')
+  if plot or self.output['plotAll'] or self.output['plot_identifyLoadHoldUnload']:
+    fig, ax = plt.subplots(2,1)
+    ax[0].plot(rate)
+    ax[0].axhline(0, c='k')
     x_ = np.arange(len(rate))[loadMask]
     y_ = np.zeros_like(rate)[loadMask]
-    plt.plot(x_, y_, 'C1.', label='load mask')
+    ax[0].plot(x_, y_, 'C1.', label='load mask')
     x_ = np.arange(len(rate))[unloadMask]
     y_ = np.zeros_like(rate)[unloadMask]
-    plt.plot(x_, y_, 'C2.', label='unload mask')
-    plt.axhline( self.model['relForceRateNoise'], c='k', linestyle='dashed')
-    plt.axhline(-self.model['relForceRateNoise'], c='k', linestyle='dashed')
-    plt.ylim([-8*self.model['relForceRateNoise'], 8*self.model['relForceRateNoise']])
-    plt.legend()
-    plt.xlabel('time incr. []')
-    plt.ylabel(r'rate [$\mathrm{mN/sec}$]')
-    plt.title('Identify load, hold, unload: loading and unloading segments - after cleaning')
-    plt.show()
+    ax[0].plot(x_, y_, 'C2.', label='unload mask')
+    ax[0].axhline( self.model['relForceRateNoise'], c='k', linestyle='dashed')
+    ax[0].axhline(-self.model['relForceRateNoise'], c='k', linestyle='dashed')
+    ax[0].set_ylim([-8*self.model['relForceRateNoise'], 8*self.model['relForceRateNoise']])
+    ax[0].legend()
+    ax[0].set_xlabel('time incr. []')
+    ax[0].set_ylabel(r'rate [$\mathrm{mN/sec}$]')
+    ax[0].set_title('Identify load, hold, unload: loading and unloading segments - after cleaning', fontsize=10)
   #find index where masks are changing from true-false
   loadMask  = np.r_[False,loadMask,False] #pad with false on both sides
   unloadMask= np.r_[False,unloadMask,False]
@@ -237,20 +237,21 @@ def identifyLoadHoldUnload(self,plot=False):
     #clean loading front
     loadIdx = loadIdx[2:]
 
-  if plot or self.output['plotAll']:     # verify visually
-    plt.plot(self.p,'o')
-    plt.plot(p, 's')
-    plt.plot(loadIdx[::2],  self.p[loadIdx[::2]],  'o',label='load',markersize=12)
-    plt.plot(loadIdx[1::2], self.p[loadIdx[1::2]], 'o',label='hold',markersize=10)
-    plt.plot(unloadIdx[::2],self.p[unloadIdx[::2]],'o',label='unload',markersize=8)
+  if plot or self.output['plotAll'] or self.output['plot_identifyLoadHoldUnload']:     # verify visually
+    ax[1].plot(self.p,'o')
+    ax[1].plot(p, 's')
+    ax[1].plot(loadIdx[::2],  self.p[loadIdx[::2]],  'o',label='load',markersize=12)
+    ax[1].plot(loadIdx[1::2], self.p[loadIdx[1::2]], 'o',label='hold',markersize=10)
+    ax[1].plot(unloadIdx[::2],self.p[unloadIdx[::2]],'o',label='unload',markersize=8)
     try:
-      plt.plot(unloadIdx[1::2],self.p[unloadIdx[1::2]],'o',label='unload-end',markersize=6)
+      ax[1].plot(unloadIdx[1::2],self.p[unloadIdx[1::2]],'o',label='unload-end',markersize=6)
     except IndexError:
       pass
-    plt.legend(loc=0)
-    plt.xlabel(r'time incr. []')
-    plt.ylabel(r'force [$\mathrm{mN}$]')
-    plt.title('Identified load, hold, unload')
+    ax[1].legend(loc=0)
+    ax[1].set_xlabel(r'time incr. []')
+    ax[1].set_ylabel(r'force [$\mathrm{mN}$]')
+    ax[1].set_title('Identified load, hold, unload', fontsize=10)
+    fig.tight_layout()
     plt.show()
   #store them in a list [[loadStart1, loadEnd1, unloadStart1, unloadEnd1], [loadStart2, loadEnd2, unloadStart2, unloadEnd2],.. ]
   self.iLHU = []
@@ -422,18 +423,18 @@ def nextTest(self, newTest=True, plotSurface=False):
       thresValues[nans]= np.interp(tempX(nans), tempX(~nans), thresValues[~nans])
 
       #filter this data
-      if 'median filter' in self.surfaceFind:
-        thresValues = signal.medfilt(thresValues, self.surfaceFind['median filter'])
-      elif 'gauss filter' in self.surfaceFind:
-        thresValues = gaussian_filter1d(thresValues, self.surfaceFind['gauss filter'])
-      elif 'butterfilter' in self.surfaceFind:
-        valueB, valueA = signal.butter(*self.surfaceFind['butterfilter'])
+      if 'median filter' in self.surface:
+        thresValues = signal.medfilt(thresValues, self.surface['median filter'])
+      elif 'gauss filter' in self.surface:
+        thresValues = gaussian_filter1d(thresValues, self.surface['gauss filter'])
+      elif 'butterfilter' in self.surface:
+        valueB, valueA = signal.butter(*self.surface['butterfilter'])
         thresValues = signal.filtfilt(valueB, valueA, thresValues)
-      if 'phase angle' in self.surfaceFind:
+      if 'phase angle' in self.surface:
         surface  = np.where(thresValues<thresValue)[0][0]
       else:
         surface  = np.where(thresValues>thresValue)[0][0]
-      if plotSurface or 'plot' in self.surfaceFind:
+      if plotSurface or 'plot' in self.surface:
         _, ax1 = plt.subplots()
         ax1.plot(self.h,thresValues, 'C0o-')
         ax1.plot(self.h[surface], thresValues[surface], 'C9o', markersize=14)
