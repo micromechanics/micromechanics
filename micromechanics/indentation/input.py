@@ -678,7 +678,7 @@ def nextHDF5Test(self):
   self.iDrift = [-1,-1]
   if hasattr(self, 'slope') and len(self.slope)>60: #if more than 30: CSM
     self.method = Method.CSM
-  if self.output['plotAll']:
+  if self.output['plotLoadHoldUnload']:
     self.plotTestingMethod()
   try:
     self.identifyLoadHoldUnload()

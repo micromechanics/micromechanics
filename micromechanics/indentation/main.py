@@ -186,7 +186,7 @@ def identifyLoadHoldUnload(self,plot=False):
   rate /= np.max(rate)
   loadMask  = np.logical_and(rate >  self.model['relForceRateNoise'], p>self.model['forceNoise'])
   unloadMask= np.logical_and(rate < -self.model['relForceRateNoise'], p>self.model['forceNoise'])
-  if plot or self.output['plotAll']:     # verify visually
+  if plot:     # verify visually
     plt.plot(rate)
     plt.axhline(0, c='k')
     plt.axhline( self.model['relForceRateNoise'], c='k', linestyle='dashed')
@@ -208,9 +208,9 @@ def identifyLoadHoldUnload(self,plot=False):
     loadMask = loadMaskTry
     unloadMask = unloadMaskTry
   # verify visually
-  if plot or self.output['plotAll']:
+  if plot or self.output['plotLoadHoldUnload']:
     if self.output['ax'] is None:
-      fig, ax = plt.subplots(2,1)
+      fig, ax = plt.subplots(2,1, sharex=True, gridspec_kw={'hspace':0})
     ax[0].plot(rate)
     ax[0].axhline(0, c='k')
     x_ = np.arange(len(rate))[loadMask]
@@ -223,9 +223,7 @@ def identifyLoadHoldUnload(self,plot=False):
     ax[0].axhline(-self.model['relForceRateNoise'], c='k', linestyle='dashed')
     ax[0].set_ylim([-8*self.model['relForceRateNoise'], 8*self.model['relForceRateNoise']])
     ax[0].legend()
-    ax[0].set_xlabel('time incr. []')
     ax[0].set_ylabel(r'rate [$\mathrm{mN/sec}$]')
-    ax[0].set_title('Identify load, hold, unload: loading and unloading segments - after cleaning', fontsize=10)
   #find index where masks are changing from true-false
   loadMask  = np.r_[False,loadMask,False] #pad with false on both sides
   unloadMask= np.r_[False,unloadMask,False]
@@ -238,7 +236,7 @@ def identifyLoadHoldUnload(self,plot=False):
     #clean loading front
     loadIdx = loadIdx[2:]
 
-  if plot or self.output['plotAll']:     # verify visually
+  if plot or self.output['plotLoadHoldUnload']:     # verify visually
     ax[1].plot(self.p,'o')
     ax[1].plot(p, 's')
     ax[1].plot(loadIdx[::2],  self.p[loadIdx[::2]],  'o',label='load',markersize=12)
@@ -251,7 +249,6 @@ def identifyLoadHoldUnload(self,plot=False):
     ax[1].legend(loc=0)
     ax[1].set_xlabel(r'time incr. []')
     ax[1].set_ylabel(r'force [$\mathrm{mN}$]')
-    ax[1].set_title('Identified load, hold, unload', fontsize=10)
     fig.tight_layout()
     if self.output['ax'] is None:
       plt.show()
@@ -342,7 +339,7 @@ def identifyLoadHoldUnloadCSM(self, plot=False):
   self.iLHU   = [[iSurface,iLoad,iHold,iDriftS]]
   self.iDrift = [iDriftS,iDriftE]
 
-  if plot or self.output['plotAll']:
+  if plot or self.output['plotLoadHoldUnload']:
     plt.plot(self.h, self.p)
     plt.plot(self.h[iSurface], self.p[iSurface], 'o', markersize=10, label='surface')
     plt.plot(self.h[iLoad], self.p[iLoad], 'o', markersize=10, label='load')
