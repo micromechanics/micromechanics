@@ -1,4 +1,5 @@
 """All instrument specific input functions"""
+import os
 import io, re, json
 from pathlib import Path
 from zipfile import ZipFile
@@ -6,6 +7,7 @@ import h5py
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+from xlsx2csv import Xlsx2csv
 from .definitions import Method, Vendor, _DefaultSurface
 
 def loadAgilent(self, fileName):
@@ -20,10 +22,38 @@ def loadAgilent(self, fileName):
   """
   self.testList = []
   self.fileName = fileName    #one file can have multiple tests
+  slash='\\'
+  if '/' in fileName:
+    slash ='/'
+  index_path_end = [i for i,c in enumerate(fileName) if c==slash][-1]
+  thePath = fileName[:index_path_end]
+  index_file_end = [i for i,c in enumerate(fileName) if c=='.'][-1]
+  theFile = fileName[index_path_end+1:index_file_end]
+  sheetNames=[]
+  # convert .xlsx to .csv
+  try:
+    sheetNames = np.loadtxt(f"{thePath}{slash}{theFile}.csv{slash}sheetNames.txt", dtype=str, delimiter=',')
+  except:
+    if '.xlsx' in fileName:
+      Xlsx2csv(fileName, outputencoding="utf-8").convert(f"{thePath}{slash}{theFile}.csv", sheetid=0)
+      for file in os.listdir(f"{thePath}{slash}{theFile}.csv"):
+        if not '.txt' in file:
+          sheetNames.append(file[:-4])
+      np.savetxt(f"{thePath}{slash}{theFile}.csv{slash}sheetNames.txt", sheetNames, fmt="%s")
+  # read converted .csv or original .xls
   self.indicies = {}
+  if len(sheetNames)>0:
+    self.datafile = {}
+    for idx, sheetName in enumerate(sheetNames):
+      if self.output['progressBar'] is not None:
+        self.output['progressBar'](int(idx/len(sheetNames)*100), 'load')
+      print(sheetName)
+      self.datafile[sheetName] = pd.read_csv(f"{thePath}{slash}{theFile}.csv{slash}{sheetName}.csv")
+  else:
+    self.datafile = pd.read_excel(fileName, sheet_name=None)
   for sheetName in ['Required Inputs', 'Pre-Test Inputs']:
     try:
-      workbook = pd.read_excel(fileName,sheet_name=sheetName)
+      workbook = self.datafile.get(sheetName)
       self.metaVendor.update( dict(workbook.iloc[-1]) )
       break
     except:
@@ -31,7 +61,6 @@ def loadAgilent(self, fileName):
   if 'Poissons Ratio' in self.metaVendor and self.metaVendor['Poissons Ratio']!=self.nuMat and \
       self.output['verbose']>0:
     print("*WARNING*: Poisson Ratio different than in file.",self.nuMat,self.metaVendor['Poissons Ratio'])
-  self.datafile = pd.read_excel(fileName, sheet_name=None)
   tagged = []
   code = {"Load On Sample":"p", "Force On Surface":"p", "LOAD":"p", "Load":"p"\
         ,"_Load":"pRaw", "Raw Load":"pRaw","Force":"pRaw"\
@@ -57,8 +86,6 @@ def loadAgilent(self, fileName):
   if self.output['verbose']>1:
     print("Open Agilent file: "+fileName)
   for idx, dfName in enumerate(self.datafile.keys()):
-    if self.output['progressBar'] is not None:
-      self.output['progressBar'](int(idx/len(self.datafile)*100), 'load')
     df    = self.datafile.get(dfName)
     if "Test " in dfName and not "Tagged" in dfName and not "Test Inputs" in dfName:
       self.testList.append(dfName)

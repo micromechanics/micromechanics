@@ -149,6 +149,8 @@ def calibrateStiffness(self,critDepth=0.5,critForce=0.0001,plotStiffness=True, r
   if self.method==Method.CSM:
     x, y, h = None, None, None
     while True:
+      if self.output['progressBar'] is not None:
+        self.output['progressBar'](1-len(self.testList)/len(self.allTestList), 'calibrateStiffness')
       self.analyse()
       if x is None:
         x = 1./np.sqrt(self.p[self.valid]-np.min(self.p[self.valid])+0.001) #add 1nm:prevent runtime error
