@@ -46,8 +46,6 @@ class Tif:
     self.origImage = None
     self.pixelSize = -1
     self.width = -1
-    self.widthPixel = -1
-    self.heightPixel = -1
     self.bestLength = -1
     self.barPixel = -1
 
@@ -125,11 +123,10 @@ class Tif:
       return
     logging.info("  Pixel size "+str(self.pixelSize)+' [um]')
     valueArray = self.meta['Store_resolution'].split()
-    self.widthPixel  = int(valueArray[0])
-    self.heightPixel = int(valueArray[2])
-    logging.info("  widthPixel "+str(self.widthPixel))
-    if abs(self.widthPixel*self.pixelSize-self.width)/self.width > 0.01:
-      logging.error("Width, PixelSize, Width "+str(self.widthPixel)+' '+str(self.pixelSize)+' '+str(self.width))
+    widthPixel  = int(valueArray[0])
+    logging.info("  widthPixel "+str(widthPixel))
+    if abs(widthPixel*self.pixelSize-self.width)/self.width > 0.01:
+      logging.error("Width, PixelSize, Width "+str(widthPixel)+' '+str(self.pixelSize)+' '+str(self.width))
       logging.error("Data keys error")
     return
 
@@ -142,7 +139,7 @@ class Tif:
     imgArray = cv2.imread(self.fileName)[:,:,0]
     self.image = Image.fromarray(imgArray).convert("P")
     self.origImage = None #do not save, since files rather large
-    self.widthPixel, self.heightPixel = imgArray.shape
+    widthPixel = imgArray.shape[0]
 
     #parse the xml line in the file
     xmlLine = ""
@@ -168,11 +165,10 @@ class Tif:
       self.pixelSize = float(self.meta['fov_x'])/float(self.meta['width'])  #guess it is um
       print("Pixel size",self.pixelSize,'[um]')
       self.meta['pixelSize'] = self.pixelSize
-      self.widthPixel  = int(self.meta['width'])
-      self.heightPixel = int(self.meta['height'])
-      print("widthPixel",self.widthPixel)
-      if abs(self.widthPixel*self.pixelSize-self.width)/self.width > 0.01:
-        print("Width, PixelSize, Width", self.widthPixel,self.pixelSize,self.width)
+      widthPixel  = int(self.meta['width'])
+      print("widthPixel",widthPixel)
+      if abs(widthPixel*self.pixelSize-self.width)/self.width > 0.01:
+        print("Width, PixelSize, Width", widthPixel,self.pixelSize,self.width)
         print("Data keys error")
         return
     else:
@@ -203,9 +199,8 @@ class Tif:
     logging.info("  Picture width "+str(self.width)+'[um]')
     self.pixelSize = float(self.meta['PixelWidth'])*1.e6  #uses SI unit m
     logging.info("  Pixel size "+str(self.pixelSize)+'[um]')
-    self.widthPixel = int(self.meta['ResolutionX'])
-    self.heightPixel = int(self.meta['ResolutionY'])
-    logging.info("  widthPixel "+str(self.widthPixel))
+    widthPixel = int(self.meta['ResolutionX'])
+    logging.info("  widthPixel "+str(widthPixel))
     return
 
 
@@ -219,11 +214,11 @@ class Tif:
     logging.info("  Start initConventional")
     self.origImage = Image.open(self.fileName)
     self.image     = self.origImage.copy()
-    self.widthPixel, self.heightPixel = self.image.size
-    logging.info("widthPixel "+str(self.widthPixel))
+    widthPixel = self.image.size[0]
+    logging.info("widthPixel "+str(widthPixel))
     self.pixelSize = pixelSize
     logging.info("Pixel size "+str(self.pixelSize)+' [um]')
-    self.width = self.pixelSize * self.widthPixel
+    self.width = self.pixelSize * widthPixel
     logging.info("Picture width "+str(self.width)+'[um]')
     return
 
@@ -241,11 +236,11 @@ class Tif:
     if copy:
       self.origImage = image.convert("P")
     self.image     = image.convert("P")
-    self.widthPixel, self.heightPixel = self.image.size
-    print("widthPixel",self.widthPixel)
+    widthPixel = self.image.size[0]
+    print("widthPixel",widthPixel)
     self.pixelSize = pixelSize
     print("Pixel size",self.pixelSize,'[um]')
-    self.width = self.pixelSize * self.widthPixel
+    self.width = self.pixelSize * widthPixel
     print("Picture width",self.width,'[um]')
     return
 
@@ -271,8 +266,10 @@ class Tif:
         self.bestLength = 0.1
     else:
       self.bestLength = length
-    self.barPixel = int(self.widthPixel * self.bestLength/self.width)
+    widthPixel = self.image.size[0]
+    self.barPixel = int(widthPixel * self.bestLength/self.width)
     logging.info("Scale bar length="+str(self.bestLength)+"  and in pixel="+str(self.barPixel))
+    print("Scale bar length="+str(self.bestLength)+"  and in pixel="+str(self.barPixel))
     return
 
 
@@ -288,15 +285,16 @@ class Tif:
     if self.bestLength < 0 or length is not None:
       self.findScaleBar(length)
     draw = ImageDraw.Draw(self.image)
+    widthPixel, heightPixel = self.image.size
     if scale < 0:
-      scale = self.widthPixel / 16
+      scale = widthPixel / 16
     font = ImageFont.truetype(self.fontFile,int(scale/5*3) )
     #identify top-left corner of scale bar section
-    if   site=="BR":  offsetX = self.widthPixel-self.barPixel-scale/5;    offsetY = self.heightPixel-scale
-    elif site=="TL":  offsetX = 0;				          offsetY = 0
-    elif site=="TR":  offsetX = self.widthPixel-self.barPixel-scale/5;    offsetY = 0
-    elif site=="B" :  offsetX =(self.widthPixel-self.barPixel-scale/5)/2; offsetY = self.heightPixel-scale
-    else:             offsetX = 0;                                        offsetY = self.heightPixel-scale   #BL
+    if   site=="BR":  offsetX = widthPixel-self.barPixel-scale/5;    offsetY = heightPixel-scale
+    elif site=="TL":  offsetX = 0;				                           offsetY = 0
+    elif site=="TR":  offsetX = widthPixel-self.barPixel-scale/5;    offsetY = 0
+    elif site=="B" :  offsetX =(widthPixel-self.barPixel-scale/5)/2; offsetY = heightPixel-scale
+    else:             offsetX = 0;                                   offsetY = heightPixel-scale   #BL
     if self.bestLength<0.5:
       textString = str(int(self.bestLength*1000.))+" nm"
     else:
@@ -306,7 +304,7 @@ class Tif:
     if self.image.mode == "P":
       draw.rectangle((offsetX,        offsetY,         offsetX+self.barPixel+scale/5,  offsetY+scale    ), fill=256)  #white background
       draw.rectangle((offsetX+scale/10, offsetY+scale*7/10, offsetX+self.barPixel+scale/10, offsetY+scale*9/10), fill=0)    #black bar
-      draw.text( (offsetX+(self.barPixel+scale/5-textWidth)/2,offsetY), textString, font=font)
+      draw.text( (offsetX+(self.barPixel+scale/5-textWidth)/2,offsetY-2), textString, font=font)
     elif self.image.mode == "RGB":
       draw.rectangle((offsetX,        offsetY,         offsetX+self.barPixel+scale/5,  offsetY+scale    ), 'white')  #white background
       draw.rectangle((offsetX+scale/10, offsetY+scale*7/10, offsetX+self.barPixel+scale/10, offsetY+scale*9/10), 'black')    #black bar
@@ -325,18 +323,23 @@ class Tif:
     """
     Show image on screen
     """
-    if self.widthPixel>1024:
-      self.image.resize( (1024, int(float(self.heightPixel)*1024.0/self.widthPixel)) ).show()
+    widthPixel, heightPixel = self.image.size
+    if widthPixel>1024:
+      self.image.resize( (1024, int(float(heightPixel)*1024.0/widthPixel)) ).show()
     else:
       self.image.show()
     return
 
 
-  def plot(self):
+  def plot(self, axis='on'):
     """
     Show image on screen by plotting it: showing the pixel coordinates, which is handy for cropping
+
+    Args:
+      axis (str): 'on','off' show axis
     """
     plt.imshow(self.image)
+    plt.axis(axis)
     plt.show()
     return
 
@@ -346,7 +349,6 @@ class Tif:
     Reset it if you want to restart after making unwanted change
     """
     self.image = self.origImage
-    self.widthPixel, self.heightPixel = self.image.size
     return
 
 
@@ -384,7 +386,8 @@ class Tif:
        scale (float): scale down image by ratio
        convertGrayscale (bool): convert to gray-scale image
     """
-    if convertGrayscale: self.image = self.image.convert("L")
+    if convertGrayscale: 
+      self.image = self.image.convert("L")
     fileName = os.path.splitext(self.fileName)[0]
     if fileType=="png":
       fileName+=".png"
@@ -395,7 +398,8 @@ class Tif:
     else:
       fileName = fileType
     if scale is not None:
-      self.image = self.image.resize( (self.widthPixel/scale, self.heightPixel/scale) )
+      widthPixel, heightPixel = self.image.size
+      self.image = self.image.resize( (int(widthPixel/scale), int(heightPixel/scale)) )
     #save to file
     self.image.save(fileName)
     return
@@ -429,10 +433,10 @@ class Tif:
       tempArray = tempArray[0:yMax,:]
     if yMin>-1  and yMax==-1:
       tempArray = tempArray[yMin:,:]
-    self.image = Image.fromarray(tempArray).convert('P')
-    self.widthPixel, self.heightPixel = self.image.size
-    print("   After cropping: new size of image: ",self.widthPixel, self.heightPixel)
-    self.width = self.widthPixel*self.pixelSize
+    self.image = Image.fromarray(tempArray).convert(self.image.mode)
+    widthPixel, heightPixel = self.image.size
+    print("   After cropping: new size of image: ",widthPixel, heightPixel)
+    self.width = widthPixel*self.pixelSize
     return
 
 
@@ -453,6 +457,19 @@ class Tif:
       print('**ERROR, only know colors b,w')
     if len(lineThreshold)>0:
       self.crop(yMax=lineThreshold[0])
+    return
+
+
+  def scale(self, scaleFactor=1):
+    """
+    Scale image by a factor. Scale by factor two decreases the pixelSize and increases the image size by factor two
+
+    Args:
+      scale (float): scaling factor
+    """
+    self.pixelSize /= scaleFactor    
+    widthPixel, heightPixel = self.image.size    
+    self.image = self.image.resize((int(widthPixel*scaleFactor), int(heightPixel*scaleFactor)), Image.NEAREST)
     return
 
 
@@ -606,6 +623,7 @@ class Tif:
 
   def topology(self, axis="V", upperEnd=4.0, start=-1, end=-1):
     """
+    EXPERIMENTAL: 
     rescale grey values such that each row/collum has the same average, cancel topological shadowing
 
     The algorithm tries to scale (change contrast) the grey-values such as that each collum (V) or
@@ -625,10 +643,11 @@ class Tif:
     imageArray = np.array(self.image)/255.  			#convert to array
     # evaluate mean (scalar) and average (collum/row vector)
     mean = imageArray.mean()		   			#get mean of original image
+    widthPixel, heightPixel = self.image.size
     if axis=="V":
-      average = imageArray.sum(axis=0) / self.heightPixel	#get average of every collum, this is a vector
+      average = imageArray.sum(axis=0) / heightPixel	#get average of every collum, this is a vector
     else:
-      average = imageArray.sum(axis=1) / self.widthPixel
+      average = imageArray.sum(axis=1) / widthPixel
     scale = mean / average					#scaling factor vector
     # do actual change of the pixels
     start = max(start, 0)
@@ -652,7 +671,7 @@ class Tif:
 
   def filterCurtain(self, xmin=6, xmax=250, ymax=6, gauss=3, plot=True, zoom=1, save=False):
     """
-    Remove FIB curtains by FFT filtering
+    EXPERIMENTAL: Remove FIB curtains by FFT filtering
 
     Args:
        xmin (int): minimum in x direction of filter, removes long waves
@@ -663,14 +682,15 @@ class Tif:
        zoom (float): zoom FFT image by factor: e.g. 4 zoom x and y by 2
        save (bool): only save once set true; allows to test varios settings before saving
     """
-    crow, ccol = int(self.heightPixel/2), int(self.widthPixel/2)
+    widthPixel, heightPixel = self.image.size
+    crow, ccol = int(heightPixel/2), int(widthPixel/2)
     #do forward FFT transformation
     dft = cv2.dft(np.float32(self.image), flags=cv2.DFT_COMPLEX_OUTPUT)
     dft_shift = np.fft.fftshift(dft)
     magnitude_spectrum=20*np.log(cv2.magnitude(dft_shift[:,:,0], dft_shift[:,:,1]))
     #create a mask for filtering
     if xmax<xmin: xmax=ccol
-    mask = np.ones((self.heightPixel, self.widthPixel,2),np.uint8)
+    mask = np.ones((heightPixel, widthPixel,2),np.uint8)
     mask[crow-ymax:crow+ymax, ccol+xmin:ccol+xmax] = 0
     mask[crow-ymax:crow+ymax, ccol-xmax:ccol-xmin] = 0
     mask = ndimage.gaussian_filter(mask*255, gauss)
@@ -683,16 +703,16 @@ class Tif:
     img_back /= ( np.max(img_back) / 255.0)
     #plot mask and result
     if plot:
-      fftImage = np.zeros((self.heightPixel, self.widthPixel,3),np.uint8)
+      fftImage = np.zeros((heightPixel, widthPixel,3),np.uint8)
       fftImage[:,:,2] = magnitude_spectrum*255/np.max(magnitude_spectrum)
       #fftImage[:,:,2][mask[:,:,0]<255] = 0
       fftImage[:,:,0] = (magnitude_spectrum*255/np.max(magnitude_spectrum)) * (mask[:,:,0])
       fftImage[:,:,0][mask[:,:,0]>250] = 0
       zoom = max(zoom, 1)
-      xpad =int( self.widthPixel*(1.0-1.0/np.sqrt(zoom))/2 )
-      ypad =int(self.heightPixel*(1.0-1.0/np.sqrt(zoom))/2 )
-      xend =self.widthPixel-xpad
-      yend =self.heightPixel-ypad
+      xpad =int( widthPixel*(1.0-1.0/np.sqrt(zoom))/2 )
+      ypad =int(heightPixel*(1.0-1.0/np.sqrt(zoom))/2 )
+      xend =widthPixel-xpad
+      yend =heightPixel-ypad
       fftImage = fftImage[ypad:yend,xpad:xend,:]
       #print "shape",fftImage.shape,xpad,ypad
       plt.subplot(131)
@@ -764,20 +784,20 @@ class Tif:
     """
     rotate image counter clock-wise
     """
+    widthPixel = self.image.size[0]
     self.image = self.image.rotate(90)
-    self.width = self.width * self.image.size[0]/self.widthPixel
-    self.widthPixel  = self.image.size[0]
-    self.heightPixel = self.image.size[1]
+    self.width = self.width * self.image.size[0]/widthPixel
+    return
 
 
   def rotateCW(self):
     """
     rotate image clock-wise
     """
+    widthPixel = self.image.size[0]
     self.image = self.image.rotate(-90)
-    self.width = self.width * self.image.size[0]/self.widthPixel
-    self.widthPixel  = self.image.size[0]
-    self.heightPixel = self.image.size[1]
+    self.width = self.width * self.image.size[0]/widthPixel
+    return
 
 
   def rotate180(self):
@@ -785,6 +805,7 @@ class Tif:
     rotate image by 180 degrees
     """
     self.image = self.image.rotate(180)
+    return
 
 
   def flip(self):
@@ -792,4 +813,5 @@ class Tif:
     flip image vertically
     """
     self.image = Image.fromarray(np.array(self.image)[::-1,:]).convert("P")
+    return
   #@}
