@@ -13,7 +13,6 @@ import matplotlib.pyplot as plt
 from scipy import ndimage
 from PIL import Image, ImageDraw, ImageFont
 from skimage import img_as_float, exposure
-import cv2
 
 class Tif:
   """Tif class to read SEM images"""
@@ -136,7 +135,8 @@ class Tif:
     Init NPVE file, no original image saved since files are large
     """
     logging.info("  Start initNPVE")
-    imgArray = cv2.imread(self.fileName)[:,:,0]
+    imgArray = Image.open(self.fileName).convert("L").convert("P")
+    #old version with openCV "cv2.imread(self.fileName)[:,:,0]" might be better for large files
     self.image = Image.fromarray(imgArray).convert("P")
     self.origImage = None #do not save, since files rather large
     widthPixel = imgArray.shape[0]
@@ -450,9 +450,9 @@ class Tif:
     """
     lineAvg = np.sum(self.image, axis=1) /self.image.size[0]
     if color=='w':
-      lineThreshold = np.where(lineAvg==255)[0]
+      lineThreshold = np.where(lineAvg>254)[0]
     elif color=='b':
-      lineThreshold = np.where(lineAvg==0)[0]
+      lineThreshold = np.where(lineAvg<1)[0]
     else:
       print('**ERROR, only know colors b,w')
     if len(lineThreshold)>0:
@@ -682,6 +682,11 @@ class Tif:
        zoom (float): zoom FFT image by factor: e.g. 4 zoom x and y by 2
        save (bool): only save once set true; allows to test varios settings before saving
     """
+    """
+    #Comment out entire block since cv2 causes issues 
+    https://forum.qt.io/topic/119109/using-pyqt5-with-opencv-python-cv2-causes-error-could-not-load-qt-platform-plugin-xcb-even-though-it-was-found/20?lang=en-US
+
+    import cv2
     widthPixel, heightPixel = self.image.size
     crow, ccol = int(heightPixel/2), int(widthPixel/2)
     #do forward FFT transformation
@@ -735,6 +740,7 @@ class Tif:
     #save
     if save:
       self.image = Image.fromarray(img_back).convert("P")
+    """
     return
 
 
