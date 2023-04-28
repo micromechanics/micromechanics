@@ -45,6 +45,7 @@ _DefaultModel = {
 
   'unloadPMax':0.99,        # upper end of fitting domain of unloading stiffness: Vendor-specific change
   'unloadPMin':0.5,         # lower end of fitting domain of unloading stiffness: Vendor-specific change
+  'unloadInitialValues': 'metal', #how to determine the initial values that are used for fitting the unloading curve: 'metal' assumes straighter curve, 'polymere' more curvature
   'relForceRateNoise':0.02, # threshold of dp/dt use to identify start of loading: Vendor-specific change
   'relForceRateNoiseFilter': 'median',
   'forceNoise': 0.001,      # threshold force to identify start of loading

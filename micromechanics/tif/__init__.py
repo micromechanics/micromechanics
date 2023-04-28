@@ -87,12 +87,10 @@ class Tif:
     """
     Init ZEISS file
     """
-    logging.info("  Start initZeiss")
     with warnings.catch_warnings():
       warnings.filterwarnings('ignore',category=ResourceWarning)  #Image open sometimes triggers "ResourceWarning"
       self.image     = Image.open(self.fileName).convert("L").convert("P")
     self.origImage = self.image.copy()
-
     #parse for information
     self.meta['measurementType'] = 'Zeiss SEM TIF-Image'
     with open(self.fileName,'r', encoding='iso-8859-1') as fIn:
@@ -104,13 +102,11 @@ class Tif:
           self.meta[key]=value
           if key=='File_Name': #don't get confused by subsequent '='
             break
-
     # meta data checks and handling
     valueArray = self.meta['Width'].split()
     self.width = float(valueArray[0])  #guess it is um
     if valueArray[1]=='mm': self.width *= 1000
     if valueArray[1]=='nm': self.width /= 1000
-    logging.info("  Picture width "+str(self.width)+' [um]')
     valueArray = self.meta['Image_Pixel_Size'].split()
     self.pixelSize = float(valueArray[0])/1000  #guess it is nm
     if valueArray[1]=='nm':
@@ -120,10 +116,9 @@ class Tif:
     else:
       logging.error("  Pixel size not nm or um")
       return
-    logging.info("  Pixel size "+str(self.pixelSize)+' [um]')
     valueArray = self.meta['Store_resolution'].split()
     widthPixel  = int(valueArray[0])
-    logging.info("  widthPixel "+str(widthPixel))
+    logging.info("  Picture width "+str(self.width)+"[um], pixel size: "+str(self.pixelSize)+" [um], widthPixel "+str(widthPixel))
     if abs(widthPixel*self.pixelSize-self.width)/self.width > 0.01:
       logging.error("Width, PixelSize, Width "+str(widthPixel)+' '+str(self.pixelSize)+' '+str(self.width))
       logging.error("Data keys error")
@@ -268,8 +263,6 @@ class Tif:
       self.bestLength = length
     widthPixel = self.image.size[0]
     self.barPixel = int(widthPixel * self.bestLength/self.width)
-    logging.info("Scale bar length="+str(self.bestLength)+"  and in pixel="+str(self.barPixel))
-    print("Scale bar length="+str(self.bestLength)+"  and in pixel="+str(self.barPixel))
     return
 
 
@@ -300,7 +293,7 @@ class Tif:
     else:
       textString = str(int(self.bestLength))+" \u03BCm"
     textWidth, _ = draw.textsize( textString, font=font)
-    logging.info("Scale used"+str(scale))
+    logging.info("  Scale bar length="+str(self.bestLength)+" ="+str(self.barPixel)+"[px], font scale: "+str(scale))
     if self.image.mode == "P":
       draw.rectangle((offsetX,        offsetY,         offsetX+self.barPixel+scale/5,  offsetY+scale    ), fill=256)  #white background
       draw.rectangle((offsetX+scale/10, offsetY+scale*7/10, offsetX+self.barPixel+scale/10, offsetY+scale*9/10), fill=0)    #black bar

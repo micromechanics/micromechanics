@@ -564,7 +564,8 @@ def loadHDF5(self,fileName):
   converter = self.datafile.attrs['uri']
   converter = converter.decode('utf-8') if isinstance(converter, bytes) else converter
   converter = converter.split('/')[-1]
-  converterList = {'hap2hdf.py':[Vendor.FischerScopeHDF5, 'Fischer Scope Indentation HDF5']}
+  converterList = {'hap2hdf.py':[Vendor.FischerScopeHDF5, 'Fischer Scope Indentation HDF5'],
+                   'Micromaterials2hdf.py': [Vendor.MicromaterialsHDF5, 'Micromaterials Indentation HDF5']}
   self.vendor = converterList[converter][0]
   self.metaUser = {'measurementType':converterList[converter][1] }
   if 'json' in self.metaVendor:
@@ -592,9 +593,10 @@ def nextHDF5Test(self):
     return False
   while len(self.testList)>0:
     self.testName = self.testList.pop(0)
-    if self.testName not in self.surface['surfaceIdx'] or self.surface['surfaceIdx'][self.testName] is not None:
+    #  print(self.surface, self.testName)  #TODO_P1 ensure that it works for surfaceFind and skipped tests
+    if self.testName not in self.surface or 'surfaceIdx' in self.surface[self.testName]:
       break
-  if self.testName in self.surface['surfaceIdx'] and self.surface['surfaceIdx'][self.testName] is None:  #handle last test
+  if self.testName in self.surface and 'surfaceIdx' not in self.surface[self.testName]:  #handle last test
     return False
   branch = self.datafile[self.testName]['data']
   inFile = list(branch.keys())

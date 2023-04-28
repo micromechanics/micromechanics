@@ -56,7 +56,7 @@ def plot(self, saveFig=False, show=True):
   Plot force-depth curve with all data
 
   Args:
-    saveFig (bool): save plot to file [use known filename plus extension png]
+    saveFig (bool, str): if bool, save plot to file [use known filename plus extension png]; else use fileName
     show (bool): show figure, else do not show
 
   Returns:
@@ -101,8 +101,10 @@ def plot(self, saveFig=False, show=True):
   ax.set_xlim(left=-0.03)
   ax.set_xlabel(r"depth [$\mathrm{\mu m}$]")
   ax.set_ylabel(r"force [$\mathrm{mN}$]")
-  if saveFig:
+  if isinstance(saveFig, bool) and saveFig:
     plt.savefig(self.fileName.split('.')[0]+".png", dpi=150, bbox_inches='tight')
+  if isinstance(saveFig, str):
+    plt.savefig(saveFig, dpi=150, bbox_inches='tight')
   if isinstance(show,bool):
     if show:
       plt.show()

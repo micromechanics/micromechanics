@@ -379,8 +379,8 @@ def nextTest(self, newTest=True, plotSurface=False):
     success = True
 
   #SURFACE FIND
-  if self.testName in self.surface['surfaceIdx']:
-    surface = self.surface['surfaceIdx'][self.testName]
+  if self.testName in self.surface:
+    surface = self.surface[self.testName]['surfaceIdx']
     self.h -= self.h[surface]  #only change surface, not force
   else:
     found = False
