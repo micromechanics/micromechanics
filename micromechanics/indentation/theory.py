@@ -150,9 +150,17 @@ def stiffnessFromUnloading(self, p, h, plot=False):
       else:
         ax.plot(h[mask],p[mask],'-b')
     #initial values of fitting
-    m0  = self.model['unloadInitialM']
+    # It would be great to be able to linearize the equation p=B(h-hf)^m. Linearization is possible for p=Bh^m with the log-rules
+    #   log p=logB+m*logh   one could argue that h>hf and that this is a great approximation and use it to get initial B,m
+    #   but that might not be so great and still cumbersome
+    # Easier: try a few values of m, find the one that is best for the middle point and stick with that going into the fitting
+    m0  = np.logspace(0.1, 1, 5) if self.model['unloadInitialM'] is None else self.model['unloadInitialM']
     hf0 = (h[mask][0]/p[mask][0]**(1/m0) - h[mask][-1]/p[mask][-1]**(1/m0))/(1/p[mask][0]**(1/m0) -1/p[mask][-1]**(1/m0))
     B0  = p[mask][0]/(h[mask][0]-hf0)**m0
+    if self.model['unloadInitialM'] is None:
+      pMid = B0*(h[mask][int(len(h[mask])/2)]-hf0)**m0
+      idxBest = np.abs(pMid-p[mask][int(len(h[mask])/2)]).argmin()
+      m0, hf0, B0 = m0[idxBest], hf0[idxBest], B0[idxBest]
     # elif self.model['unloadInitialValues']=='metal': # Assuming a more linear unloading curve
     #   B0  = (p[mask][-1]-p[mask][0])/(h[mask][-1]-h[mask][0])
     #   hf0 = h[mask][0] - p[mask][0]/B0
