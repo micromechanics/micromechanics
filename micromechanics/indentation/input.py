@@ -532,10 +532,8 @@ def loadHDF5(self,fileName):
   self.fileName = fileName
   self.metaVendor = {}
   self.testList = []
-  if 'version' not in self.datafile.attrs or \
-    (isinstance(self.datafile.attrs['version'], str) and self.datafile.attrs['version']!='2.0') or \
-    (isinstance(self.datafile.attrs['version'], bytes) and self.datafile.attrs['version']!=b'2.0'):
-    print("**ERROR** Only hdf5 version 2 supported")
+  if 'version' not in self.datafile.attrs or self.datafile.attrs['version'] not in ['2.0',b'2.0']:
+    print("**ERROR** Only hdf5 version 2 supported. ", self.datafile.attrs['version'] )
     return False
   #read surface and convert to dictionary
   try:

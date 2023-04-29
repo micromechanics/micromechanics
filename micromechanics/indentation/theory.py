@@ -150,16 +150,17 @@ def stiffnessFromUnloading(self, p, h, plot=False):
       else:
         ax.plot(h[mask],p[mask],'-b')
     #initial values of fitting
-    if self.model['unloadInitialValues']=='metal': # Assuming a more linear unloading curve
-      B0  = (p[mask][-1]-p[mask][0])/(h[mask][-1]-h[mask][0])
-      hf0 = h[mask][0] - p[mask][0]/B0
-      m0  = 1.5 #to get of axis
-    elif self.model['unloadInitialValues']=='polymere': # Assuming more curvature in the unloading curve
-      hf0    = h[mask][-1]/2.0
-      m0     = 2
-      B0     = max(abs(p[mask][0] / np.power(h[mask][0]-hf0,m0)), 0.001)  #prevent neg. or zero
-    else:
-      print('**ERROR: undefined initial values for unloading fit')
+    m0  = self.model['unloadInitialM']
+    hf0 = (h[mask][0]/p[mask][0]**(1/m0) - h[mask][-1]/p[mask][-1]**(1/m0))/(1/p[mask][0]**(1/m0) -1/p[mask][-1]**(1/m0))
+    B0  = p[mask][0]/(h[mask][0]-hf0)**m0
+    # elif self.model['unloadInitialValues']=='metal': # Assuming a more linear unloading curve
+    #   B0  = (p[mask][-1]-p[mask][0])/(h[mask][-1]-h[mask][0])
+    #   hf0 = h[mask][0] - p[mask][0]/B0
+    #   m0  = 1.5 #to get of axis
+    # elif self.model['unloadInitialValues']=='polymere': # Assuming more curvature in the unloading curve
+    #   hf0    = h[mask][-1]/2.0
+    #   m0     = 2
+    #   B0     = max(abs(p[mask][0] / np.power(h[mask][0]-hf0,m0)), 0.001)  #prevent neg. or zero
     bounds = [[0,0,0.8],[np.inf, max(np.min(h[mask]),hf0), 10]]
     if self.output['verbose']>2:
       print("Initial fitting values B,hf,m", B0,hf0,m0)
