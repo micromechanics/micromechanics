@@ -175,8 +175,8 @@ def stiffnessFromUnloading(self, p, h, plot=False):
       print("  Bounds", bounds)
     try:
       opt, _ = curve_fit(self.unloadingPowerFunc, h[mask],p[mask],      # pylint: disable=unbalanced-tuple-unpacking
-                         p0=[B0,hf0,m0], bounds=bounds,
-                         ftol=1e-4, maxfev=3000 )#set ftol to 1e-4 if accept more and fail less
+                         p0=[B0,hf0,m0], bounds=bounds, ftol=1e-4, maxfev=3000 )#set ftol to 1e-4 if accept more and fail less
+                         # sigma=np.arange(len(mask[mask]))+1, weights that decrease from beginning to end
       if self.output['verbose']>2:
         print("  Optimal values B,hf,m", opt[0], opt[1], opt[2])
       B,hf,m = opt
