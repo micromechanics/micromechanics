@@ -562,9 +562,12 @@ def loadHDF5(self,fileName):
   converter = self.datafile.attrs['uri']
   converter = converter.decode('utf-8') if isinstance(converter, bytes) else converter
   converter = converter.split('/')[-1]
+  #                 converter:   Vendor, Human readable description
   converterList = {'hap2hdf.py':[Vendor.FischerScopeHDF5, 'Fischer Scope Indentation HDF5'],
                    'Micromaterials2hdf.py': [Vendor.MicromaterialsHDF5, 'Micromaterials Indentation HDF5'],
-                   'xls2hdf.py': [Vendor.AgilentHDF5, 'MTS Indentation HDF5']}
+                   'xls2hdf.py': [Vendor.AgilentHDF5, 'MTS Indentation HDF5'],
+                   'nmd2hdf.py': [Vendor.KLAHDF5, 'KLA G200X Indentation HDF5'],
+                   }
   self.vendor = converterList[converter][0]
   self.metaUser = {'measurementType':converterList[converter][1] }
   if 'json' in self.metaVendor:
