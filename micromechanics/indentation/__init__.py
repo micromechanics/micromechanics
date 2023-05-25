@@ -128,9 +128,6 @@ class Indentation:
   def fillVendorDefaults(self):
     """
     fill defaults depending on vendor, if information is not yet present
-
-    Args:
-      force (bool): overwrite the values
     """
     if self.vendor in self._DefaultVendorDependent:
       for key, valueDefault in self._DefaultVendorDependent[self.vendor].items():

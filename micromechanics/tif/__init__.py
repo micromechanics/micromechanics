@@ -379,7 +379,7 @@ class Tif:
        scale (float): scale down image by ratio
        convertGrayscale (bool): convert to gray-scale image
     """
-    if convertGrayscale: 
+    if convertGrayscale:
       self.image = self.image.convert("L")
     fileName = os.path.splitext(self.fileName)[0]
     if fileType=="png":
@@ -458,10 +458,10 @@ class Tif:
     Scale image by a factor. Scale by factor two decreases the pixelSize and increases the image size by factor two
 
     Args:
-      scale (float): scaling factor
+      scaleFactor (float): scaling factor
     """
-    self.pixelSize /= scaleFactor    
-    widthPixel, heightPixel = self.image.size    
+    self.pixelSize /= scaleFactor
+    widthPixel, heightPixel = self.image.size
     self.image = self.image.resize((int(widthPixel*scaleFactor), int(heightPixel*scaleFactor)), Image.NEAREST)
     return
 
@@ -616,7 +616,7 @@ class Tif:
 
   def topology(self, axis="V", upperEnd=4.0, start=-1, end=-1):
     """
-    EXPERIMENTAL: 
+    EXPERIMENTAL:
     rescale grey values such that each row/collum has the same average, cancel topological shadowing
 
     The algorithm tries to scale (change contrast) the grey-values such as that each collum (V) or
@@ -662,79 +662,77 @@ class Tif:
     return
 
 
-  def filterCurtain(self, xmin=6, xmax=250, ymax=6, gauss=3, plot=True, zoom=1, save=False):
-    """
-    EXPERIMENTAL: Remove FIB curtains by FFT filtering
+  # def filterCurtain(self, xmin=6, xmax=250, ymax=6, gauss=3, plot=True, zoom=1, save=False):
+  #   """
+  #   EXPERIMENTAL: Remove FIB curtains by FFT filtering
 
-    Args:
-       xmin (int): minimum in x direction of filter, removes long waves
-       xmax (int): maximum in x direction of filter, x-direction is mirrored, removes short waves
-       ymax (int): maximum in y direction of filter
-       gauss (float): spread of corners to remove filter artifacts
-       plot (bool): plot the original image, filter, processed image
-       zoom (float): zoom FFT image by factor: e.g. 4 zoom x and y by 2
-       save (bool): only save once set true; allows to test varios settings before saving
-    """
-    """
-    #Comment out entire block since cv2 causes issues 
-    https://forum.qt.io/topic/119109/using-pyqt5-with-opencv-python-cv2-causes-error-could-not-load-qt-platform-plugin-xcb-even-though-it-was-found/20?lang=en-US
+  #   Args:
+  #      xmin (int): minimum in x direction of filter, removes long waves
+  #      xmax (int): maximum in x direction of filter, x-direction is mirrored, removes short waves
+  #      ymax (int): maximum in y direction of filter
+  #      gauss (float): spread of corners to remove filter artifacts
+  #      plot (bool): plot the original image, filter, processed image
+  #      zoom (float): zoom FFT image by factor: e.g. 4 zoom x and y by 2
+  #      save (bool): only save once set true; allows to test varios settings before saving
+  #   """
+  #   #Comment out entire block since cv2 causes issues
+  #   https://forum.qt.io/topic/119109/using-pyqt5-with-opencv-python-cv2-causes-error-could-not-load-qt-platform-plugin-xcb-even-though-it-was-found/20?lang=en-US
 
-    import cv2
-    widthPixel, heightPixel = self.image.size
-    crow, ccol = int(heightPixel/2), int(widthPixel/2)
-    #do forward FFT transformation
-    dft = cv2.dft(np.float32(self.image), flags=cv2.DFT_COMPLEX_OUTPUT)
-    dft_shift = np.fft.fftshift(dft)
-    magnitude_spectrum=20*np.log(cv2.magnitude(dft_shift[:,:,0], dft_shift[:,:,1]))
-    #create a mask for filtering
-    if xmax<xmin: xmax=ccol
-    mask = np.ones((heightPixel, widthPixel,2),np.uint8)
-    mask[crow-ymax:crow+ymax, ccol+xmin:ccol+xmax] = 0
-    mask[crow-ymax:crow+ymax, ccol-xmax:ccol-xmin] = 0
-    mask = ndimage.gaussian_filter(mask*255, gauss)
-    mask = ((mask-np.min(mask))*255.0/(np.max(mask)-np.min(mask))).astype(np.uint8)
-    # apply mask and inverse DFT
-    fshift = dft_shift*mask.astype(np.float32)/255.0
-    f_ishift = np.fft.ifftshift(fshift)
-    img_back = cv2.idft(f_ishift)
-    img_back = cv2.magnitude(img_back[:,:,0],img_back[:,:,1])
-    img_back /= ( np.max(img_back) / 255.0)
-    #plot mask and result
-    if plot:
-      fftImage = np.zeros((heightPixel, widthPixel,3),np.uint8)
-      fftImage[:,:,2] = magnitude_spectrum*255/np.max(magnitude_spectrum)
-      #fftImage[:,:,2][mask[:,:,0]<255] = 0
-      fftImage[:,:,0] = (magnitude_spectrum*255/np.max(magnitude_spectrum)) * (mask[:,:,0])
-      fftImage[:,:,0][mask[:,:,0]>250] = 0
-      zoom = max(zoom, 1)
-      xpad =int( widthPixel*(1.0-1.0/np.sqrt(zoom))/2 )
-      ypad =int(heightPixel*(1.0-1.0/np.sqrt(zoom))/2 )
-      xend =widthPixel-xpad
-      yend =heightPixel-ypad
-      fftImage = fftImage[ypad:yend,xpad:xend,:]
-      #print "shape",fftImage.shape,xpad,ypad
-      plt.subplot(131)
-      plt.imshow(self.image , cmap='gray')
-      plt.xticks([])
-      plt.yticks([])
-      plt.title("Before")
-      plt.subplot(132)
-      plt.imshow(fftImage)
-      plt.xticks([])
-      plt.yticks([])
-      plt.title("Filter")
-      plt.subplot(133)
-      plt.imshow(img_back   , cmap='gray')
-      plt.xticks([])
-      plt.yticks([])
-      plt.title("After")
-      plt.tight_layout(pad=-0.5, w_pad=-0.5, h_pad=-0.5)
-      plt.show()
-    #save
-    if save:
-      self.image = Image.fromarray(img_back).convert("P")
-    """
-    return
+  #   import cv2
+  #   widthPixel, heightPixel = self.image.size
+  #   crow, ccol = int(heightPixel/2), int(widthPixel/2)
+  #   #do forward FFT transformation
+  #   dft = cv2.dft(np.float32(self.image), flags=cv2.DFT_COMPLEX_OUTPUT)
+  #   dft_shift = np.fft.fftshift(dft)
+  #   magnitude_spectrum=20*np.log(cv2.magnitude(dft_shift[:,:,0], dft_shift[:,:,1]))
+  #   #create a mask for filtering
+  #   if xmax<xmin: xmax=ccol
+  #   mask = np.ones((heightPixel, widthPixel,2),np.uint8)
+  #   mask[crow-ymax:crow+ymax, ccol+xmin:ccol+xmax] = 0
+  #   mask[crow-ymax:crow+ymax, ccol-xmax:ccol-xmin] = 0
+  #   mask = ndimage.gaussian_filter(mask*255, gauss)
+  #   mask = ((mask-np.min(mask))*255.0/(np.max(mask)-np.min(mask))).astype(np.uint8)
+  #   # apply mask and inverse DFT
+  #   fshift = dft_shift*mask.astype(np.float32)/255.0
+  #   f_ishift = np.fft.ifftshift(fshift)
+  #   img_back = cv2.idft(f_ishift)
+  #   img_back = cv2.magnitude(img_back[:,:,0],img_back[:,:,1])
+  #   img_back /= ( np.max(img_back) / 255.0)
+  #   #plot mask and result
+  #   if plot:
+  #     fftImage = np.zeros((heightPixel, widthPixel,3),np.uint8)
+  #     fftImage[:,:,2] = magnitude_spectrum*255/np.max(magnitude_spectrum)
+  #     #fftImage[:,:,2][mask[:,:,0]<255] = 0
+  #     fftImage[:,:,0] = (magnitude_spectrum*255/np.max(magnitude_spectrum)) * (mask[:,:,0])
+  #     fftImage[:,:,0][mask[:,:,0]>250] = 0
+  #     zoom = max(zoom, 1)
+  #     xpad =int( widthPixel*(1.0-1.0/np.sqrt(zoom))/2 )
+  #     ypad =int(heightPixel*(1.0-1.0/np.sqrt(zoom))/2 )
+  #     xend =widthPixel-xpad
+  #     yend =heightPixel-ypad
+  #     fftImage = fftImage[ypad:yend,xpad:xend,:]
+  #     #print "shape",fftImage.shape,xpad,ypad
+  #     plt.subplot(131)
+  #     plt.imshow(self.image , cmap='gray')
+  #     plt.xticks([])
+  #     plt.yticks([])
+  #     plt.title("Before")
+  #     plt.subplot(132)
+  #     plt.imshow(fftImage)
+  #     plt.xticks([])
+  #     plt.yticks([])
+  #     plt.title("Filter")
+  #     plt.subplot(133)
+  #     plt.imshow(img_back   , cmap='gray')
+  #     plt.xticks([])
+  #     plt.yticks([])
+  #     plt.title("After")
+  #     plt.tight_layout(pad=-0.5, w_pad=-0.5, h_pad=-0.5)
+  #     plt.show()
+  #   #save
+  #   if save:
+  #     self.image = Image.fromarray(img_back).convert("P")
+  #   return
 
 
   def removeGrayGradient(self, save=False, plot=True):

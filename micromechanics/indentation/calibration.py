@@ -18,7 +18,7 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepthStiffness=1.0, critFo
       critForce (float): frame stiffness: what is the minimum force used for fitting
       plotStiffness (bool): plot stiffness graph with compliance
       plotTip (bool): plot tip shape after fitting
-      kwargs (dict): additional keyword arguments
+      **kwargs (dict): additional keyword arguments
 
         - constantTerm (bool): add constant term into area function
         - returnArea (bool): return contact depth and area

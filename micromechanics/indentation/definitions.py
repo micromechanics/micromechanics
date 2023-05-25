@@ -45,7 +45,7 @@ _DefaultModel = {
 
   'unloadPMax':0.99,        # upper end of fitting domain of unloading stiffness: Vendor-specific change
   'unloadPMin':0.5,         # lower end of fitting domain of unloading stiffness: Vendor-specific change
-  'unloadInitialM': None,   # initial value of m that is used to determine the initial values of B and hf, 
+  'unloadInitialM': None,   # initial value of m that is used to determine the initial values of B and hf,
                             # which are then used to fit the unloading curve. 1<m0<10, if None then best m0 is automatically identified
   'relForceRateNoise':0.02, # threshold of dp/dt use to identify start of loading: Vendor-specific change
   'relForceRateNoiseFilter': 'median',
