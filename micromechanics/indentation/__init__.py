@@ -62,7 +62,8 @@ class Indentation:
     self.surface = self._DefaultSurface             # dictionary describing the surface find
     self.surface.update(surface)
     self.model   = self._DefaultModel               # dictionary for all numerical parameters that determine the results
-    self.model.update(model)
+    self.modelUserChoice = model
+    self.model.update(self.modelUserChoice)
     self.output  = self._DefaultOutput              # dictionary for all output parameters, axis
     self.output.update(output)
 
@@ -124,7 +125,7 @@ class Indentation:
     return
 
 
-  def fillVendorDefaults(self, force=False):
+  def fillVendorDefaults(self):
     """
     fill defaults depending on vendor, if information is not yet present
 
@@ -132,9 +133,11 @@ class Indentation:
       force (bool): overwrite the values
     """
     if self.vendor in self._DefaultVendorDependent:
-      for key, value in self._DefaultVendorDependent[self.vendor].items():
-        if force or key not in self.model:
-          self.model[key]=value
+      for key, valueDefault in self._DefaultVendorDependent[self.vendor].items():
+        if key in self.modelUserChoice:
+          self.model[key] =  self.modelUserChoice[key]
+        elif key not in self.model:
+          self.model[key]=valueDefault
     else:
       print('**ERROR defaults not defined for',self.vendor)
     return

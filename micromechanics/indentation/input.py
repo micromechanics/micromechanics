@@ -576,7 +576,7 @@ def loadHDF5(self,fileName):
       templateName = metaVendor['SAMPLE']['@TEMPLATENAME']
       if 'Dynamic' in templateName or 'Essential' in templateName or 'Displacement' in templateName:
         self.method = Method.CSM
-  self.fillVendorDefaults(force=True)
+  self.fillVendorDefaults()
   self.allTestList = list(self.testList)
   self.nextTest()
   return True

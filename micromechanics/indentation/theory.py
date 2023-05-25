@@ -170,6 +170,9 @@ def stiffnessFromUnloading(self, p, h, plot=False):
     #   m0     = 2
     #   B0     = max(abs(p[mask][0] / np.power(h[mask][0]-hf0,m0)), 0.001)  #prevent neg. or zero
     bounds = [[0,0,0.8],[np.inf, max(np.min(h[mask]),hf0), 10]]
+    B0  = min( max(B0,  bounds[0][0]), bounds[1][0])  #ensure parameters are in bounds
+    hf0 = min( max(hf0, bounds[0][1]), bounds[1][1])  #ensure parameters are in bounds
+    m0  = min( max(m0,  bounds[0][2]), bounds[1][2])  #ensure parameters are in bounds
     if self.output['verbose']>2:
       print("Initial fitting values B,hf,m", B0,hf0,m0)
       print("  Bounds", bounds)
