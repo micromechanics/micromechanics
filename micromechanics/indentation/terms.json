@@ -64,5 +64,13 @@
     "p": [["force",1.0]],
     "t": [["time",1.0]],
     "__ignore__": ["indices"]
+  },
+  "Femtotools":{
+    "h": [["displacement",1.0]],
+    "p": [["force_a",1.0e-3]],
+    "t": [["time",1.0]],
+    "slope": [["real_stiffness",1.0e-3]],
+    "phase": [["phase",1.0]],
+    "__ignore__": ["indices"]
   }
 }

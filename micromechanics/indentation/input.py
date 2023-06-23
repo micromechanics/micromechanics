@@ -567,6 +567,7 @@ def loadHDF5(self,fileName):
                    'Micromaterials2hdf.py': [Vendor.MicromaterialsHDF5, 'Micromaterials Indentation HDF5'],
                    'xls2hdf.py': [Vendor.AgilentHDF5, 'MTS Indentation HDF5'],
                    'nmd2hdf.py': [Vendor.KLAHDF5, 'KLA G200X Indentation HDF5'],
+                   'converter_femtotools.py': [Vendor.FemtotoolsHDF5, 'Femtotools Indentation HDF5']
                    }
   self.vendor = converterList[converter][0]
   self.metaUser = {'measurementType':converterList[converter][1] }

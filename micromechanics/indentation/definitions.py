@@ -26,6 +26,7 @@ class Vendor(IntEnum):
   MicromaterialsHDF5 = 13 #Micromaterials HDF5 file format                       # pylint: disable=invalid-name
   FischerScopeHDF5   = 14 #FischerScope HDF5 file format                         # pylint: disable=invalid-name
   KLAHDF5            = 15 #Micromaterials HDF5 file format                       # pylint: disable=invalid-name
+  FemtotoolsHDF5     = 16 #Femtotools HDF5 file format                           # pylint: disable=invalid-name
 
 
 class FileType(IntEnum):
@@ -64,7 +65,8 @@ _DefaultVendorDependent = {
   Vendor.KLAHDF5:           {'unloadPMax':0.99, 'unloadPMin':0.5, 'relForceRateNoise':0.007},#enhanced accuracy
   Vendor.FischerScopeHDF5:  {'unloadPMax':0.99, 'unloadPMin':0.21, 'relForceRateNoise':0.02},#reduced accuracy
   Vendor.MicromaterialsHDF5:{'unloadPMax':0.99, 'unloadPMin':0.5, 'relForceRateNoise':0.02},
-  Vendor.HysitronHDF5:      {'unloadPMax':0.99, 'unloadPMin':0.5, 'relForceRateNoise':0.04}
+  Vendor.HysitronHDF5:      {'unloadPMax':0.99, 'unloadPMin':0.5, 'relForceRateNoise':0.04},
+  Vendor.FemtotoolsHDF5:    {'unloadPMax':0.99, 'unloadPMin':0.5, 'relForceRateNoise':0.04}
 }
 
 

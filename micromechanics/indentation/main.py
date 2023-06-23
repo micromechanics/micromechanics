@@ -265,7 +265,7 @@ def identifyLoadHoldUnload(self,plot=False):
         if np.min(newEntry)>0 and np.max(newEntry)<len(self.h):
           self.iLHU.append(newEntry)
         else:
-          print("**ERROR: iLHU values out of bounds", newEntry)
+          print("**ERROR: iLHU values out of bounds", newEntry,' with length',len(self.h))
           if len(self.iLHU)>0:
             self.iLHU.append([])
       else:

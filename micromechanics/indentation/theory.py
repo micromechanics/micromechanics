@@ -131,7 +131,7 @@ def stiffnessFromUnloading(self, p, h, plot=False):
     if self.output['ax'] is not None:
       ax = self.output['ax']
     elif plot:
-      ax = plt.subplots()
+      ax = plt.subplots()[1]
     ax.plot(h,p, '--k', label='data')
   for cycleNum, cycle in enumerate(self.iLHU):
     loadStart, loadEnd, unloadStart, unloadEnd = cycle
