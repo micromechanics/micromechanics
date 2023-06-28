@@ -301,54 +301,70 @@ def identifyLoadHoldUnloadCSM(self, plot=False):
     bool: success of identifying hold-load-unload sequence
   """
   iSurface = np.min(np.where( self.h>=0                     ))
-  iLoad    = np.min(np.where( self.p-np.max(self.p)*self.model['unloadPMax']>0 ))
-  if iLoad<len(self.p)-1:
-    iHold  = np.max(np.where( self.p-np.max(self.p)*self.model['unloadPMax']>0 ))
-    if iHold==iLoad:
-      iHold += 1
-    try:
-      hist,bins= np.histogram( self.p[iHold:] , bins=1000)
-    except:
-      print('**ERROR identifyLoadHoldUnloadCSM: 1')
-      self.iLHU = []
-      self.iDrift = []
-      return False
-    pDrift   = bins[np.argmax(hist)+1]
-    pCloseToDrift = np.logical_and(self.p>pDrift*self.model['unloadPMax'], \
-                                   self.p<pDrift/self.model['unloadPMax'])
-    pCloseToDrift[:iHold] = False
-    if len(pCloseToDrift[pCloseToDrift])>3:
-      iDriftS  = np.min(np.where( pCloseToDrift ))
-      iDriftE  = np.max(np.where( pCloseToDrift ))
-    else:
-      iDriftS   = len(self.p)-2
-      iDriftE   = len(self.p)-1
-    if not iSurface < iLoad < iHold < iDriftS < iDriftE < len(self.h):
-      print("Warning: identifyLoadHoldUnloadCSM could not identify load-hold-unloading cycle. Only loading?")
-      print(iSurface,iLoad,iHold,iDriftS,iDriftE, len(self.h))
-      iLoad     = len(self.p)-4
+  if len(self.slope) > 600: #SRJT changes
+    iLoad    = np.argmax(self.p)
+    iHold    = np.max(np.where( self.h-np.max(self.h)*self.model['unloadPMax']>0 ))-3
+
+    if plot or self.output['plotLoadHoldUnload']:
+      plt.plot(self.h, self.p)
+      plt.plot(self.h[iSurface], self.p[iSurface], 'o', markersize=10, label='surface')
+      plt.plot(self.h[iLoad], self.p[iLoad], 'o', markersize=10, label='load')
+      plt.plot(self.h[iHold], self.p[iHold], 'o', markersize=10, label='hold')
+      #plt.plot(self.h[iDriftS], self.p[iDriftS], 'o', markersize=10, label='drift start')
+      #plt.plot(self.h[iDriftE], self.p[iDriftE], 'o', markersize=10, label='drift end')
+      plt.legend(loc=0)
+      plt.title('Identify Load, Hold, Unload for CSM measurements')
+      plt.show()
+  else:
+    iLoad    = np.min(np.where( self.p-np.max(self.p)*self.model['unloadPMax']>0 ))
+  
+    if iLoad<len(self.p)-1:
+      iHold  = np.max(np.where( self.p-np.max(self.p)*self.model['unloadPMax']>0 ))
+      if iHold==iLoad:
+        iHold += 1
+      try:
+        hist,bins= np.histogram( self.p[iHold:] , bins=1000)
+      except:
+        print('**ERROR identifyLoadHoldUnloadCSM: 1')
+        self.iLHU = []
+        self.iDrift = []
+        return False
+      pDrift   = bins[np.argmax(hist)+1]
+      pCloseToDrift = np.logical_and(self.p>pDrift*self.model['unloadPMax'], \
+                                    self.p<pDrift/self.model['unloadPMax'])
+      pCloseToDrift[:iHold] = False
+      if len(pCloseToDrift[pCloseToDrift])>3:
+        iDriftS  = np.min(np.where( pCloseToDrift ))
+        iDriftE  = np.max(np.where( pCloseToDrift ))
+      else:
+        iDriftS   = len(self.p)-2
+        iDriftE   = len(self.p)-1
+      if not iSurface < iLoad < iHold < iDriftS < iDriftE < len(self.h):
+        print("Warning: identifyLoadHoldUnloadCSM could not identify load-hold-unloading cycle. Only loading?")
+        print(iSurface,iLoad,iHold,iDriftS,iDriftE, len(self.h))
+        iLoad     = len(self.p)-4
+        iHold     = len(self.p)-3
+        iDriftS   = len(self.p)-2
+        iDriftE   = len(self.p)-1
+    else:  #This part is required
+      if self.method != Method.CSM:
+        print("*WARNING*: no hold or unloading segments in data")
       iHold     = len(self.p)-3
       iDriftS   = len(self.p)-2
       iDriftE   = len(self.p)-1
-  else:  #This part is required
-    if self.method != Method.CSM:
-      print("*WARNING*: no hold or unloading segments in data")
-    iHold     = len(self.p)-3
-    iDriftS   = len(self.p)-2
-    iDriftE   = len(self.p)-1
-  self.iLHU   = [[iSurface,iLoad,iHold,iDriftS]]
-  self.iDrift = [iDriftS,iDriftE]
+    self.iLHU   = [[iSurface,iLoad,iHold,iDriftS]]
+    self.iDrift = [iDriftS,iDriftE]
 
-  if plot or self.output['plotLoadHoldUnload']:
-    plt.plot(self.h, self.p)
-    plt.plot(self.h[iSurface], self.p[iSurface], 'o', markersize=10, label='surface')
-    plt.plot(self.h[iLoad], self.p[iLoad], 'o', markersize=10, label='load')
-    plt.plot(self.h[iHold], self.p[iHold], 'o', markersize=10, label='hold')
-    plt.plot(self.h[iDriftS], self.p[iDriftS], 'o', markersize=10, label='drift start')
-    plt.plot(self.h[iDriftE], self.p[iDriftE], 'o', markersize=10, label='drift end')
-    plt.legend(loc=0)
-    plt.title('Identify Load, Hold, Unload for CSM measurements')
-    plt.show()
+    if plot or self.output['plotLoadHoldUnload']:
+      plt.plot(self.h, self.p)
+      plt.plot(self.h[iSurface], self.p[iSurface], 'o', markersize=10, label='surface')
+      plt.plot(self.h[iLoad], self.p[iLoad], 'o', markersize=10, label='load')
+      plt.plot(self.h[iHold], self.p[iHold], 'o', markersize=10, label='hold')
+      plt.plot(self.h[iDriftS], self.p[iDriftS], 'o', markersize=10, label='drift start')
+      plt.plot(self.h[iDriftE], self.p[iDriftE], 'o', markersize=10, label='drift end')
+      plt.legend(loc=0)
+      plt.title('Identify Load, Hold, Unload for CSM measurements')
+      plt.show()
   return True
 
 
