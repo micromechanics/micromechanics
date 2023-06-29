@@ -21,8 +21,12 @@ def calcYoungsModulus(self, minDepth=-1, plot=False):
   Returns:
       float: average Young's modulus, minDepth>0
   """
-  self.modulusRed, self.Ac, self.hc = \
-    self.OliverPharrMethod(self.slope, self.p[self.valid], self.h[self.valid], self.model['nonMetal'])
+  if len(self.slope) > 2000:  #SRJT
+    self.modulusRed, self.Ac, self.hc = \
+    self.OliverPharrMethod(self.slope[self.valid], self.p[self.valid], self.h[self.valid], self.model['nonMetal'])
+  else:
+    self.modulusRed, self.Ac, self.hc = \
+      self.OliverPharrMethod(self.slope, self.p[self.valid], self.h[self.valid], self.model['nonMetal'])
   modulus = self.YoungsModulus(self.modulusRed)
   if minDepth>0:
     #eAve = np.average(       self.modulusRed[ self.h>minDepth ] )
@@ -60,7 +64,11 @@ def calcHardness(self, minDepth=-1, plot=False):
       plot (bool): plot comparison this calculation to data read from file
   """
   #use area function
-  hardness=self.p[self.valid]/self.OliverPharrMethod(self.slope, self.p[self.valid], self.h[self.valid], \
+  if len(self.slope) > 2000:  #SRJT
+    hardness=self.p[self.valid]/self.OliverPharrMethod(self.slope[self.valid], self.p[self.valid], self.h[self.valid], \
+    self.model['nonMetal'])[1]
+  else:
+    hardness=self.p[self.valid]/self.OliverPharrMethod(self.slope, self.p[self.valid], self.h[self.valid], \
     self.model['nonMetal'])[1]
   if plot:
     mark = '-' if len(hardness)>1 else 'o'
@@ -140,16 +148,18 @@ def analyse(self):
     which is toggled during loading and analysing
   """
   self.h -= self.tip.compliance*self.p
-  if self.method == Method.CSM:
+  if self.method == Method.CSM:      
     self.slope = 1./(1./self.slope-self.tip.compliance)
+    if len(self.slope) > 2000:  #SRJT
+      self.k2p = self.slope[self.valid]*self.slope[self.valid]/self.p[self.valid]
   else:
     self.slope, self.valid, _, _ , _= self.stiffnessFromUnloading(self.p, self.h)
     self.slope = np.array(self.slope)
-  try:
-    self.k2p = self.slope*self.slope/self.p[self.valid]
-  except:
-    print('**WARNING SKIP ANALYSE')
-    return
+  # try:
+  #   self.k2p = self.slope*self.slope/self.p[self.valid]
+  # except:
+  #   print('**WARNING SKIP ANALYSE')
+  #   return
   #Calculate Young's modulus
   self.calcYoungsModulus()
   self.calcHardness()
@@ -304,6 +314,8 @@ def identifyLoadHoldUnloadCSM(self, plot=False):
   if len(self.slope) > 600: #SRJT changes
     iLoad    = np.argmax(self.p)
     iHold    = np.max(np.where( self.h-np.max(self.h)*self.model['unloadPMax']>0 ))-3
+    self.valid[np.argmax(self.p):]=False
+    self.valid[:iSurface]=False
 
     if plot or self.output['plotLoadHoldUnload']:
       plt.plot(self.h, self.p)
@@ -314,7 +326,7 @@ def identifyLoadHoldUnloadCSM(self, plot=False):
       #plt.plot(self.h[iDriftE], self.p[iDriftE], 'o', markersize=10, label='drift end')
       plt.legend(loc=0)
       plt.title('Identify Load, Hold, Unload for CSM measurements')
-      plt.show()
+      #plt.show()
   else:
     iLoad    = np.min(np.where( self.p-np.max(self.p)*self.model['unloadPMax']>0 ))
   
