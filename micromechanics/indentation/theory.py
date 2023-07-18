@@ -169,7 +169,7 @@ def stiffnessFromUnloading(self, p, h, plot=False):
     #   hf0    = h[mask][-1]/2.0
     #   m0     = 2
     #   B0     = max(abs(p[mask][0] / np.power(h[mask][0]-hf0,m0)), 0.001)  #prevent neg. or zero
-    bounds = [[0,0,0.8],[np.inf, max(np.min(h[mask]),hf0), 10]]
+    bounds = [[0,0,0.8],[np.inf, max(np.min(h[mask]),hf0), 100]]
     B0  = min( max(B0,  bounds[0][0]), bounds[1][0])  #ensure parameters are in bounds
     hf0 = min( max(hf0, bounds[0][1]), bounds[1][1])  #ensure parameters are in bounds
     m0  = min( max(m0,  bounds[0][2]), bounds[1][2])  #ensure parameters are in bounds
@@ -223,4 +223,8 @@ def stiffnessFromUnloading(self, p, h, plot=False):
     ax.set_ylabel(r'force [$\mathrm{mN}$]')
   if plot and not self.output['ax']:
     plt.show()
+  
+  stiffnessNgan = 1./(  1./np.array(stiffness) - (  np.array(np.gradient(self.h[mask],self.t[mask]))[0] / np.array((np.gradient(self.p[mask],self.t[mask])))[0]  )  )
+  self.stiffnessNgan = stiffnessNgan
+  
   return stiffness, validMask, mask, opt, powerlawFit
