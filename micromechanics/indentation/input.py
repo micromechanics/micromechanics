@@ -537,20 +537,14 @@ def loadHDF5(self,fileName):
     return False
   #read surface and convert to dictionary
   try:
-    if 'post_test_analysis' in self.datafile and \
+    if self.surface==_DefaultSurface and \
+      'post_test_analysis' in self.datafile and \
       'com_github_micromechanics' in self.datafile['post_test_analysis'] and \
       'config' in self.datafile['post_test_analysis']['com_github_micromechanics'].attrs:
       self.surface = self.datafile['post_test_analysis']['com_github_micromechanics'].attrs['config']
       self.surface = json.loads(self.surface)
-    else:
-      self.surface = _DefaultSurface
   except:
-    self.surface = _DefaultSurface
-  # TODO_P1 still needed?
-  # if (not bool(self.surfaceFind)) and bool(self.config):
-  #   self.surfaceFind = { i:self.config[i] for i in self.config if not i.startswith('test_')}
-  # else:
-  #   self.config = { i:self.surfaceFind[i] for i in self.surfaceFind if i.startswith('test_')}
+    pass
   for key in self.datafile:
     if re.match(r'test_\d+',key):
       self.testList.append(key)

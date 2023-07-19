@@ -338,6 +338,10 @@ def identifyLoadHoldUnloadCSM(self, plot=False):
     iDriftE   = len(self.p)-1
   self.iLHU   = [[iSurface,iLoad,iHold,iDriftS]]
   self.iDrift = [iDriftS,iDriftE]
+  # constrain valid part to section between surface and maximum load
+  self.valid  = np.zeros_like(self.h, dtype=bool)
+  self.valid[iSurface:iLoad]  = True
+  self.slope  = self.slope[self.valid]
 
   if plot or self.output['plotLoadHoldUnload']:
     plt.plot(self.h, self.p)
@@ -434,11 +438,12 @@ def nextTest(self, newTest=True, plotSurface=False):
       else:
         surface  = np.where(thresValues>thresValue)[0][0]
       if plotSurface or 'plot' in self.surface:
+        print(thresValue, 'hhohoho')
         _, ax1 = plt.subplots()
         ax1.plot(self.h,thresValues, 'C0o-')
         ax1.plot(self.h[surface], thresValues[surface], 'C9o', markersize=14)
         ax1.axhline(0,linestyle='dashed')
-        ax1.set_ylim(bottom=0, top=np.percentile(thresValues,80))
+        ax1.set_ylim(bottom=0, top=0.01)# np.percentile(thresValues,80))
         ax1.set_xlabel(r'depth [$\mu m$]')
         ax1.set_ylabel(r'threshold value [different units]', color='C0')
         ax1.grid()
