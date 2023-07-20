@@ -1,5 +1,6 @@
 """Most central functions for nanoindentation"""
 
+import traceback
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import ndimage
@@ -149,6 +150,7 @@ def analyse(self):
     self.k2p = self.slope*self.slope/self.p[self.valid]
   except:
     print('**WARNING SKIP ANALYSE')
+    print(traceback.format_exc())
     return
   #Calculate Young's modulus
   self.calcYoungsModulus()
@@ -324,8 +326,9 @@ def identifyLoadHoldUnloadCSM(self, plot=False):
       iDriftS   = len(self.p)-2
       iDriftE   = len(self.p)-1
     if not iSurface < iLoad < iHold < iDriftS < iDriftE < len(self.h):
-      print("Warning: identifyLoadHoldUnloadCSM could not identify load-hold-unloading cycle. Only loading?")
-      print(iSurface,iLoad,iHold,iDriftS,iDriftE, len(self.h))
+      if self.output['verbose']>1:
+        print("Warning: identifyLoadHoldUnloadCSM could not identify load-hold-unloading cycle. Only loading?")
+        print(iSurface,iLoad,iHold,iDriftS,iDriftE, len(self.h))
       iLoad     = len(self.p)-4
       iHold     = len(self.p)-3
       iDriftS   = len(self.p)-2
@@ -339,9 +342,11 @@ def identifyLoadHoldUnloadCSM(self, plot=False):
   self.iLHU   = [[iSurface,iLoad,iHold,iDriftS]]
   self.iDrift = [iDriftS,iDriftE]
   # constrain valid part to section between surface and maximum load
+  slope = np.zeros_like(self.h)  #rebuild a large self.slope
+  slope[self.valid] = self.slope #  and add current data to it
   self.valid  = np.zeros_like(self.h, dtype=bool)
   self.valid[iSurface:iLoad]  = True
-  self.slope  = self.slope[self.valid]
+  self.slope  = slope[self.valid]
 
   if plot or self.output['plotLoadHoldUnload']:
     plt.plot(self.h, self.p)
@@ -437,18 +442,24 @@ def nextTest(self, newTest=True, plotSurface=False):
         surface  = np.where(thresValues<thresValue)[0][0]
       else:
         surface  = np.where(thresValues>thresValue)[0][0]
+      print('surface',surface)
       if plotSurface or 'plot' in self.surface:
-        print(thresValue, 'hhohoho')
         _, ax1 = plt.subplots()
         ax1.plot(self.h,thresValues, 'C0o-')
         ax1.plot(self.h[surface], thresValues[surface], 'C9o', markersize=14)
         ax1.axhline(0,linestyle='dashed')
-        ax1.set_ylim(bottom=0, top=0.01)# np.percentile(thresValues,80))
+        ax1.set_ylim(bottom=0, top=thresValue*5)
         ax1.set_xlabel(r'depth [$\mu m$]')
         ax1.set_ylabel(r'threshold value [different units]', color='C0')
         ax1.grid()
         plt.show()
       self.h -= self.h[surface]  #only change surface, not force
+  try:
+    self.identifyLoadHoldUnload()
+  except:
+    print('**ERROR: could not identify load-hold-unload. Suggestion: try next test')
+    import traceback
+    print(traceback.format_exc())
   return success
 
 

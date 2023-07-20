@@ -59,7 +59,7 @@ class Indentation:
     self.nuMat   = nuMat                            # nuMat: material's Posson ratio
     self.method  = Method.ISO                       # iso default: csm uses different methods
     self.tip     = Tip() if tip is None else tip    # nanoindenter tip and compliance
-    self.surface = dict(self._DefaultSurface)             # dictionary describing the surface find
+    self.surface = dict(self._DefaultSurface)       # dictionary describing the surface find
     self.surface.update(surface)
     self.model   = self._DefaultModel               # dictionary for all numerical parameters that determine the results
     self.modelUserChoice = model

@@ -140,7 +140,7 @@ def nextAgilentTest(self, newTest=True):
   self.valid = self.valid[validFull]
   #  now all fields (incl. p) are full and defined
 
-  self.identifyLoadHoldUnload()
+  # self.identifyLoadHoldUnload()
   #TODO_P2 Why is there this code?
   # if self.onlyLoadingSegment and self.method==Method.CSM:
   #   # print("Length test",len(self.valid), len(self.h[self.valid]), len(self.p[self.valid])  )
@@ -512,7 +512,6 @@ def nextFischerScopeTest(self):
   self.h = np.array(df['h'])
   self.p = np.array(df['F'])
   self.valid = np.ones_like(self.t, dtype=bool)
-  self.identifyLoadHoldUnload()
   return True
 
 
@@ -679,12 +678,6 @@ def nextHDF5Test(self):
     self.method = Method.CSM
   if self.output['plotLoadHoldUnload']:
     self.plotTestingMethod()
-  try:
-    self.identifyLoadHoldUnload()
-  except:
-    print('**ERROR: could not identify load-hold-unload. Suggestion: try next test')
-    import traceback
-    print(traceback.format_exc())
   return True
 
 

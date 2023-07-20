@@ -150,7 +150,7 @@ def plotAll(self, saveFig=False, show=True):
 
 
 
-def plotAsDepth(self, entity, hvline=None):
+def plotAsDepth(self, entity, hvline=None, vmax=None, vmin=None):
   """
   Plot as function of depth either Young's modulus, hardness,
   stiffnessSquaredForce, ContactDepth, Contact Area, reducedModulus  |br|
@@ -159,6 +159,8 @@ def plotAsDepth(self, entity, hvline=None):
   Args:
     entity (str): what to plot on y-axis [E,H,K,K2P,hc,Ac,modulusRed]
     hvline (float): plot a horizontal line at this value
+    vmax (float): maximum value for plotting
+    vmin (float): minimum value for plotting
   """
   if not isinstance(entity, str):
     print("**ERROR plotAsDepth: entity=[E,H,K,K2P,hc,Ac,modulusRed]")
@@ -197,5 +199,9 @@ def plotAsDepth(self, entity, hvline=None):
     print("Unknown entity")
     return
   plt.xlabel(r"depth "+r'[$\mathrm{\mu m}$]')
+  if vmax is not None:
+    plt.ylim(top=vmax)
+  if vmin is not None:
+    plt.ylim(bottom=vmin)
   plt.show()
   return
