@@ -341,12 +341,13 @@ def identifyLoadHoldUnloadCSM(self, plot=False):
     iDriftE   = len(self.p)-1
   self.iLHU   = [[iSurface,iLoad,iHold,iDriftS]]
   self.iDrift = [iDriftS,iDriftE]
-  # constrain valid part to section between surface and maximum load
-  slope = np.zeros_like(self.h)  #rebuild a large self.slope
-  slope[self.valid] = self.slope #  and add current data to it
-  self.valid  = np.zeros_like(self.h, dtype=bool)
-  self.valid[iSurface:iLoad]  = True
-  self.slope  = slope[self.valid]
+  if self.model['cropSlopeToLoading']:
+    # constrain valid part to section between surface and maximum load
+    slope = np.zeros_like(self.h)  #rebuild a large self.slope
+    slope[self.valid] = self.slope #  and add current data to it
+    self.valid  = np.zeros_like(self.h, dtype=bool)
+    self.valid[iSurface:iLoad]  = True
+    self.slope  = slope[self.valid]
 
   if plot or self.output['plotLoadHoldUnload']:
     plt.plot(self.h, self.p)
@@ -458,7 +459,6 @@ def nextTest(self, newTest=True, plotSurface=False):
     self.identifyLoadHoldUnload()
   except:
     print('**ERROR: could not identify load-hold-unload. Suggestion: try next test')
-    import traceback
     print(traceback.format_exc())
   return success
 

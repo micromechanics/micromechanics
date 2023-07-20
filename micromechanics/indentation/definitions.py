@@ -52,7 +52,8 @@ _DefaultModel = {
   'relForceRateNoiseFilter': 'median',
   'forceNoise': 0.001,      # threshold force to identify start of loading
   'evaluateSAtMax': True,   # evaluate stiffness at maximum or at end of power-law fit domain
-  'maxSizeFluctuations': 10 # maximum size of small fluctuations that are removed in identifyLoadHoldUnload
+  'maxSizeFluctuations': 10,# maximum size of small fluctuations that are removed in identifyLoadHoldUnload
+  'cropSlopeToLoading': True# crop the slope to the domain between the surface and loading, after those are identified
 }
 
 _DefaultVendorDependent = {
