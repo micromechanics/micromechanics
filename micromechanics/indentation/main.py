@@ -172,13 +172,6 @@ def identifyLoadHoldUnload(self,plot=False):
   if self.method==Method.CSM:
     success = self.identifyLoadHoldUnloadCSM()
     return success
-  #identify point in time, which are too close (~0) to eachother
-  gradTime = np.diff(self.t)
-  maskTooClose = gradTime < np.percentile(gradTime,80)/1.e3
-  self.t     = self.t[1:][~maskTooClose]
-  self.p     = self.p[1:][~maskTooClose]
-  self.h     = self.h[1:][~maskTooClose]
-  self.valid = self.valid[1:][~maskTooClose]
   #use force-rate to identify load-hold-unload
   if self.model['relForceRateNoiseFilter']=='median':
     p = signal.medfilt(self.p, 5)
@@ -388,7 +381,18 @@ def nextTest(self, newTest=True, plotSurface=False):
   else:
     success = True
 
+  # CLEANING ALL
+  # identify point in time, which are too close (~0) to eachother
+  gradTime = np.diff(self.t)
+  maskTooClose = gradTime < np.percentile(gradTime,80)/1.e3
+  self.t     = self.t[1:][~maskTooClose]
+  self.p     = self.p[1:][~maskTooClose]
+  self.h     = self.h[1:][~maskTooClose]
+  self.valid = self.valid[1:][~maskTooClose]
+
   #SURFACE FIND
+  thresValue = None
+  thresValues = None
   if self.testName in self.surface:
     surface = self.surface[self.testName]['surfaceIdx']
     self.h -= self.h[surface]  #only change surface, not force
@@ -443,18 +447,21 @@ def nextTest(self, newTest=True, plotSurface=False):
         surface  = np.where(thresValues<thresValue)[0][0]
       else:
         surface  = np.where(thresValues>thresValue)[0][0]
-      print('surface',surface)
-      if plotSurface or 'plot' in self.surface:
-        _, ax1 = plt.subplots()
+      self.h -= self.h[surface]  #only change surface, not force
+    if plotSurface or 'plot' in self.surface:
+      _, ax1 = plt.subplots()
+      if thresValues is None:
+        ax1.plot(self.h,self.p, 'C0o-')
+      else:
         ax1.plot(self.h,thresValues, 'C0o-')
         ax1.plot(self.h[surface], thresValues[surface], 'C9o', markersize=14)
-        ax1.axhline(0,linestyle='dashed')
+      ax1.axhline(0,linestyle='dashed')
+      if thresValue is not None:
         ax1.set_ylim(bottom=0, top=thresValue*5)
-        ax1.set_xlabel(r'depth [$\mu m$]')
-        ax1.set_ylabel(r'threshold value [different units]', color='C0')
-        ax1.grid()
-        plt.show()
-      self.h -= self.h[surface]  #only change surface, not force
+      ax1.set_xlabel(r'depth [$\mu m$]')
+      ax1.set_ylabel(r'threshold value [different units]', color='C0')
+      ax1.grid()
+      plt.show()
   try:
     self.identifyLoadHoldUnload()
   except:
