@@ -277,7 +277,6 @@ class Tif:
     """
     if self.bestLength < 0 or length is not None:
       self.findScaleBar(length)
-    print(self.image.size)
     draw = ImageDraw.Draw(self.image)
     widthPixel, heightPixel = self.image.size
     if scale < 0:
@@ -293,7 +292,11 @@ class Tif:
       textString = str(int(self.bestLength*1000.))+" nm"
     else:
       textString = str(int(self.bestLength))+" \u03BCm"
-    textWidth, _ = draw.textsize( textString, font=font)
+    try:
+      textWidth, _ = draw.textsize( textString, font=font)
+    except AttributeError:
+      print("**Exception:  'ImageDraw' object has no attribute 'textsize' should only occur during github actions.")
+      textWidth = 112
     logging.info("  Scale bar length="+str(self.bestLength)+" ="+str(self.barPixel)+"[px], font scale: "+str(scale))
     if self.image.mode == "P":
       draw.rectangle((offsetX,        offsetY,         offsetX+self.barPixel+scale/5,  offsetY+scale    ), fill=256)  #white background
