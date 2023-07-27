@@ -277,6 +277,7 @@ class Tif:
     """
     if self.bestLength < 0 or length is not None:
       self.findScaleBar(length)
+    print(self.image.size)
     draw = ImageDraw.Draw(self.image)
     widthPixel, heightPixel = self.image.size
     if scale < 0:
