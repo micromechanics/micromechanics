@@ -383,12 +383,13 @@ def nextTest(self, newTest=True, plotSurface=False):
 
   # CLEANING ALL
   # identify point in time, which are too close (~0) to eachother
-  gradTime = np.diff(self.t)
-  maskTooClose = gradTime < np.percentile(gradTime,80)/1.e3
-  self.t     = self.t[1:][~maskTooClose]
-  self.p     = self.p[1:][~maskTooClose]
-  self.h     = self.h[1:][~maskTooClose]
-  self.valid = self.valid[1:][~maskTooClose]
+  if self.method != Method.CSM:
+    gradTime = np.diff(self.t)
+    maskTooClose = gradTime < np.percentile(gradTime,80)/1.e3
+    self.t     = self.t[1:][~maskTooClose]
+    self.p     = self.p[1:][~maskTooClose]
+    self.h     = self.h[1:][~maskTooClose]
+    self.valid = self.valid[1:][~maskTooClose]
 
   #SURFACE FIND
   thresValue = None
