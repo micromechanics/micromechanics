@@ -503,7 +503,7 @@ class Tif:
       print('Do first: i.image = i.image.convert(mode="L")')
       print('Do second: i.image = i.image.convert(mode="P")')
     else:
-      print("Image type not supported")
+      print(f"Enhance - image type not supported: {self.image.mode}")
     return
 
 
