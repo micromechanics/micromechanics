@@ -40,7 +40,7 @@ Import necessary libraries::
 
 	import matplotlib.pyplot as plt
 	import numpy as np
-	from nanoindentation import Indentation, Tip
+	from micromechanics.indentation import Indentation, Tip
 
 Introduce tip::
 

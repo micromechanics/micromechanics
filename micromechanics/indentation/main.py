@@ -135,12 +135,15 @@ def analyse(self):
   """
   update slopes/stiffness, Young's modulus and hardness after displacement correction by:
 
+  - drift correction
   - compliance change
 
   ONLY DO ONCE AFTER LOADING FILE: if this causes issues introduce flag analysed
     which is toggled during loading and analysing
   """
-  self.h -= self.tip.compliance*self.p
+  self.h -= self.model['driftRate'] * self.t
+  self.h -= self.tip.compliance * self.p
+
   if self.method == Method.CSM:
     self.slope = 1./(1./self.slope-self.tip.compliance)
   else:
@@ -391,7 +394,7 @@ def nextTest(self, newTest=True, plotSurface=False):
     self.h     = self.h[1:][~maskTooClose]
     self.valid = self.valid[1:][~maskTooClose]
 
-  #SURFACE FIND
+  # SURFACE FIND
   thresValue = None
   thresValues = None
   if self.testName in self.surface:
