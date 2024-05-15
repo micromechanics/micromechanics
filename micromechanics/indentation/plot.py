@@ -51,7 +51,7 @@ def plotTestingMethod(self, saveFig=False, show=True, double=False):
   return ax1
 
 
-def plot(self, saveFig=False, show=True):
+def plot(self, saveFig=False, show=True, plotAllItems=True):
   """
   Plot force-depth curve with all data
 
@@ -69,22 +69,20 @@ def plot(self, saveFig=False, show=True):
       "A:   "+str(round(self.Ac[0],4))+          "um2    hc: "+str(round(self.hc[0],4))+"um")
     print("E:        "+str(round(self.modulus[0],1))   +"GPa     "+\
       "H:   "+str(round(self.hardness[0],1))+     "GPa")
-  _, ax = plt.subplots()
-  ax.axhline(0,ls="dashed",c='k')
-  ax.axvline(0,ls="dashed",c='k')
-  ax.plot(self.h,self.p)
-  if self.method != Method.CSM:
+  plt.axhline(0,ls="dashed",c='k')
+  plt.axvline(0,ls="dashed",c='k')
+  plt.plot(self.h,self.p)
+  if self.method != Method.CSM and plotAllItems:
     _, _, maskUnload, optPar, _ = self.stiffnessFromUnloading(self.p, self.h)
     h_, p_ = self.h[maskUnload], self.p[maskUnload]
     if maskUnload is not None:
-      ax.plot(self.h[maskUnload], self.unloadingPowerFunc(self.h[maskUnload],*optPar),\
-        'C1', label='fit powerlaw')
+      plt.plot(self.h[maskUnload], self.unloadingPowerFunc(self.h[maskUnload],*optPar), 'C1', label='fit powerlaw')
     if len(self.h[self.valid])<101:  #allow for 100 unloading segments to be plotted
-      ax.plot(self.h[self.valid],self.p[self.valid],"or",label="evaluated", markersize=10)
-      ax.plot(self.hc, np.zeros_like(self.hc),"ob", label="hc", markersize=10)
+      plt.plot(self.h[self.valid],self.p[self.valid],"or",label="evaluated", markersize=10)
+      plt.plot(self.hc, np.zeros_like(self.hc),"ob", label="hc", markersize=10)
     if len(self.hc)==1:
-      ax.plot(h_[0],p_[0],'og',)
-      ax.plot(h_[-1],p_[-1],'og', label="fit domain")
+      plt.plot(h_[0],p_[0],'og',)
+      plt.plot(h_[-1],p_[-1],'og', label="fit domain")
       try:
         if self.model['evaluateSAtMax']:
           stiffnessLineInterceptY = self.p[self.valid]-self.slope*self.h[self.valid]
@@ -92,16 +90,16 @@ def plot(self, saveFig=False, show=True):
         else:
           stiffnessLineInterceptY = self.p[maskUnload][0]-self.slope*self.h[maskUnload][0]
           h_ = np.linspace(self.hc, self.h[maskUnload][0], 10)
-        ax.plot(h_,   self.slope*h_+stiffnessLineInterceptY, 'r--', lw=2, label='stiffness')
+        plt.plot(h_,   self.slope*h_+stiffnessLineInterceptY, 'r--', lw=2, label='stiffness')
       except:
         print('**Error something is wrong with plotting unloading-line')
         print(traceback.format_exc())
-    ax.legend(loc=0, numpoints=1)
-  else:
-    ax.plot(self.h[self.iLHU[0]],self.p[self.iLHU[0]],"or",label="specific", markersize=10)
-  ax.set_xlim(left=-0.03)
-  ax.set_xlabel(r"depth [$\mathrm{\mu m}$]")
-  ax.set_ylabel(r"force [$\mathrm{mN}$]")
+    # plt.legend(loc=0, numpoints=1)
+  elif plotAllItems:
+    plt.plot(self.h[self.iLHU[0]],self.p[self.iLHU[0]],"or",label="specific", markersize=10)
+  plt.xlim(left=-0.03)
+  plt.xlabel(r"depth [$\mathrm{\mu m}$]")
+  plt.ylabel(r"force [$\mathrm{mN}$]")
   if isinstance(saveFig, bool) and saveFig:
     plt.savefig(self.fileName.split('.')[0]+".png", dpi=150, bbox_inches='tight')
   if isinstance(saveFig, str):
@@ -113,7 +111,7 @@ def plot(self, saveFig=False, show=True):
     plt.show(block = False)
     plt.pause(show)
     plt.close()
-  return ax
+  return
 
 
 def plotAll(self, saveFig=False, show=True):

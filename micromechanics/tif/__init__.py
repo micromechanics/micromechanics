@@ -293,7 +293,7 @@ class Tif:
     else:
       textString = str(int(self.bestLength))+" \u03BCm"
     try:
-      textWidth, _ = draw.textsize( textString, font=font)
+      textWidth = draw.textlength( textString, font=font)
     except AttributeError:
       print("**Exception:  'ImageDraw' object has no attribute 'textsize' should only occur during github actions.")
       textWidth = 112
