@@ -6,13 +6,14 @@ Class to allow for Zeiss/FEI-ThermoFischer TIF image loading and enhancing using
 - All images have an image, pixelsize, width, height
 
 """
-import logging, re, math, os, sys, warnings, codecs
+import logging, re, math, os, warnings
 from xml.dom import minidom
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import ndimage
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageFile
 from skimage import img_as_float, exposure
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 class Tif:
   """Tif class to read SEM images"""
@@ -292,11 +293,7 @@ class Tif:
       textString = str(int(self.bestLength*1000.))+" nm"
     else:
       textString = str(int(self.bestLength))+" \u03BCm"
-    try:
-      textWidth = draw.textlength( textString, font=font)
-    except AttributeError:
-      print("**Exception:  'ImageDraw' object has no attribute 'textsize' should only occur during github actions.")
-      textWidth = 112
+    textWidth = draw.textlength( textString, font=font)
     logging.info("  Scale bar length="+str(self.bestLength)+" ="+str(self.barPixel)+"[px], font scale: "+str(scale))
     if self.image.mode == "P":
       draw.rectangle((offsetX,        offsetY,         offsetX+self.barPixel+scale/5,  offsetY+scale    ), fill=256)  #white background
