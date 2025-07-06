@@ -122,6 +122,8 @@ class Indentation:
       self.fileType = FileType.Multi
       self.fillVendorDefaults()
       success = self.loadHDF5(fileName)
+    if not success:
+      print('**ERROR** __init__: file type not recognized or not supported',fileName)
     return
 
 
