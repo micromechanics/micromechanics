@@ -198,11 +198,18 @@ def calibrateStiffness(self,critDepth=0.5,critForce=0.0001,plotStiffness=True, r
 
   param, covM = np.polyfit(x[mask],y[mask],1, cov=True)
   print("fit f(x)=",round(param[0],5),"*x+",round(param[1],5))
-  frameStiff = 1./param[1]
+  frameStiff      = 1./param[1]
   frameCompliance = param[1]
+  self.tip.complianceSlope = param[0]
+  # according to https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.curve_fit.html
+  # To compute standard deviation (standard errors), use perr = np.sqrt(np.diag(pcov))
+  # according to https://www.cdc.gov/nchs/hus/sources-definitions/rse.htm
+  # Relative standard error (RSE): A measure of an estimate’s reliability. The RSE of an estimate is obtained
+  # by dividing the standard error of the estimate, SE(r), by the estimate itself, r. This quantity is
+  # expressed as a percentage of the estimate and is calculated as: RSE=100[SE(r)/r]
+  self.tip.relativeStandardError = np.abs( np.sqrt(np.diag(covM)[1]) / param[1] * 100. )
   print(f"  frame compliance: {frameCompliance:8.4e} um/mN = {frameCompliance/1000.:8.4e} m/N")
-  stderrPercent = np.abs( np.sqrt(np.diag(covM)[1]) / param[1] * 100. )
-  print("  compliance and stiffness standard error in %: "+str(round(stderrPercent,2)) )
+  print("  compliance and stiffness standard error in %: "+str(round(self.tip.relativeStandardError,2)) )
   print(f"  frame stiffness: {frameStiff:6.0f} mN/um = {1000.*frameStiff:6.2e} N/m")
   self.tip.compliance = frameCompliance
 

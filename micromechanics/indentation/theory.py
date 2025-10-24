@@ -188,9 +188,8 @@ def stiffnessFromUnloading(self, p, h, plot=False):
       powerlawFit.append(True)
     except:
       #if fitting fails: often the initial bounds and initial values do not match
-      print(traceback.format_exc())
       if self.output['verbose']>0:
-        print("stiffnessFrommasking: #",cycleNum," Fitting failed. use linear")
+        print("stiffnessFrommasking: #",cycleNum," Fitting powerlaw failed. use linear fit")
       B  = (p[mask][-1]-p[mask][0])/(h[mask][-1]-h[mask][0])
       hf = h[mask][0] -p[mask][0]/B
       m  = 1.

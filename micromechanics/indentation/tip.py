@@ -29,6 +29,8 @@ class Tip:
     else:
       self.prefactors = ["perfect"]
     self.compliance = compliance
+    self.complianceSlope       = -1
+    self.relativeStandardError = -1
     #verify and set default values
     if self.compliance > 0.01 or self.compliance < 0.0000001:
       if compliance == 0:
