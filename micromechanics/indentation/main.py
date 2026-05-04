@@ -196,6 +196,8 @@ def identifyLoadHoldUnload(self,plot=False):
     plt.title('Identify load, hold, unload: loading and unloading segments - prior to cleaning')
     plt.show()
   #try to clean small fluctuations
+  loadMaskTry = loadMask
+  unloadMaskTry = unloadMask
   if len(loadMask)>100 and len(unloadMask)>100:
     size = self.model['maxSizeFluctuations']
     loadMaskTry = ndimage.binary_closing(loadMask, structure=np.ones((size,)) )
@@ -452,9 +454,13 @@ def nextTest(self, newTest=True, plotSurface=False):
         valueB, valueA = signal.butter(*self.surface['butterfilter'])
         thresValues = signal.filtfilt(valueB, valueA, thresValues)
       if 'phase angle' in self.surface:
-        surface  = np.where(thresValues<thresValue)[0][0]
+        surfaceMatches = np.where(thresValues<thresValue)[0]
       else:
-        surface  = np.where(thresValues>thresValue)[0][0]
+        surfaceMatches = np.where(thresValues>thresValue)[0]
+      if len(surfaceMatches)==0:
+        print('**ERROR: could not identify surface for threshold', thresValue)
+        return False
+      surface = surfaceMatches[0]
       # ONLY CHANGE SURFACE, NOT LOAD (only if explicitly stated)
       if 'load' in self.surface:
         self.h -= self.h[surface]

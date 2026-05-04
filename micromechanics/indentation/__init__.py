@@ -20,6 +20,7 @@ Coding rules:
 - Change all variables: do not keep original-depth as can be reread and makes code less readable
 """
 import os
+import copy
 from pathlib import Path
 import numpy as np
 from .definitions import Method, Vendor, FileType
@@ -43,7 +44,7 @@ class Indentation:
   from .definitions import _DefaultModel, _DefaultOutput, _DefaultSurface, _DefaultVendorDependent
   from .seldomUsedFunctions import tareDepthForce, analyseDrift  # type: ignore[misc]
 
-  def __init__(self, fileName=None, nuMat= 0.3, tip=None, surface={}, model={}, output={}):
+  def __init__(self, fileName=None, nuMat= 0.3, tip=None, surface=None, model=None, output=None):
     """
     Initialize indentation experiment data
 
@@ -59,12 +60,15 @@ class Indentation:
     self.nuMat   = nuMat                            # nuMat: material's Posson ratio
     self.method  = Method.ISO                       # iso default: csm uses different methods
     self.tip     = Tip() if tip is None else tip    # nanoindenter tip and compliance
-    self.surface = dict(self._DefaultSurface)       # dictionary describing the surface find
+    surface = {} if surface is None else surface
+    model = {} if model is None else model
+    output = {} if output is None else output
+    self.surface = copy.deepcopy(self._DefaultSurface)  # dictionary describing the surface find
     self.surface.update(surface)
-    self.model   = self._DefaultModel               # dictionary for all numerical parameters that determine the results
-    self.modelUserChoice = model
+    self.model   = copy.deepcopy(self._DefaultModel)    # dictionary for all numerical parameters that determine the results
+    self.modelUserChoice = dict(model)
     self.model.update(self.modelUserChoice)
-    self.output  = self._DefaultOutput              # dictionary for all output parameters, axis
+    self.output  = copy.deepcopy(self._DefaultOutput)   # dictionary for all output parameters, axis
     self.output.update(output)
 
     self.newFileRead = True                                 #file was just loaded
@@ -83,6 +87,7 @@ class Indentation:
     #initialize and load first data set
     #set default parameters
     success = False
+    recognized = False
     if fileName is None:
       fileName = str(Path(__file__).parent/'data/Example.xls')
     if not os.path.exists(fileName) and fileName!='':
@@ -90,12 +95,14 @@ class Indentation:
       return
     if fileName.endswith(".xls") or fileName.endswith(".xlsx"):
       # KLA, Agilent, Keysight, MTS
+      recognized = True
       self.vendor = Vendor.Agilent
       self.fileType = FileType.Multi
       self.fillVendorDefaults()
       success = self.loadAgilent(fileName)
     if (fileName.endswith(".hld") or fileName.endswith(".txt")) and not success:
       # Hysitron
+      recognized = True
       self.vendor = Vendor.Hysitron
       self.fileType = FileType.Single
       self.fillVendorDefaults()
@@ -103,6 +110,7 @@ class Indentation:
     if (fileName.endswith(".txt") or
         fileName.endswith(".zip")) and not success:
       # Micromaterials
+      recognized = True
       self.vendor = Vendor.Micromaterials
       self.fillVendorDefaults()
       if fileName.endswith(".txt"):
@@ -112,18 +120,23 @@ class Indentation:
       success = self.loadMicromaterials(fileName)
     if fileName.endswith(".txt") and not success:
       # Fischer Scope
+      recognized = True
       self.vendor = Vendor.FischerScope
       self.fileType = FileType.Multi
       self.fillVendorDefaults()
       success = self.loadFischerScope(fileName)
     if fileName.endswith(".hdf5") and not success:
       # Common hdf5 file: refined later
+      recognized = True
       self.vendor = Vendor.Hdf5
       self.fileType = FileType.Multi
       self.fillVendorDefaults()
       success = self.loadHDF5(fileName)
     if not success:
-      print('**ERROR** __init__: file type not recognized or not supported',fileName)
+      if recognized:
+        print('**ERROR** __init__: file recognized but could not be loaded',fileName)
+      else:
+        print('**ERROR** __init__: file type not recognized or not supported',fileName)
     return
 
 

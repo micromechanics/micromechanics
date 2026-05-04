@@ -72,9 +72,11 @@ def plot(self, saveFig=False, show=True, plotAllItems=True):
   plt.plot(self.h,self.p)
   if self.method != Method.CSM and plotAllItems:
     _, _, maskUnload, optPar, _ = self.stiffnessFromUnloading(self.p, self.h)
+    if maskUnload is None or optPar is None:
+      print("**ERROR plot: unloading fit unavailable; run analyse() or check load-hold-unload identification")
+      return
     h_, p_ = self.h[maskUnload], self.p[maskUnload]
-    if maskUnload is not None:
-      plt.plot(self.h[maskUnload], self.unloadingPowerFunc(self.h[maskUnload],*optPar), 'C1', label='fit powerlaw')
+    plt.plot(self.h[maskUnload], self.unloadingPowerFunc(self.h[maskUnload],*optPar), 'C1', label='fit powerlaw')
     if len(self.h[self.valid])<101:  #allow for 100 unloading segments to be plotted
       plt.plot(self.h[self.valid],self.p[self.valid],"or",label="evaluated", markersize=10)
       plt.plot(self.hc, np.zeros_like(self.hc),"ob", label="hc", markersize=10)
@@ -183,6 +185,9 @@ def plotAsDepth(self, entity, hvline=None, vmax=None, vmin=None, show=True):
       self.k2p = np.array(self.slope)*np.array(self.slope)/np.array(self.p[self.valid])
     plt.plot(self.h[self.valid], self.k2p, "C0.")
     mask = self.h[self.valid]>0.1
+    if np.count_nonzero(mask)<2:
+      print("**ERROR plotAsDepth: not enough data above 0.1 um for K2P fit")
+      return
     fit = np.polyfit(self.h[self.valid][mask], self.k2p[mask],1)
     if show:
       print('Fit: K2P='+str(round(fit[1]))+'+ '+str(round(fit[0]))+'*h')

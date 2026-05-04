@@ -86,8 +86,7 @@ def loadAgilent(self, fileName):
     print("*WARNING*: INDENTATION: Some index is missing (t,p,h) should be there")
   self.metaUser['measurementType'] = 'MTS, Agilent Indentation XLS'
   self.allTestList =  list(self.testList)
-  self.nextTest()
-  return True
+  return self.nextTest()
 
 
 def nextAgilentTest(self, newTest=True):
@@ -534,7 +533,7 @@ def loadHDF5(self,fileName):
   self.metaVendor = {}
   self.testList = []
   if 'version' not in self.datafile.attrs or self.datafile.attrs['version'] not in ['2.0',b'2.0']:
-    print("**ERROR** Only hdf5 version 2 supported. ", self.datafile.attrs['version'] )
+    print("**ERROR** Only hdf5 version 2 supported. ", self.datafile.attrs.get('version') )
     return False
   #read surface and convert to dictionary
   try:
@@ -554,6 +553,9 @@ def loadHDF5(self,fileName):
       self.metaVendor = self.datafile['instrument'].attrs[key]
     else:
       self.metaVendor[key] = self.datafile['instrument'].attrs[key]
+  if 'uri' not in self.datafile.attrs:
+    print("**ERROR** HDF5 file does not contain converter uri metadata")
+    return False
   converter = self.datafile.attrs['uri']
   converter = converter.decode('utf-8') if isinstance(converter, bytes) else converter
   converter = converter.split('/')[-1]
@@ -565,6 +567,9 @@ def loadHDF5(self,fileName):
                    'converter_femtotools.py': [Vendor.FemtotoolsHDF5, 'Femtotools Indentation HDF5'],
                    'dat2hdf.py':[Vendor.SurfaceHDF5, 'SURFACE Indentation HDF5'],
                    }
+  if converter not in converterList:
+    print("**ERROR** Unsupported HDF5 converter:", converter)
+    return False
   self.vendor = converterList[converter][0]
   self.metaUser = {'measurementType':converterList[converter][1] }
   if 'json' in self.metaVendor:
@@ -610,6 +615,7 @@ def nextHDF5Test(self):
 
   #determine valid masks: loop through all entries and ensure that they all make sense
   self.valid = None
+  validFull = None
   for key in nameDict:
     if key in ['__ignore__','__note__']:
       continue
@@ -626,6 +632,11 @@ def nextHDF5Test(self):
         if key=='h':
           validFull = np.isfinite(np.array(branch[name], dtype=np.float64))
         break
+
+  if self.valid is None or validFull is None:
+    print('Missing information for',self.metaUser['measurementType'].split()[0],': h or valid data')
+    print('Keys exist',inFile)
+    return False
 
   #Run through all items again and crop to only valid data
   for key in nameDict:
@@ -647,6 +658,7 @@ def nextHDF5Test(self):
     if not hasattr(self, attrib) or len(getattr(self, attrib))==0:
       print('Missing information for',self.metaUser['measurementType'].split()[0],': ',attrib)
       print('Keys exist',inFile)
+      return False
   self.valid = self.valid[validFull]
 
   #cleaning

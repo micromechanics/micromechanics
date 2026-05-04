@@ -36,6 +36,8 @@ def hertzFit(self, forceRange=(1, 25), correctH=True, plot=True):
   """
   fitMask = np.logical_and(forceRange[0]<self.p, self.p<forceRange[1])
   fitMask[np.argmax(self.p):] = False
+  if np.count_nonzero(fitMask)<3:
+    raise ValueError("hertzFit: not enough data points in forceRange before maximum load")
   depthRange = [self.h[fitMask].min(), self.h[fitMask].max()]
   para0 = [0., 5000.]
   bounds = [[-depthRange[0],0],[depthRange[0], 50000.]]
@@ -85,6 +87,8 @@ def popIn(self, correctH=True, plot=True, removeInitialNM=2.):
   mask = (self.h[self.valid]-np.min(self.h[self.valid]))  >removeInitialNM/1.e3
   h = self.h[self.valid][mask]
   p = self.p[self.valid][mask]
+  if len(h)<6:
+    raise ValueError("popIn: not enough valid data after removing initial depth")
 
   depthRate = h[1:]-h[:-1]
   x_        = np.arange(len(depthRate))
@@ -92,7 +96,12 @@ def popIn(self, correctH=True, plot=True, removeInitialNM=2.):
   depthRate-= np.polyval(fits,x_)
   iJump     = np.argmax(depthRate)
   iMax      = min(np.argmax(p), iJump+maxPlasticFit)      #max for fit: 150 data-points or max. of curve
-  iMin      = np.min(np.where(p>minElasticFit))
+  elasticCandidates = np.where(p>minElasticFit)[0]
+  if len(elasticCandidates)==0:
+    raise ValueError("popIn: no data above minimum elastic fit force")
+  iMin      = np.min(elasticCandidates)
+  if iMin>=iJump or iJump+2>=iMax:
+    raise ValueError("popIn: not enough points around detected jump for fitting")
   fitPlast  = np.polyfit(h[iJump+1:iMax],p[iJump+1:iMax],2) #does not have to be parabola, just close fit
   slopePlast= np.polyder(np.poly1d(fitPlast))(h[iJump+1] )
   def funct(depth, prefactor, h0):

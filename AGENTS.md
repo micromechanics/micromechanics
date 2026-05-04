@@ -32,6 +32,12 @@ Lint package modules with the same tool used by CI:
 pylint $(git ls-files 'micromechanics/*/*.py')
 ```
 
+Run static type checks:
+
+```bash
+python -m mypy micromechanics
+```
+
 Build the Sphinx documentation:
 
 ```bash
