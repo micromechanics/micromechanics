@@ -58,9 +58,7 @@ def plot(self, saveFig=False, show=True, plotAllItems=True):
   Args:
     saveFig (bool, str): if bool, save plot to file [use known filename plus extension png]; else use fileName
     show (bool): show figure, else do not show
-
-  Returns:
-    pyplot.axis: figure
+    plotAllItems (bool): plot auxiliary fit and evaluation markers.
   """
   if len(self.slope)==1 and self.output['verbose']>1:
     print("Stiffness:"+str(round(self.slope[0],1))     +"mN/um   "+\

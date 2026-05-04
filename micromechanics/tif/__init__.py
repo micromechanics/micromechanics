@@ -12,7 +12,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import ndimage
 from PIL import Image, ImageDraw, ImageFont, ImageFile
-from skimage import img_as_float, exposure
+from skimage import exposure
+from skimage.util import img_as_float
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 class Tif:
@@ -449,6 +450,7 @@ class Tif:
       lineThreshold = np.where(lineAvg<1)[0]
     else:
       print('**ERROR, only know colors b,w')
+      return
     if len(lineThreshold)>0:
       self.crop(yMax=lineThreshold[0])
     return

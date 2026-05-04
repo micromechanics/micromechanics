@@ -158,6 +158,7 @@ class Tip:
       h = math.sqrt(area / 24.494)
     else:
       print("*ERROR*: prefactors last value does not contain type")
+      return None
     return h
 
 

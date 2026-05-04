@@ -209,6 +209,8 @@ def identifyLoadHoldUnload(self,plot=False):
   if plot or self.output['plotLoadHoldUnload']:
     if self.output['ax'] is None:
       fig, ax = plt.subplots(2,1, sharex=True, gridspec_kw={'hspace':0})
+    else:
+      ax = self.output['ax']
     ax[0].plot(rate)
     ax[0].axhline(0, c='k')
     x_ = np.arange(len(rate))[loadMask]

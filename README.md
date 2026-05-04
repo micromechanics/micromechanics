@@ -61,8 +61,6 @@ or the short form to run all the tests
 python -m unittest tests/test*
 ```
 
-#TODO_P3 turn all tests into one github action
-
 Then upload/create-pull-request to github, via
 ``` bash
 ./commit.py 'my message'

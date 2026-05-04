@@ -190,6 +190,8 @@ def loadHysitron(self, fileName, plotContact=False):
       segmentTime = []
       segmentDeltaP = []
       segmentPoints = []
+      numSegments = 0
+      pStart = 0.0
       while True:
         line = inFile.readline()
         label = line.split(":")[0]
@@ -603,7 +605,7 @@ def nextHDF5Test(self):
     nameDict = nameDict[self.metaUser['measurementType'].split()[0]]
   else:
     print("**ERROR instrument not in terms.json:", self.metaUser['measurementType'].split()[0])
-    return
+    return False
 
 
   #determine valid masks: loop through all entries and ensure that they all make sense

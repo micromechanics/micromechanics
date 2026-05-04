@@ -86,8 +86,8 @@ def inverseOliverPharrMethod(self, stiffness, pMax, modulusRed, nonMetal=1.):
   Returns:
       float: h penetration depth
   """
-  Ac = math.pow( stiffness / (2.0*modulusRed/math.sqrt(math.pi))  ,2)
-  hc0 = math.sqrt(Ac / 24.494)           # first guess: perfect Berkovich
+  Ac = np.power(stiffness / (2.0*modulusRed/np.sqrt(np.pi)), 2)
+  hc0 = np.sqrt(Ac / 24.494)           # first guess: perfect Berkovich
   hc = self.tip.areaFunctionInverse(Ac, hc0=hc0)
   h = hc + nonMetal*self.model['beta']*pMax/stiffness
   return h.flatten()
@@ -130,7 +130,7 @@ def stiffnessFromUnloading(self, p, h, plot=False):
   if plot:
     if self.output['ax'] is not None:
       ax = self.output['ax']
-    elif plot:
+    else:
       ax = plt.subplots()[1]
     ax.plot(h,p, '--k', label='data')
   for cycleNum, cycle in enumerate(self.iLHU):
