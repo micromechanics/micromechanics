@@ -91,9 +91,7 @@ def inverseOliverPharrMethod(self, stiffness, pMax, modulusRed, nonMetal=1.):
   hc = self.tip.areaFunctionInverse(Ac, hc0=hc0)
   h = hc + nonMetal*self.model['beta']*pMax/stiffness
   return h.flatten()
-
-
-@staticmethod
+@staticmethod  # type: ignore[misc]
 def unloadingPowerFunc(h,B,hf,m):
   """
   internal function describing the unloading regime

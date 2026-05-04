@@ -30,18 +30,18 @@ class Indentation:
   Main class of indentation
   """
   #pylint: disable=import-outside-toplevel
-  from .input import loadAgilent, nextAgilentTest, loadHysitron, loadMicromaterials, nextMicromaterialsTest, \
-    loadFischerScope, nextFischerScopeTest, loadHDF5, nextHDF5Test, restartFile
-  from .main import calcYoungsModulus, calcHardness, calcStiffness2Force, analyse, \
-    identifyLoadHoldUnload, identifyLoadHoldUnloadCSM, nextTest, saveToUserMeta, correctThermalDrift
-  from .theory import YoungsModulus, ReducedModulus, OliverPharrMethod, inverseOliverPharrMethod,\
-    stiffnessFromUnloading, unloadingPowerFunc
-  from .hertz import popIn, hertzFit
-  from .plot import plotTestingMethod, plot, plotAsDepth, plotAll
-  from .calibration import calibration, calibrateStiffness
-  from .verification import verifyOneData, verifyOneData1, verifyReadCalc
+  from .input import (loadAgilent, nextAgilentTest, loadHysitron, loadMicromaterials, nextMicromaterialsTest,  # type: ignore[misc]
+    loadFischerScope, nextFischerScopeTest, loadHDF5, nextHDF5Test, restartFile)
+  from .main import (calcYoungsModulus, calcHardness, calcStiffness2Force, analyse,  # type: ignore[misc]
+    identifyLoadHoldUnload, identifyLoadHoldUnloadCSM, nextTest, saveToUserMeta, correctThermalDrift)
+  from .theory import (YoungsModulus, ReducedModulus, OliverPharrMethod, inverseOliverPharrMethod,  # type: ignore[misc]
+    stiffnessFromUnloading, unloadingPowerFunc)
+  from .hertz import popIn, hertzFit  # type: ignore[misc]
+  from .plot import plotTestingMethod, plot, plotAsDepth, plotAll  # type: ignore[misc]
+  from .calibration import calibration, calibrateStiffness  # type: ignore[misc]
+  from .verification import verifyOneData, verifyOneData1, verifyReadCalc  # type: ignore[misc]
   from .definitions import _DefaultModel, _DefaultOutput, _DefaultSurface, _DefaultVendorDependent
-  from .seldomUsedFunctions import tareDepthForce, analyseDrift
+  from .seldomUsedFunctions import tareDepthForce, analyseDrift  # type: ignore[misc]
 
   def __init__(self, fileName=None, nuMat= 0.3, tip=None, surface={}, model={}, output={}):
     """

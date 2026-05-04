@@ -1,5 +1,6 @@
 """Definitions used in the nanoindent functions"""
 from enum import IntEnum
+from typing import Any
 
 # enum classes: make code more readable
 class Method(IntEnum):
@@ -73,7 +74,7 @@ _DefaultVendorDependent = {
 }
 
 
-_DefaultOutput = {
+_DefaultOutput: dict[str, Any] = {
   'verbose': 2,          # the higher, the more information printed: 2=default, 1=minimal, 0=print nothing
   'plotLoadHoldUnload': False,      # plot intermediate steps; helpful for debugging
   'ax': None,            # matplotlib axis to use for plotting
@@ -82,6 +83,6 @@ _DefaultOutput = {
   'successTest': []      # list of all test with valid load-hold-unload sequence
 }
 
-_DefaultSurface = {
+_DefaultSurface: dict[str, dict[str, Any]] = {
   'surfaceIdx': {}
 }

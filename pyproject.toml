@@ -1,2 +1,5 @@
 [build-system]
 requires = ["setuptools >= 43.0.0", "wheel"]
+
+[tool.mypy]
+ignore_missing_imports = true
