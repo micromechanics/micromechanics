@@ -173,7 +173,7 @@ def identifyLoadHoldUnload(self,plot=False):
       bool: success of identifying the load-hold-unload
   """
   if self.method==Method.CSM:
-    success = self.identifyLoadHoldUnloadCSM()
+    success = self.identifyLoadHoldUnloadCSM(plot)
     return success
   #use force-rate to identify load-hold-unload
   if self.model['relForceRateNoiseFilter']=='median':
@@ -383,6 +383,8 @@ def nextTest(self, newTest=True, plotSurface=False):
       success = False
   else:
     success = True
+  if not success:
+    return success
 
   # CLEANING ALL
   # identify point in time, which are too close (~0) to eachother
@@ -451,14 +453,25 @@ def nextTest(self, newTest=True, plotSurface=False):
         surface  = np.where(thresValues<thresValue)[0][0]
       else:
         surface  = np.where(thresValues>thresValue)[0][0]
-      self.h -= self.h[surface]  #only change surface, not force
+      # ONLY CHANGE SURFACE, NOT LOAD (only if explicitly stated)
+      if 'load' in self.surface:
+        self.h -= self.h[surface]
+        if 'tare load' in self.surface:
+          self.p -= self.p[surface]
+      else:
+        self.h -= self.h[self.valid][surface]
+        if 'tare load' in self.surface:
+          self.p -= self.p[self.valid][surface]
     if plotSurface or 'plot' in self.surface:
       _, ax1 = plt.subplots()
       if thresValues is None:
         ax1.plot(self.h,self.p, 'C0o-')
-      else:
+      elif 'load' in self.surface:
         ax1.plot(self.h,thresValues, 'C0o-')
         ax1.plot(self.h[surface], thresValues[surface], 'C9o', markersize=14)
+      else:
+        ax1.plot(self.h[self.valid],thresValues, 'C0o-')
+        ax1.plot(self.h[self.valid][surface], thresValues[surface], 'C9o', markersize=14)
       ax1.axhline(0,linestyle='dashed')
       if thresValue is not None:
         ax1.set_ylim(bottom=0, top=thresValue*5)

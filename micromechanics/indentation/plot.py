@@ -114,13 +114,14 @@ def plot(self, saveFig=False, show=True, plotAllItems=True):
   return
 
 
-def plotAll(self, saveFig=False, show=True):
+def plotAll(self, saveFig=False, show=True, legend=True):
   """
   Plot force-depth curves of all tests in the file
 
   Args:
     saveFig (bool): save plot to file [use known filename plus extension png]
     show (bool): show figure, else do not show
+    legend (bool): show legend
 
   Returns:
     pyplot.axis: figure
@@ -130,7 +131,8 @@ def plotAll(self, saveFig=False, show=True):
   ax.axvline(0,ls="dashed",c='k')
   for testName in self:
     ax.plot(self.h,self.p, label=testName)
-  plt.legend()
+  if legend:
+    plt.legend()
   ax.set_xlim(left=-0.03)
   ax.set_xlabel(r"depth [$\mathrm{\mu m}$]")
   ax.set_ylabel(r"force [$\mathrm{mN}$]")
@@ -148,7 +150,7 @@ def plotAll(self, saveFig=False, show=True):
 
 
 
-def plotAsDepth(self, entity, hvline=None, vmax=None, vmin=None):
+def plotAsDepth(self, entity, hvline=None, vmax=None, vmin=None, show=True):
   """
   Plot as function of depth either Young's modulus, hardness,
   stiffnessSquaredForce, ContactDepth, Contact Area, reducedModulus  |br|
@@ -159,6 +161,7 @@ def plotAsDepth(self, entity, hvline=None, vmax=None, vmin=None):
     hvline (float): plot a horizontal line at this value
     vmax (float): maximum value for plotting
     vmin (float): minimum value for plotting
+    show (bool): show figure, else do not show
   """
   if not isinstance(entity, str):
     print("**ERROR plotAsDepth: entity=[E,H,K,K2P,hc,Ac,modulusRed]")
@@ -166,13 +169,13 @@ def plotAsDepth(self, entity, hvline=None, vmax=None, vmin=None):
   if hvline is not None:
     plt.axhline(hvline, c='k')
   if   entity == "E":
-    plt.plot(self.h[self.valid], self.modulus, "o")
+    plt.plot(self.h[self.valid], self.modulus, "C0.")
     plt.ylabel("Young's modulus [GPa]")
   elif entity == "modulusRed":
     plt.plot(self.h[self.valid], self.modulusRed, "o")
     plt.ylabel("reduced Young's modulus [GPa]")
   elif entity == "H":
-    plt.plot(self.h[self.valid], self.hardness, "o")
+    plt.plot(self.h[self.valid], self.hardness, "C0.")
     plt.ylabel("Hardness [GPa]")
   elif entity == "K":
     plt.plot(self.h[self.valid], self.slope, "o")
@@ -180,12 +183,13 @@ def plotAsDepth(self, entity, hvline=None, vmax=None, vmin=None):
   elif entity == "K2P":
     if not hasattr(self, 'k2p'):
       self.k2p = np.array(self.slope)*np.array(self.slope)/np.array(self.p[self.valid])
-    plt.plot(self.h[self.valid], self.k2p, "C0o")
+    plt.plot(self.h[self.valid], self.k2p, "C0.")
     mask = self.h[self.valid]>0.1
     fit = np.polyfit(self.h[self.valid][mask], self.k2p[mask],1)
-    print('Fit: K2P='+str(round(fit[1]))+'+ '+str(round(fit[0]))+'*h')
-    plt.plot(self.h[self.valid], np.polyval(fit,self.h[self.valid]), 'C1-')
-    plt.axvline(0.1, linestyle='dashed',color='C1')
+    if show:
+      print('Fit: K2P='+str(round(fit[1]))+'+ '+str(round(fit[0]))+'*h')
+      plt.plot(self.h[self.valid], np.polyval(fit,self.h[self.valid]), 'C1-')
+      plt.axvline(0.1, linestyle='dashed',color='C1')
     plt.ylabel(r"Stiffness Squared Over Load [$\mathrm{GPa}$]")
   elif entity == "hc":
     plt.plot(self.h[self.valid], self.hc, "o")
@@ -201,5 +205,6 @@ def plotAsDepth(self, entity, hvline=None, vmax=None, vmin=None):
     plt.ylim(top=vmax)
   if vmin is not None:
     plt.ylim(bottom=vmin)
-  plt.show()
+  if show:
+    plt.show()
   return

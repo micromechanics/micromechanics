@@ -560,7 +560,8 @@ def loadHDF5(self,fileName):
                    'Micromaterials2hdf.py': [Vendor.MicromaterialsHDF5, 'Micromaterials Indentation HDF5'],
                    'xls2hdf.py': [Vendor.AgilentHDF5, 'MTS Indentation HDF5'],
                    'nmd2hdf.py': [Vendor.KLAHDF5, 'KLA G200X Indentation HDF5'],
-                   'converter_femtotools.py': [Vendor.FemtotoolsHDF5, 'Femtotools Indentation HDF5']
+                   'converter_femtotools.py': [Vendor.FemtotoolsHDF5, 'Femtotools Indentation HDF5'],
+                   'dat2hdf.py':[Vendor.SurfaceHDF5, 'SURFACE Indentation HDF5'],
                    }
   self.vendor = converterList[converter][0]
   self.metaUser = {'measurementType':converterList[converter][1] }
@@ -601,7 +602,9 @@ def nextHDF5Test(self):
   if self.metaUser['measurementType'].split()[0] in nameDict:
     nameDict = nameDict[self.metaUser['measurementType'].split()[0]]
   else:
-    print("**ERROR instrument not in terms.json", self.metaUser['measurementType'].split()[0])
+    print("**ERROR instrument not in terms.json:", self.metaUser['measurementType'].split()[0])
+    return
+
 
   #determine valid masks: loop through all entries and ensure that they all make sense
   self.valid = None

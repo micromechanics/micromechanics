@@ -6,7 +6,8 @@ from scipy import interpolate
 import lmfit
 from .definitions import Method
 
-def calibration(self,eTarget=72.0,numPolynomial=3,critDepthStiffness=1.0, critForce=1.0, critDepthTip=0.0, plotStiffness=False, plotTip=False, **kwargs):
+def calibration(self,eTarget=72.0,numPolynomial=3,critDepthStiffness=1.0, critForce=1.0, critDepthTip=0.0,
+                plotStiffness=False, plotTip=False, **kwargs):
   """
   Calibrate by first frame-stiffness and then area-function calibration
 
@@ -22,14 +23,17 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepthStiffness=1.0, critFo
 
         - constantTerm (bool): add constant term into area function
         - returnArea (bool): return contact depth and area
+        - frameCompliance (float): frame compliance (if not given, determine)
 
   Returns:
     bool: success
   """
   constantTerm = kwargs.get('constantTerm', False)
-  frameCompliance = self.calibrateStiffness(critDepth=critDepthStiffness,critForce=critForce,
-    plotStiffness=plotStiffness)
-
+  if 'frameCompliance' in kwargs:
+    frameCompliance = kwargs.get('frameCompliance')
+  else:
+    frameCompliance = self.calibrateStiffness(critDepth=critDepthStiffness, critForce=critForce,
+                                              plotStiffness=plotStiffness)
   ## re-create data-frame of all files
   self.restartFile()
   self.tip.compliance = frameCompliance
@@ -45,7 +49,9 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepthStiffness=1.0, critFo
       p     = np.hstack((p,     self.p[self.valid]))
       if not self.testList:
         break
-      self.nextTest()
+      success = self.nextTest()
+      if not success:
+        break
   else:
     while True:
       if self.output['progressBar'] is not None:
@@ -56,7 +62,9 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepthStiffness=1.0, critFo
       p     = np.hstack((p,     self.metaUser['pMax_mN']))
       if len(self.testList)==0:
         break
-      self.nextTest()
+      success = self.nextTest()
+      if not success:
+        break
 
   #depth has to be positive
   mask = h>critDepthTip
@@ -73,12 +81,15 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepthStiffness=1.0, critFo
   #  first calculate the  savgol-average using a adaptive window-size
   if numPolynomial is None:
     # use interpolation function using random points
-    data = np.vstack((hc,Ac))
+    mask = np.logical_and(np.isfinite(hc), np.isfinite(Ac))
+    data = np.vstack((hc[mask],Ac[mask]))
     data = data[:, data[0].argsort()]
     windowSize = int(len(Ac)/20) if int(len(Ac)/20)%2==1 else int(len(Ac)/20)-1
     output = savgol_filter(data,windowSize,3)
     interpolationFunct = interpolate.interp1d(output[0,:],output[1,:])
-    hc_ = np.logspace(np.log(0.0001),np.log(np.max(output[0,:])),num=50,base=np.exp(1))
+    hc_ = np.logspace(np.log(max(0.0001,np.min(output[0,:])+0.0001)),
+                      np.log(np.max(output[0,:])-0.0001),
+                      num=50, base=np.exp(1))
     Ac_ = interpolationFunct(hc_)
     interpolationFunct = interpolate.interp1d(hc_, Ac_)
     self.tip.setInterpolationFunction(interpolationFunct)
@@ -105,7 +116,7 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepthStiffness=1.0, critFo
     if constantTerm:
       params.add('c',  value= 20, min=0.5, max=300.0) ##all prefactors are in nm, this has to be too
     # do fit, here with leastsq model; args=(hc, Ac)
-    result = lmfit.minimize(fitFunct, params, max_nfev=10000)
+    result = lmfit.minimize(fitFunct, params, max_nfev=10000, nan_policy='omit')
     self.tip.prefactors = [result.params[x].value for x in result.params]+[appendix]
     print("\nTip shape:")
     print("  iterated prefactors",[round(i,1) for i in self.tip.prefactors[:-1]])
@@ -115,7 +126,7 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepthStiffness=1.0, critFo
   if plotTip:
     rNonPerfect = np.sqrt(Ac/np.pi)
     plt.plot(rNonPerfect, hc,'C0o', label='data')
-    self.tip.plotIndenterShape(maxDepth=1.5)
+    self.tip.plotIndenterShape(maxDepth=0.5)
     #Error plot
     plt.plot(hc,(Ac-self.tip.areaFunction(hc))/Ac,'o',markersize=2)
     plt.axhline(0,color='k',linewidth=2)
