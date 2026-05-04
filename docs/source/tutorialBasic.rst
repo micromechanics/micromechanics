@@ -46,9 +46,9 @@ Introduce tip::
 
 	ourTip = Tip()  #µm/mN
 
-Initialization: Files containing the experimental data are in hdf5, txt or xls format::
+Initialization: Files containing the experimental data are in hdf5, txt, hld, xls or xlsx format::
 
-	fileName = 'Nafion_15_100_5.hdf5'
+	fileName = 'examples/FischerScope/N1_1.hdf5'
 
 Introduce class Indentation, where nuMat is material’s Poisson’s ratio::
 
@@ -78,9 +78,10 @@ Plotting:
 Save all values to a dictionary. This can be appended to a user defined dataframe and further information can be added to it
 accordingly. E.g. the file name in this case::
 
+	rows = []
 	meta = i.metaUser
 	meta["file name"]=fileName
-	df = df.append(meta, ignore_index=True)
+	rows.append(meta)
 
 Show plots::
 
@@ -93,19 +94,20 @@ This is an example code analysing the hdf5 files from FischerScope nanoindenter:
 
 	import matplotlib.pyplot as plt
 	import pandas as pd
-	from nanoindentation import Indentation, Tip
+	from micromechanics.indentation import Indentation, Tip
 
-	fileName = "Nafion_15_100_5.hdf5"
+	fileName = "examples/FischerScope/N1_1.hdf5"
 	ourTip = Tip()  #um/mN
 	i = Indentation(fileName, nuMat=0.5, tip=ourTip)
-	df = pd.DataFrame()
+	rows = []
 
 	for testname in i:
 		i.analyse()
 		#i.plot()
 		plt.plot(i.h, i.p)
 		meta = i.metaUser
-		df = df.append(meta, ignore_index=True)
+		rows.append(meta.copy())
 
+	df = pd.DataFrame(rows)
 	print(df)
 	plt.show()

@@ -12,9 +12,9 @@ Linux and Mac OS
 
     pip install micromechanics
 
-2. Run test using the default data
+2. Run a quick check using the default data
 
-.. code-block:: bash
+.. code-block:: python
 
     from micromechanics.indentation import Indentation
     i = Indentation()
@@ -45,4 +45,3 @@ Windows - Anaconda
 	:width: 400
 	:align: center
 	:alt: run installer
-

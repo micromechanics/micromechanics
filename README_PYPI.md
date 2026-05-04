@@ -8,9 +8,9 @@ This library allows to read datafiles from different nanoindenters and allows to
 
 The library can read:
 - xls files from the vendors MTS, Agilent, Keysight, which produced the XP and G200 indenters
-- hap files from the Fischer-Scope
-- zip-files which include all the files of the Micromaterials NanoXtreme
-- some common format which is based on the NeXus common data format
+- txt files from FischerScope
+- zip-files which include all the txt files of the Micromaterials NanoXtreme
+- HDF5 files produced by the supported converters/common format
 - Tif images from Zeiss and FEI/ThermoFischer
 
 
