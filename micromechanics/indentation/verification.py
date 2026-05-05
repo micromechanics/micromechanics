@@ -3,6 +3,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 from .definitions import Method
 
+def showWithTimeout(timeout=1):
+  """Show the current matplotlib figure for a limited time."""
+  plt.show(block=False)
+  plt.pause(timeout)
+  plt.close()
+
 def verifyOneData(self):
   """
   Test one data set to ensure everything still working: OliverPharrMethod and area functions
@@ -92,7 +98,7 @@ def verifyReadCalc(self, plot=True):
       plt.xlabel('time [s]')
       plt.ylabel(r'contact depth $h_c$ [$\mu m$]')
       plt.title(f"Error in hc: {np.linalg.norm(hc-self.hc):.2e}" )
-      plt.show()
+      showWithTimeout()
     else:
       print(f"  Error in hc: {np.linalg.norm(hc-self.hc):.2e}")
   else:
@@ -107,7 +113,7 @@ def verifyReadCalc(self, plot=True):
       plt.xlabel('time [s]')
       plt.ylabel(r'contact area $A_c$ [$\mu m^2$]')
       plt.title(f"Error in Ac: {np.linalg.norm(Ac-self.Ac):.2e}")
-      plt.show()
+      showWithTimeout()
     else:
       print(f"  Error in Ac: {np.linalg.norm(Ac-self.Ac):.2e}")
   else:
@@ -122,7 +128,7 @@ def verifyReadCalc(self, plot=True):
       plt.xlim(left=0)
       plt.ylim([0,np.max(self.modulusRed)])
       plt.title(f"Error in modulusRed: {np.linalg.norm(modulusRed-self.modulusRed):.2e}")
-      plt.show()
+      showWithTimeout()
     else:
       print(f"  Error in modulusRed: {np.linalg.norm(modulusRed-self.modulusRed):.2e}")
   else:
@@ -138,7 +144,7 @@ def verifyReadCalc(self, plot=True):
       plt.xlim(left=0)
       plt.ylim([0,np.max(self.modulus)])
       plt.title(f"Error in modulus: {np.linalg.norm(modulus-self.modulus):.2e}")
-      plt.show()
+      showWithTimeout()
     else:
       print(f"  Error in modulus: {np.linalg.norm(modulus-self.modulus):.2e}")
   else:
@@ -153,7 +159,7 @@ def verifyReadCalc(self, plot=True):
       plt.xlim(left=0)
       plt.ylim([0,np.max(self.hardness)])
       plt.title(f"Error in hardness: {np.linalg.norm(hardness-self.hardness):.2e}")
-      plt.show()
+      showWithTimeout()
     else:
       print(f"  Error in hardness: {np.linalg.norm((hardness-self.hardness)):.2e}")
   else:

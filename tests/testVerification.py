@@ -47,7 +47,7 @@ class TestStringMethods(unittest.TestCase):
 			i = Indentation('examples/Agilent/FS_XP.xls', nuMat=0.18, tip=tip, model={'cropSlopeToLoading': False})
 			while True:
 				print('Sheet name:', i.testName)
-				i.verifyReadCalc(plot=False)
+				i.verifyReadCalc(plot=True)
 				if len(i.testList)==0:
 					break
 				i.nextTest()
