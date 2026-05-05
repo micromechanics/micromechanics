@@ -18,6 +18,7 @@ Run the CI-style test suite:
 ```bash
 python -m unittest tests/test*
 ```
+Pay attention that no '**ERROR**' is in the output.
 
 Run individual regression tests while iterating, for example:
 

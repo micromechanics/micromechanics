@@ -154,10 +154,14 @@ def analyse(self):
       return
     self.slope = np.array(slope)
     self.valid = valid
+  # verify in one location that the length of valid makes sense
+  if len(self.slope) != len(self.h[self.valid]):
+    print('**ERROR**: length of slope and valid do not match.')
+    return
   try:
     self.k2p = self.slope*self.slope/self.p[self.valid]
   except:
-    print('**WARNING SKIP ANALYSE')
+    print('**ERROR**: could not calculate k2p. SKIP ANALYSE')
     print(traceback.format_exc())
     return
   #Calculate Young's modulus

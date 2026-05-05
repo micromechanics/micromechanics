@@ -14,12 +14,25 @@ The library can read:
 Tutorials
 =========
 
+Indentation tutorials:
+
+- :doc:`installation`
+- :doc:`tutorialBasic`
+- :doc:`tutorialAdvanced`
+- :doc:`auto_examples/index`
+
+Tif tutorials:
+
+- :doc:`tutorialTif`
+
 .. toctree::
    :maxdepth: 1
+   :hidden:
 
    installation
    tutorialBasic
    tutorialAdvanced
+   auto_examples/index
    tutorialTif
 
 Libraries

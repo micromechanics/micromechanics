@@ -90,9 +90,13 @@ class Indentation:
     recognized = False
     if fileName is None:
       fileName = str(Path(__file__).parent/'data/Example.xls')
-    if not os.path.exists(fileName) and fileName!='':
-      print("*ERROR* __init__: file does not exist",fileName)
-      return
+    if not os.path.exists(fileName):
+      if fileName!='':
+        print("*ERROR* __init__: file does not exist",fileName)
+        return
+      else:
+        recognized = True
+        success = True
     if fileName.endswith(".xls") or fileName.endswith(".xlsx"):
       # KLA, Agilent, Keysight, MTS
       recognized = True

@@ -33,7 +33,8 @@ class TestStringMethods(unittest.TestCase):
 				  'is unchanged. Its purpose is a broader smoke/regression test for multi-test'
 				  'Agilent XLS parsing plus the analysis pipeline: valid-point handling, ' \
 				  'stiffness correction,  Oliver-Pharr modulus calculation.')
-			i = Indentation('examples/Agilent/NiAl_250nm_TUIL_max_depth_1000nm_GM3_SM_previousGM1.xls')
+			model = {'cropSlopeToLoading': False}
+			i = Indentation('examples/Agilent/NiAl_250nm_TUIL_max_depth_1000nm_GM3_SM_previousGM1.xls', model=model)
 			for testname in i:
 				i.analyse()
 			i.plot(show=3)
