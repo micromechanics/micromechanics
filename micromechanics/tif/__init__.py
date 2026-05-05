@@ -132,11 +132,13 @@ class Tif:
     Init NPVE file, no original image saved since files are large
     """
     logging.info("  Start initNPVE")
-    imgArray = Image.open(self.fileName).convert("L").convert("P")
-    #old version with openCV "cv2.imread(self.fileName)[:,:,0]" might be better for large files
-    self.image = Image.fromarray(imgArray).convert("P")
+    with warnings.catch_warnings():
+      warnings.filterwarnings('ignore',category=ResourceWarning)  #Image open sometimes triggers "ResourceWarning"
+      image = Image.open(self.fileName).convert("L").convert("P")
+    # old version with openCV "cv2.imread(self.fileName)[:,:,0]" might be better for large files
+    self.image = image
     self.origImage = None #do not save, since files rather large
-    widthPixel = imgArray.shape[0]
+    widthPixel = image.size[0]
 
     #parse the xml line in the file
     xmlLine = ""
@@ -148,12 +150,15 @@ class Tif:
     xmlLine  = re.sub(r'[^\x00-\x7F]+',' ', xmlLine)  #clean off any non-ascii characters
     xmlData  = minidom.parseString(xmlLine)           #parse it
     xmlObject= xmlData.documentElement		       #make an object
-    keys = ['Width', 'Height', 'Contrast', 'Brightness', 'FOV_X', 'Ux', 'Vy']
-    for key in keys:
-      self.meta[key.lower()] = xmlObject.getElementsByTagName(key)[0].childNodes[0].data
+    requiredKeys = ['Width', 'Height', 'FOV_X', 'Ux', 'Vy']
+    optionalKeys = ['Contrast', 'Brightness']
+    for key in requiredKeys + optionalKeys:
+      elements = xmlObject.getElementsByTagName(key)
+      if elements and elements[0].childNodes:
+        self.meta[key.lower()] = elements[0].childNodes[0].data
 
     # meta data checks and handling
-    if len(keys) == len(self.meta):
+    if all(key.lower() in self.meta for key in requiredKeys):
       self.width = float(self.meta['fov_x'])  #guess it is um
       if xmlObject.getElementsByTagName("FOV_X")[0].getAttribute("units") != "um":
         print("Error field of view not in um", xmlObject.getElementsByTagName("FOV_X")[0].getAttribute("units"))
@@ -169,7 +174,7 @@ class Tif:
         print("Data keys error")
         return
     else:
-      print("Some keys were missing. Found keys:\n",self.meta)
+      print("Some required keys were missing. Found keys:\n",self.meta)
       return
 
 

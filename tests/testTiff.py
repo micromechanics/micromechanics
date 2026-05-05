@@ -38,6 +38,24 @@ class TestStringMethods(unittest.TestCase):
 			self.assertTrue(False,'Exception occurred')
 		return
 
+
+	def test_npve(self):
+		try:
+			### MAIN ###
+			print('**PURPOSE**\nLoad a real NPVE TIF file, enhances the image and adds a '
+				  'scale bar. Its purpose is to catch changes in TIF parsing, image '
+				  'enhancement, bundled font handling, or scale-bar rendering behavior. ')
+			i = Tif('examples/NPVE/Pearlite.tif')
+			i.enhance()
+			i.addScaleBar()
+			i.plot(showDuration=3)
+			### END OF MAIN ###
+			print('\n*** DONE WITH VERIFY ***')
+		except:
+			print('ERROR OCCURRED IN VERIFY TESTING\n'+ traceback.format_exc() )
+			self.assertTrue(False,'Exception occurred')
+		return
+
 	def tearDown(self):
 		return
 
