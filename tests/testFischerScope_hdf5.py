@@ -9,6 +9,11 @@ class TestStringMethods(unittest.TestCase):
 	def test_main(self):
 		try:
 			### MAIN ###
+			print('**PURPOSE**\nLoad a real FischerScope HDF5 file, iterates through all '
+		 		  'tests and checks that the total calculated Youngs modulus sum is unchanged. '
+				  'Its purpose is a smoke/regression test for FischerScope HDF5 parsing plus '
+				  'the analysis pipeline: valid-point handling, stiffness correction, '
+				  'Oliver-Pharr modulus calculation.')
 			i = Indentation('examples/FischerScope/N1_1.hdf5')
 			for testname in i:
 				i.analyse()

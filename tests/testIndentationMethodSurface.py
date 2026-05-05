@@ -39,6 +39,10 @@ ATTACHED_METHODS = [
 
 class TestIndentationMethodSurface(unittest.TestCase):
   def test_imported_methods_are_available_on_class_and_instance(self):
+    print('**PURPOSE**\nChecks that methods imported from separate modules are attached '
+          'to both the Indentation class and instance. Its purpose is to catch changes '
+          'in dynamic class composition, staticmethod binding, and basic theory helper '
+          'availability.')
     indentation = Indentation('examples/Agilent/Popin.xls', output={'verbose': 0})
 
     for method_name in ATTACHED_METHODS:
@@ -52,6 +56,10 @@ class TestIndentationMethodSurface(unittest.TestCase):
     self.assertGreater(indentation.ReducedModulus(100.0), 0.0)
 
   def test_representative_vendor_files_load_and_analyse(self):
+    print('**PURPOSE**\nLoad representative vendor files and checks that each file is '
+          'recognized with the expected vendor and file type. Its purpose is a smoke/'
+          'regression test for Agilent, Hysitron, Micromaterials, FischerScope, and '
+          'converted FischerScope HDF5 loading plus the analysis pipeline.')
     cases = [
       ('examples/Agilent/Popin.xls', Vendor.Agilent, FileType.Multi),
       ('examples/Hysitron/Exp-50mN_0000.hld', Vendor.Hysitron, FileType.Single),
@@ -72,6 +80,10 @@ class TestIndentationMethodSurface(unittest.TestCase):
         self.assertGreater(len(indentation.p), 0)
 
   def test_iteration_and_plotting_use_bound_methods(self):
+    print('**PURPOSE**\nLoad a multi-test FischerScope HDF5 file, iterates through all '
+          'tests and checks that plotting still works through bound Indentation methods. '
+          'Its purpose is to catch changes in HDF5 iteration, analysis dispatch, and '
+          'plotting method binding.')
     indentation = Indentation('examples/FischerScope/N1_1.hdf5', output={'verbose': 0})
     test_names = []
     for test_name in indentation:

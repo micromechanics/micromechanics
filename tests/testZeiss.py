@@ -7,9 +7,13 @@ class TestStringMethods(unittest.TestCase):
 	def test_calibration(self):
 		try:
 			### MAIN ###
+			print('**PURPOSE**\nLoad a real Zeiss TIF file, enhances the image and adds a '
+				  'scale bar. Its purpose is to catch changes in Zeiss TIF parsing, image '
+				  'enhancement, bundled font handling, or scale-bar rendering behavior. ')
 			i = Tif('examples/Zeiss/Zeiss.tif')
 			i.enhance()
 			i.addScaleBar()
+			i.plot(showDuration=3)
 			### END OF MAIN ###
 			print('\n*** DONE WITH VERIFY ***')
 		except:

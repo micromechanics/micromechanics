@@ -326,16 +326,22 @@ class Tif:
     return
 
 
-  def plot(self, axis='on'):
+  def plot(self, axis='on', showDuration=-1):
     """
     Show image on screen by plotting it: showing the pixel coordinates, which is handy for cropping
 
     Args:
       axis (str): 'on','off' show axis
+      showDuration (int): show the image for n seconds. Show for infinity if -1
     """
     plt.imshow(self.image)
     plt.axis(axis)
-    plt.show()
+    if showDuration > 0:
+      plt.show(block = False)
+      plt.pause(showDuration)
+      plt.close()
+    else:
+      plt.show()
     return
 
 
