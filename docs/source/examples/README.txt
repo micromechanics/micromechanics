@@ -1,4 +1,4 @@
-Executable examples
+Executable Examples
 ===================
 
 These examples are run by Sphinx-Gallery when building the HTML documentation.

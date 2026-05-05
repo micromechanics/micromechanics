@@ -125,9 +125,12 @@ def calibration(self,eTarget=72.0,numPolynomial=3,critDepthStiffness=1.0, critFo
 
   if plotTip:
     rNonPerfect = np.sqrt(Ac/np.pi)
+    plt.figure()
     plt.plot(rNonPerfect, hc,'C0o', label='data')
-    self.tip.plotIndenterShape(maxDepth=0.5)
+    self.tip.plotIndenterShape(maxDepth=0.5, show=False)
+    plt.show()
     #Error plot
+    plt.figure()
     plt.plot(hc,(Ac-self.tip.areaFunction(hc))/Ac,'o',markersize=2)
     plt.axhline(0,color='k',linewidth=2)
     plt.xlabel(r"Depth [$\mathrm{\mu m}$]")

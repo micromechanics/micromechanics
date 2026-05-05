@@ -61,6 +61,15 @@ or the short form to run all the tests
 python -m unittest tests/test*
 ```
 
+Check test coverage, including package code and the example files in `docs/source/examples`
+``` bash
+python -m coverage run -m unittest tests/test*
+```
+For an HTML coverage report, run
+``` bash
+python -m coverage html
+```
+
 Then upload/create-pull-request to github, via
 ``` bash
 ./commit.py 'my message'
