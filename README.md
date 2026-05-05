@@ -66,6 +66,10 @@ Check test coverage, including package code and the example files in `docs/sourc
 python -m coverage run -m unittest tests/test*
 for f in docs/source/examples/plot_*.py; do python -m coverage run --append "$f"; done
 ```
+Coverage report for LLMs
+``` bash
+python -m coverage report -m
+```
 For an HTML coverage report, run
 ``` bash
 python -m coverage html
