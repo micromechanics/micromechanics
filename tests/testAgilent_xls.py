@@ -9,6 +9,10 @@ class TestStringMethods(unittest.TestCase):
 	def test_calibration(self):
 		try:
 			### MAIN ###
+			print('**PURPOSE**\nChecks that the fitted tip area-function prefactors stay close'
+		 		  ' to known reference values. Its purpose is to catch changes in Agilent XLS '
+				  'loading, frame stiffness correction, calibration fitting, or area-function '
+				  'behavior.')
 			i = Indentation('examples/Agilent/FS_Calibration.xls', nuMat = 0.18, model={'cropSlopeToLoading': False})
 			i.calibration()
 			prerecorded = np.array([25.99088100777346, 305.6978416681741, 2050.70109154738])
@@ -24,6 +28,11 @@ class TestStringMethods(unittest.TestCase):
 	def test_other(self):
 		try:
 			### MAIN ###
+			print('**PURPOSE**\nLoad a real NiAl Agilent XLS file, iterates through all '
+		 		  'tests/sheets and checks that the total calculated Youngs modulus sum '
+				  'is unchanged. Its purpose is a broader smoke/regression test for multi-test'
+				  'Agilent XLS parsing plus the analysis pipeline: valid-point handling, ' \
+				  'stiffness correction,  Oliver-Pharr modulus calculation.')
 			i = Indentation('examples/Agilent/NiAl_250nm_TUIL_max_depth_1000nm_GM3_SM_previousGM1.xls')
 			for testname in i:
 				i.analyse()

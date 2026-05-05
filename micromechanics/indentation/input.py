@@ -433,6 +433,8 @@ def loadFischerScope(self,fileName):
     if ".hap	Name of the application" not in line:
       print("Not a Fischer Scope")
       return False
+    if self.output['verbose']>1:
+      print("Open Fischer Scope file: "+fileName)
     identifier = line.split()[0]
     _ = fIn.readline()
     self.metaVendor['Indent_Type'] = fIn.readline().split()[0]
@@ -604,6 +606,8 @@ def nextHDF5Test(self):
     return False
   branch = self.datafile[self.testName]['data']
   inFile = list(branch.keys())
+  for attrib in ['slope', 'k2p', 'hc', 'Ac', 'modulus', 'modulusRed', 'hardness', 'phase']:
+    setattr(self, attrib, [])
   with open(Path(__file__).parent/'terms.json', encoding='utf-8') as fIn:
     nameDict   = json.load(fIn)
   if self.metaUser['measurementType'].split()[0] in nameDict:
@@ -691,7 +695,7 @@ def nextHDF5Test(self):
   #   print("**INFO on",self.metaUser['measurementType'].split()[0],"fields not imported:",inFile)
   self.iLHU   = []
   self.iDrift = [-1,-1]
-  if hasattr(self, 'slope') and len(self.slope)>60: #if more than 30: CSM
+  if hasattr(self, 'slope') and np.ndim(self.slope)>0 and len(self.slope)>60: #if more than 30: CSM
     self.method = Method.CSM
   if self.output['plotLoadHoldUnload']:
     self.plotTestingMethod()

@@ -147,8 +147,13 @@ def analyse(self):
   if self.method == Method.CSM:
     self.slope = 1./(1./self.slope-self.tip.compliance)
   else:
-    self.slope, self.valid, _, _ , _= self.stiffnessFromUnloading(self.p, self.h)
-    self.slope = np.array(self.slope)
+    slope, valid, _, _ , _= self.stiffnessFromUnloading(self.p, self.h)
+    if slope is None or valid is None:
+      self.slope = np.array([])
+      self.valid = np.zeros_like(self.p, dtype=bool)
+      return
+    self.slope = np.array(slope)
+    self.valid = valid
   try:
     self.k2p = self.slope*self.slope/self.p[self.valid]
   except:
@@ -234,7 +239,7 @@ def identifyLoadHoldUnload(self,plot=False):
   if len(unloadIdx) == len(loadIdx)+2 and np.all(unloadIdx[-4:]>loadIdx[-1]):
     #for drift: partial unload-hold-full unload
     unloadIdx = unloadIdx[:-2]
-  while len(unloadIdx) < len(loadIdx) and loadIdx[2]<unloadIdx[0]:
+  while len(loadIdx)>2 and len(unloadIdx)>0 and len(unloadIdx) < len(loadIdx) and loadIdx[2]<unloadIdx[0]:
     #clean loading front
     loadIdx = loadIdx[2:]
 

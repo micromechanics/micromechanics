@@ -4,15 +4,13 @@ import unittest
 import numpy as np
 from micromechanics.indentation import Indentation
 
-skipFiles = ['examples/Agilent/FS_XP_MethodInclCalibration.txt',\
-						 'examples/Agilent/ISO.txt','examples/Agilent/CSM.txt',\
-						 'examples/Zeiss/Zeiss.tif',\
-						 'examples/Micromaterials/Sample1_Vac_RT.hdf5']
-#TODO_P1 repair micromaterials and include test
+skipFiles = ['examples/Agilent/FS_XP_MethodInclCalibration.txt', 'examples/Agilent/ISO.txt',
+			 'examples/Agilent/CSM.txt', 'examples/Zeiss/Zeiss.tif']
 
 class TestMethods(unittest.TestCase):
 	def test_all_filesn(self):
 		try:
+			print('**Purpose**\nCheck if all example files can be loaded and analysed.')
 			### MAIN ###
 			for path, _, files in os.walk('examples'):
 				if files == []:
@@ -25,6 +23,7 @@ class TestMethods(unittest.TestCase):
 					i = Indentation(fullPath)
 					while True:
 						i.analyse()
+						print('   Test succeeded', i.testName)
 						if (not i.testList) or len(i.testList)==0:
 							break
 						i.nextTest()
