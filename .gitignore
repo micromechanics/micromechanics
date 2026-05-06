@@ -11,4 +11,5 @@ docs/source/sg_execution_times.rst
 *__pycache__*
 
 .coverage
+coverage.txt
 htmlcov/

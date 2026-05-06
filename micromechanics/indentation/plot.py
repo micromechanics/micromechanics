@@ -4,210 +4,214 @@ import numpy as np
 import matplotlib.pyplot as plt
 from .definitions import Method
 
-def plotTestingMethod(self, saveFig=False, show=True, double=False):
-  """
-  plot testing method
 
-  Args:
-    saveFig (bool): save plot to file [use known filename plus extension png]
-    show (bool): show figure, else do not show
-    double (bool): show also stiffness and phase an function of time
-
-  Returns:
-    pyplot.axis: figure
+class IndentationPlotMixin:
   """
-  if double:
-    _, [ax1, ax2] = plt.subplots(2, sharex=True, figsize=(6,6))
-  else:
-    _, ax1, = plt.subplots()
-  ax1b = ax1.twinx()
-  ax1.plot(self.t, self.p,'C0')
-  ax1b.plot(self.t, self.h,'C1')
-  for mask in self.iLHU:
-    ax1.plot(self.t[mask][0], self.p[mask][0], 'C0s')
-    ax1.plot(self.t[mask][1], self.p[mask][1], 'C0x')
-    ax1.plot(self.t[mask][2], self.p[mask][2], 'C0+')
-    ax1.plot(self.t[mask][3], self.p[mask][3], 'C0o')
-  ax1.plot(self.t[self.iDrift], self.p[self.iDrift], 'k.')
-  ax1.axhline(0,color='C0', linestyle='dashed')
-  ax1b.axhline(0,color='C1', linestyle='dashed')
-  ax1.set_xlabel(r"time [$\mathrm{s}$]")
-  ax1b.set_ylabel(r"depth [$\mathrm{\mu m}$]", color='C1', fontsize=14)
-  ax1.set_ylabel(r"force [$\mathrm{mN}$]", color='C0', fontsize=14)
-  if double:
-    ax2b = ax2.twinx()
-    ax2.plot(self.t[self.valid], self.slope,'C0')
-    ax2b.plot(self.t[self.valid], self.phase,'C1')
-    ax2.set_xlabel(r"time [$\mathrm{s}$]")
-    ax2b.set_ylabel(r"phase [$\mathrm{rad}$]", color='C1', fontsize=14)
-    ax2.set_ylabel(r"stiffness [$\mathrm{mN/\mu m}$]", color='C0', fontsize=14)
-  plt.grid()
-  plt.subplots_adjust(hspace=0)
-  plt.show()
-  if saveFig:
-    plt.savefig(self.fileName.split('.')[0]+".png", dpi=150, bbox_inches='tight')
-  if show:
+  Plotting methods for :class:`Indentation`.
+  """
+
+  def plotTestingMethod(self, saveFig=False, show=True, double=False):
+    """
+    plot testing method
+
+    Args:
+      saveFig (bool): save plot to file [use known filename plus extension png]
+      show (bool): show figure, else do not show
+      double (bool): show also stiffness and phase an function of time
+
+    Returns:
+      pyplot.axis: figure
+    """
+    if double:
+      _, [ax1, ax2] = plt.subplots(2, sharex=True, figsize=(6,6))
+    else:
+      _, ax1, = plt.subplots()
+    ax1b = ax1.twinx()
+    ax1.plot(self.t, self.p,'C0')
+    ax1b.plot(self.t, self.h,'C1')
+    for mask in self.iLHU:
+      ax1.plot(self.t[mask][0], self.p[mask][0], 'C0s')
+      ax1.plot(self.t[mask][1], self.p[mask][1], 'C0x')
+      ax1.plot(self.t[mask][2], self.p[mask][2], 'C0+')
+      ax1.plot(self.t[mask][3], self.p[mask][3], 'C0o')
+    ax1.plot(self.t[self.iDrift], self.p[self.iDrift], 'k.')
+    ax1.axhline(0,color='C0', linestyle='dashed')
+    ax1b.axhline(0,color='C1', linestyle='dashed')
+    ax1.set_xlabel(r"time [$\mathrm{s}$]")
+    ax1b.set_ylabel(r"depth [$\mathrm{\mu m}$]", color='C1', fontsize=14)
+    ax1.set_ylabel(r"force [$\mathrm{mN}$]", color='C0', fontsize=14)
+    if double:
+      ax2b = ax2.twinx()
+      ax2.plot(self.t[self.valid], self.slope,'C0')
+      ax2b.plot(self.t[self.valid], self.phase,'C1')
+      ax2.set_xlabel(r"time [$\mathrm{s}$]")
+      ax2b.set_ylabel(r"phase [$\mathrm{rad}$]", color='C1', fontsize=14)
+      ax2.set_ylabel(r"stiffness [$\mathrm{mN/\mu m}$]", color='C0', fontsize=14)
+    plt.grid()
+    plt.subplots_adjust(hspace=0)
     plt.show()
-  return ax1
-
-
-def plot(self, saveFig=False, show=True, plotAllItems=True):
-  """
-  Plot force-depth curve with all data
-
-  Args:
-    saveFig (bool, str): if bool, save plot to file [use known filename plus extension png]; else use fileName
-    show (bool): show figure, else do not show
-    plotAllItems (bool): plot auxiliary fit and evaluation markers.
-  """
-  if len(self.slope)==1 and self.output['verbose']>1:
-    print("Stiffness:"+str(round(self.slope[0],1))     +"mN/um   "+\
-      "hMax:"+str(round(self.h[self.valid][0],4))+"um    pMax:"+str(round(self.p[self.valid][0],2))+"mN")
-    print("E*:       "+str(round(self.modulusRed[0],1))+"GPa     "+\
-      "A:   "+str(round(self.Ac[0],4))+          "um2    hc: "+str(round(self.hc[0],4))+"um")
-    print("E:        "+str(round(self.modulus[0],1))   +"GPa     "+\
-      "H:   "+str(round(self.hardness[0],1))+     "GPa")
-  plt.axhline(0,ls="dashed",c='k')
-  plt.axvline(0,ls="dashed",c='k')
-  plt.plot(self.h,self.p)
-  if self.method != Method.CSM and plotAllItems:
-    _, _, maskUnload, optPar, _ = self.stiffnessFromUnloading(self.p, self.h)
-    if maskUnload is None or optPar is None:
-      print("**ERROR** plot: unloading fit unavailable; run analyse() or check load-hold-unload identification")
-      return
-    h_, p_ = self.h[maskUnload], self.p[maskUnload]
-    plt.plot(self.h[maskUnload], self.unloadingPowerFunc(self.h[maskUnload],*optPar), 'C1', label='fit powerlaw')
-    if len(self.h[self.valid])<101:  #allow for 100 unloading segments to be plotted
-      plt.plot(self.h[self.valid],self.p[self.valid],"or",label="evaluated", markersize=10)
-      plt.plot(self.hc, np.zeros_like(self.hc),"ob", label="hc", markersize=10)
-    if len(self.hc)==1:
-      plt.plot(h_[0],p_[0],'og',)
-      plt.plot(h_[-1],p_[-1],'og', label="fit domain")
-      try:
-        if self.model['evaluateSAtMax']:
-          stiffnessLineInterceptY = self.p[self.valid]-self.slope*self.h[self.valid]
-          h_ = np.linspace(self.hc,self.h[self.valid].max(),10)
-        else:
-          stiffnessLineInterceptY = self.p[maskUnload][0]-self.slope*self.h[maskUnload][0]
-          h_ = np.linspace(self.hc, self.h[maskUnload][0], 10)
-        plt.plot(h_,   self.slope*h_+stiffnessLineInterceptY, 'r--', lw=2, label='stiffness')
-      except:
-        print('**ERROR** something is wrong with plotting unloading-line')
-        print(traceback.format_exc())
-    # plt.legend(loc=0, numpoints=1)
-  elif plotAllItems:
-    plt.plot(self.h[self.iLHU[0]],self.p[self.iLHU[0]],"or",label="specific", markersize=10)
-  plt.xlim(left=-0.03)
-  plt.xlabel(r"depth [$\mathrm{\mu m}$]")
-  plt.ylabel(r"force [$\mathrm{mN}$]")
-  if isinstance(saveFig, bool) and saveFig:
-    plt.savefig(self.fileName.split('.')[0]+".png", dpi=150, bbox_inches='tight')
-  if isinstance(saveFig, str):
-    plt.savefig(saveFig, dpi=150, bbox_inches='tight')
-  if isinstance(show,bool):
+    if saveFig:
+      plt.savefig(self.fileName.split('.')[0]+".png", dpi=150, bbox_inches='tight')
     if show:
       plt.show()
-  elif isinstance(show,int):
-    plt.show(block = False)
-    plt.pause(show)
-    plt.close()
-  return
+    return ax1
 
 
-def plotAll(self, saveFig=False, show=True, legend=True):
-  """
-  Plot force-depth curves of all tests in the file
+  def plot(self, saveFig=False, show=True, plotAllItems=True):
+    """
+    Plot force-depth curve with all data
 
-  Args:
-    saveFig (bool): save plot to file [use known filename plus extension png]
-    show (bool): show figure, else do not show
-    legend (bool): show legend
+    Args:
+      saveFig (bool, str): if bool, save plot to file [use known filename plus extension png]; else use fileName
+      show (bool): show figure, else do not show
+      plotAllItems (bool): plot auxiliary fit and evaluation markers.
+    """
+    if len(self.slope)==1 and self.output['verbose']>1:
+      print("Stiffness:"+str(round(self.slope[0],1))     +"mN/um   "+\
+        "hMax:"+str(round(self.h[self.valid][0],4))+"um    pMax:"+str(round(self.p[self.valid][0],2))+"mN")
+      print("E*:       "+str(round(self.modulusRed[0],1))+"GPa     "+\
+        "A:   "+str(round(self.Ac[0],4))+          "um2    hc: "+str(round(self.hc[0],4))+"um")
+      print("E:        "+str(round(self.modulus[0],1))   +"GPa     "+\
+        "H:   "+str(round(self.hardness[0],1))+     "GPa")
+    plt.axhline(0,ls="dashed",c='k')
+    plt.axvline(0,ls="dashed",c='k')
+    plt.plot(self.h,self.p)
+    if self.method != Method.CSM and plotAllItems:
+      _, _, maskUnload, optPar, _ = self.stiffnessFromUnloading(self.p, self.h)
+      if maskUnload is None or optPar is None:
+        print("**ERROR** plot: unloading fit unavailable; run analyse() or check load-hold-unload identification")
+        return
+      h_, p_ = self.h[maskUnload], self.p[maskUnload]
+      plt.plot(self.h[maskUnload], self.unloadingPowerFunc(self.h[maskUnload],*optPar), 'C1', label='fit powerlaw')
+      if len(self.h[self.valid])<101:  #allow for 100 unloading segments to be plotted
+        plt.plot(self.h[self.valid],self.p[self.valid],"or",label="evaluated", markersize=10)
+        plt.plot(self.hc, np.zeros_like(self.hc),"ob", label="hc", markersize=10)
+      if len(self.hc)==1:
+        plt.plot(h_[0],p_[0],'og',)
+        plt.plot(h_[-1],p_[-1],'og', label="fit domain")
+        try:
+          if self.model['evaluateSAtMax']:
+            stiffnessLineInterceptY = self.p[self.valid]-self.slope*self.h[self.valid]
+            h_ = np.linspace(self.hc,self.h[self.valid].max(),10)
+          else:
+            stiffnessLineInterceptY = self.p[maskUnload][0]-self.slope*self.h[maskUnload][0]
+            h_ = np.linspace(self.hc, self.h[maskUnload][0], 10)
+          plt.plot(h_,   self.slope*h_+stiffnessLineInterceptY, 'r--', lw=2, label='stiffness')
+        except:
+          print('**ERROR** something is wrong with plotting unloading-line')
+          print(traceback.format_exc())
+      # plt.legend(loc=0, numpoints=1)
+    elif plotAllItems:
+      plt.plot(self.h[self.iLHU[0]],self.p[self.iLHU[0]],"or",label="specific", markersize=10)
+    plt.xlim(left=-0.03)
+    plt.xlabel(r"depth [$\mathrm{\mu m}$]")
+    plt.ylabel(r"force [$\mathrm{mN}$]")
+    if isinstance(saveFig, bool) and saveFig:
+      plt.savefig(self.fileName.split('.')[0]+".png", dpi=150, bbox_inches='tight')
+    if isinstance(saveFig, str):
+      plt.savefig(saveFig, dpi=150, bbox_inches='tight')
+    if isinstance(show,bool):
+      if show:
+        plt.show()
+    elif isinstance(show,int):
+      plt.show(block = False)
+      plt.pause(show)
+      plt.close()
+    return
 
-  Returns:
-    pyplot.axis: figure
-  """
-  _, ax = plt.subplots()
-  ax.axhline(0,ls="dashed",c='k')
-  ax.axvline(0,ls="dashed",c='k')
-  for testName in self:
-    ax.plot(self.h,self.p, label=testName)
-  if legend:
-    plt.legend()
-  ax.set_xlim(left=-0.03)
-  ax.set_xlabel(r"depth [$\mathrm{\mu m}$]")
-  ax.set_ylabel(r"force [$\mathrm{mN}$]")
-  if saveFig:
-    plt.savefig(self.fileName.split('.')[0]+".png", dpi=150, bbox_inches='tight')
-  if isinstance(show,bool):
+
+  def plotAll(self, saveFig=False, show=True, legend=True):
+    """
+    Plot force-depth curves of all tests in the file
+
+    Args:
+      saveFig (bool): save plot to file [use known filename plus extension png]
+      show (bool): show figure, else do not show
+      legend (bool): show legend
+
+    Returns:
+      pyplot.axis: figure
+    """
+    _, ax = plt.subplots()
+    ax.axhline(0,ls="dashed",c='k')
+    ax.axvline(0,ls="dashed",c='k')
+    for testName in self:
+      ax.plot(self.h,self.p, label=testName)
+    if legend:
+      plt.legend()
+    ax.set_xlim(left=-0.03)
+    ax.set_xlabel(r"depth [$\mathrm{\mu m}$]")
+    ax.set_ylabel(r"force [$\mathrm{mN}$]")
+    if saveFig:
+      plt.savefig(self.fileName.split('.')[0]+".png", dpi=150, bbox_inches='tight')
+    if isinstance(show,bool):
+      if show:
+        plt.show()
+    elif isinstance(show,int):
+      plt.show(block = False)
+      plt.pause(show)
+      plt.close()
+    return ax
+
+
+  def plotAsDepth(self, entity, hvline=None, vmax=None, vmin=None, show=True):
+    """
+    Plot as function of depth either Young's modulus, hardness,
+    stiffnessSquaredForce, ContactDepth, Contact Area, reducedModulus  |br|
+    Makes only sense for CSM measurements
+
+    Args:
+      entity (str): what to plot on y-axis [E,H,K,K2P,hc,Ac,modulusRed]
+      hvline (float): plot a horizontal line at this value
+      vmax (float): maximum value for plotting
+      vmin (float): minimum value for plotting
+      show (bool): show figure, else do not show
+    """
+    if not isinstance(entity, str):
+      print("**ERROR** plotAsDepth: entity=[E,H,K,K2P,hc,Ac,modulusRed]")
+      return
+    if hvline is not None:
+      plt.axhline(hvline, c='k')
+    if   entity == "E":
+      plt.plot(self.h[self.valid], self.modulus, "C0.")
+      plt.ylabel("Young's modulus [GPa]")
+    elif entity == "modulusRed":
+      plt.plot(self.h[self.valid], self.modulusRed, "o")
+      plt.ylabel("reduced Young's modulus [GPa]")
+    elif entity == "H":
+      plt.plot(self.h[self.valid], self.hardness, "C0.")
+      plt.ylabel("Hardness [GPa]")
+    elif entity == "K":
+      plt.plot(self.h[self.valid], self.slope, "o")
+      plt.ylabel("Stiffness [kN/m]")
+    elif entity == "K2P":
+      if not hasattr(self, 'k2p'):
+        self.k2p = np.array(self.slope)*np.array(self.slope)/np.array(self.p[self.valid])
+      plt.plot(self.h[self.valid], self.k2p, "C0.")
+      mask = self.h[self.valid]>0.1
+      if np.count_nonzero(mask)<2:
+        print("**ERROR** plotAsDepth: not enough data above 0.1 um for K2P fit")
+        return
+      fit = np.polyfit(self.h[self.valid][mask], self.k2p[mask],1)
+      if show:
+        print('Fit: K2P='+str(round(fit[1]))+'+ '+str(round(fit[0]))+'*h')
+        plt.plot(self.h[self.valid], np.polyval(fit,self.h[self.valid]), 'C1-')
+        plt.axvline(0.1, linestyle='dashed',color='C1')
+      plt.ylabel(r"Stiffness Squared Over Load [$\mathrm{GPa}$]")
+    elif entity == "hc":
+      plt.plot(self.h[self.valid], self.hc, "o")
+      plt.ylabel(r"Contact depth [$\mathrm{\mu m}$]")
+    elif entity == "Ac":
+      plt.plot(self.h[self.valid], self.Ac, "o")
+      plt.ylabel(r"Contact area [$\mathrm{\mu m^2}$]")
+    else:
+      print("**ERROR** Unknown entity")
+      return
+    plt.xlabel(r"depth "+r'[$\mathrm{\mu m}$]')
+    if vmax is not None:
+      plt.ylim(top=vmax)
+    if vmin is not None:
+      plt.ylim(bottom=vmin)
     if show:
       plt.show()
-  elif isinstance(show,int):
-    plt.show(block = False)
-    plt.pause(show)
-    plt.close()
-  return ax
-
-
-
-
-def plotAsDepth(self, entity, hvline=None, vmax=None, vmin=None, show=True):
-  """
-  Plot as function of depth either Young's modulus, hardness,
-  stiffnessSquaredForce, ContactDepth, Contact Area, reducedModulus  |br|
-  Makes only sense for CSM measurements
-
-  Args:
-    entity (str): what to plot on y-axis [E,H,K,K2P,hc,Ac,modulusRed]
-    hvline (float): plot a horizontal line at this value
-    vmax (float): maximum value for plotting
-    vmin (float): minimum value for plotting
-    show (bool): show figure, else do not show
-  """
-  if not isinstance(entity, str):
-    print("**ERROR** plotAsDepth: entity=[E,H,K,K2P,hc,Ac,modulusRed]")
     return
-  if hvline is not None:
-    plt.axhline(hvline, c='k')
-  if   entity == "E":
-    plt.plot(self.h[self.valid], self.modulus, "C0.")
-    plt.ylabel("Young's modulus [GPa]")
-  elif entity == "modulusRed":
-    plt.plot(self.h[self.valid], self.modulusRed, "o")
-    plt.ylabel("reduced Young's modulus [GPa]")
-  elif entity == "H":
-    plt.plot(self.h[self.valid], self.hardness, "C0.")
-    plt.ylabel("Hardness [GPa]")
-  elif entity == "K":
-    plt.plot(self.h[self.valid], self.slope, "o")
-    plt.ylabel("Stiffness [kN/m]")
-  elif entity == "K2P":
-    if not hasattr(self, 'k2p'):
-      self.k2p = np.array(self.slope)*np.array(self.slope)/np.array(self.p[self.valid])
-    plt.plot(self.h[self.valid], self.k2p, "C0.")
-    mask = self.h[self.valid]>0.1
-    if np.count_nonzero(mask)<2:
-      print("**ERROR** plotAsDepth: not enough data above 0.1 um for K2P fit")
-      return
-    fit = np.polyfit(self.h[self.valid][mask], self.k2p[mask],1)
-    if show:
-      print('Fit: K2P='+str(round(fit[1]))+'+ '+str(round(fit[0]))+'*h')
-      plt.plot(self.h[self.valid], np.polyval(fit,self.h[self.valid]), 'C1-')
-      plt.axvline(0.1, linestyle='dashed',color='C1')
-    plt.ylabel(r"Stiffness Squared Over Load [$\mathrm{GPa}$]")
-  elif entity == "hc":
-    plt.plot(self.h[self.valid], self.hc, "o")
-    plt.ylabel(r"Contact depth [$\mathrm{\mu m}$]")
-  elif entity == "Ac":
-    plt.plot(self.h[self.valid], self.Ac, "o")
-    plt.ylabel(r"Contact area [$\mathrm{\mu m^2}$]")
-  else:
-    print("**ERROR** Unknown entity")
-    return
-  plt.xlabel(r"depth "+r'[$\mathrm{\mu m}$]')
-  if vmax is not None:
-    plt.ylim(top=vmax)
-  if vmin is not None:
-    plt.ylim(bottom=vmin)
-  if show:
-    plt.show()
-  return

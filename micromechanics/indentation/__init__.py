@@ -23,26 +23,21 @@ import os
 import copy
 from pathlib import Path
 import numpy as np
-from .definitions import Method, Vendor, FileType
+from .calibration import IndentationCalibrationMixin
+from .definitions import (FileType, Method, Vendor, _DefaultModel, _DefaultOutput, _DefaultSurface, _DefaultVendorDependent)
+from .hertz import IndentationHertzMixin
+from .input import IndentationInputMixin
+from .main import IndentationMainMixin
+from .plot import IndentationPlotMixin
+from .theory import IndentationTheoryMixin
 from .tip import Tip
+from .verification import IndentationVerificationMixin
 
-class Indentation:
+class Indentation(IndentationInputMixin, IndentationMainMixin, IndentationTheoryMixin, IndentationHertzMixin, IndentationPlotMixin,
+                  IndentationCalibrationMixin, IndentationVerificationMixin):
   """
   Main class of indentation
   """
-  #pylint: disable=import-outside-toplevel
-  from .input import (loadAgilent, nextAgilentTest, loadHysitron, loadMicromaterials, nextMicromaterialsTest,  # type: ignore[misc]
-    loadFischerScope, nextFischerScopeTest, loadHDF5, nextHDF5Test, restartFile)
-  from .main import (calcYoungsModulus, calcHardness, calcStiffness2Force, analyse,  # type: ignore[misc]
-    identifyLoadHoldUnload, identifyLoadHoldUnloadCSM, nextTest, saveToUserMeta)
-  from .theory import (YoungsModulus, ReducedModulus, OliverPharrMethod, inverseOliverPharrMethod,  # type: ignore[misc]
-    stiffnessFromUnloading, unloadingPowerFunc)
-  from .hertz import popIn, hertzFit  # type: ignore[misc]
-  from .plot import plotTestingMethod, plot, plotAsDepth, plotAll  # type: ignore[misc]
-  from .calibration import calibration, calibrateStiffness  # type: ignore[misc]
-  from .verification import verifyOneData, verifyOneData1, verifyReadCalc  # type: ignore[misc]
-  from .definitions import _DefaultModel, _DefaultOutput, _DefaultSurface, _DefaultVendorDependent
-
   def __init__(self, fileName=None, nuMat= 0.3, tip=None, surface=None, model=None, output=None):
     """
     Initialize indentation experiment data
@@ -62,12 +57,12 @@ class Indentation:
     surface = {} if surface is None else surface
     model = {} if model is None else model
     output = {} if output is None else output
-    self.surface = copy.deepcopy(self._DefaultSurface)  # dictionary describing the surface find
+    self.surface = copy.deepcopy(_DefaultSurface)  # dictionary describing the surface find
     self.surface.update(surface)
-    self.model   = copy.deepcopy(self._DefaultModel)    # dictionary for all numerical parameters that determine the results
+    self.model   = copy.deepcopy(_DefaultModel)    # dictionary for all numerical parameters that determine the results
     self.modelUserChoice = dict(model)
     self.model.update(self.modelUserChoice)
-    self.output  = copy.deepcopy(self._DefaultOutput)   # dictionary for all output parameters, axis
+    self.output  = copy.deepcopy(_DefaultOutput)   # dictionary for all output parameters, axis
     self.output.update(output)
 
     self.newFileRead = True                                 #file was just loaded
@@ -147,8 +142,8 @@ class Indentation:
     """
     fill defaults depending on vendor, if information is not yet present
     """
-    if self.vendor in self._DefaultVendorDependent:
-      for key, valueDefault in self._DefaultVendorDependent[self.vendor].items():
+    if self.vendor in _DefaultVendorDependent:
+      for key, valueDefault in _DefaultVendorDependent[self.vendor].items():
         if key in self.modelUserChoice:
           self.model[key] =  self.modelUserChoice[key]
         elif key not in self.model:
