@@ -42,7 +42,6 @@ class Indentation:
   from .calibration import calibration, calibrateStiffness  # type: ignore[misc]
   from .verification import verifyOneData, verifyOneData1, verifyReadCalc  # type: ignore[misc]
   from .definitions import _DefaultModel, _DefaultOutput, _DefaultSurface, _DefaultVendorDependent
-  from .seldomUsedFunctions import tareDepthForce, analyseDrift  # type: ignore[misc]
 
   def __init__(self, fileName=None, nuMat= 0.3, tip=None, surface=None, model=None, output=None):
     """

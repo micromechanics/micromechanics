@@ -17,8 +17,8 @@ def hertzEquation(h,h0,E,R=1):
   Returns:
     numpy.array: force
   """
-  h -= h0
-  h[h<0] = 0
+  h = np.asarray(h, dtype=float) - h0
+  h = np.maximum(h, 0.0)
   return 4./3. * E * np.sqrt(R*h**3)
 
 
