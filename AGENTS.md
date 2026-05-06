@@ -68,6 +68,8 @@ python -m coverage report -m
 python -m coverage html
 ```
 
+DO NOT run tests, convergence, unless explicitly tasked by the user.
+
 ## Commit & Pull Request Guidelines
 
 Recent commits use short, imperative summaries such as `Add information and output of relative standard error` or `Simplify indentation plotting`. Keep commit messages specific to the behavior changed. For releases, `./commit.py 'message' [level]` regenerates `requirements.txt`, commits, tags, and pushes; use it only when intentionally creating a version tag.
@@ -77,3 +79,4 @@ Pull requests should describe the changed behavior, list tests run, and mention 
 ## Agent-Specific Instructions
 
 Do not modify files in `examples/` unless the change is required for a parser or regression fixture. Treat binary example data and generated documentation output as inputs, not routine edit targets.
+For `micromechanics/indentation/*` mixin methods, prefer local `# type: ignore[misc]` on methods whose `self` type is intentionally broader than the mixin class. Do not introduce parallel `_State` or protocol classes just to satisfy mypy; rely on tests to catch mismatches between `Indentation` and its mixins.
