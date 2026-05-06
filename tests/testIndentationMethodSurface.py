@@ -26,14 +26,13 @@ ATTACHED_METHODS = [
   'loadHDF5', 'nextHDF5Test', 'restartFile',
   'calcYoungsModulus', 'calcHardness', 'calcStiffness2Force', 'analyse',
   'identifyLoadHoldUnload', 'identifyLoadHoldUnloadCSM', 'nextTest',
-  'saveToUserMeta', 'correctThermalDrift',
+  'saveToUserMeta',
   'YoungsModulus', 'ReducedModulus', 'OliverPharrMethod',
   'inverseOliverPharrMethod', 'stiffnessFromUnloading', 'unloadingPowerFunc',
   'popIn', 'hertzFit',
   'plotTestingMethod', 'plot', 'plotAsDepth', 'plotAll',
   'calibration', 'calibrateStiffness',
-  'verifyOneData', 'verifyOneData1', 'verifyReadCalc',
-  'tareDepthForce', 'analyseDrift',
+  'verifyOneData', 'verifyOneData1', 'verifyReadCalc'
 ]
 
 
