@@ -56,6 +56,7 @@ Tests use Python `unittest`; development dependencies also include `pytest` and 
 To measure coverage, include both the test suite and executable examples:
 
 ```bash
+python -m coverage erase
 MPLBACKEND=Agg python -m coverage run -m unittest tests/test*
 for f in docs/source/examples/plot_*.py; do MPLBACKEND=Agg python -m coverage run --append "$f"; done
 ```

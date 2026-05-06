@@ -524,11 +524,3 @@ def saveToUserMeta(self):
   self.metaUser.update(meta)
   self.metaUser['code'] = __file__.rsplit('/', maxsplit=1)[-1]
   return
-
-
-def correctThermalDrift(self):
-  """
-  not perfectly implemented
-  """
-  print(self)
-  return

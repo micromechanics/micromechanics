@@ -34,7 +34,7 @@ class Indentation:
   from .input import (loadAgilent, nextAgilentTest, loadHysitron, loadMicromaterials, nextMicromaterialsTest,  # type: ignore[misc]
     loadFischerScope, nextFischerScopeTest, loadHDF5, nextHDF5Test, restartFile)
   from .main import (calcYoungsModulus, calcHardness, calcStiffness2Force, analyse,  # type: ignore[misc]
-    identifyLoadHoldUnload, identifyLoadHoldUnloadCSM, nextTest, saveToUserMeta, correctThermalDrift)
+    identifyLoadHoldUnload, identifyLoadHoldUnloadCSM, nextTest, saveToUserMeta)
   from .theory import (YoungsModulus, ReducedModulus, OliverPharrMethod, inverseOliverPharrMethod,  # type: ignore[misc]
     stiffnessFromUnloading, unloadingPowerFunc)
   from .hertz import popIn, hertzFit  # type: ignore[misc]
