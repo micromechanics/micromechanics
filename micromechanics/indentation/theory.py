@@ -119,7 +119,7 @@ def stiffnessFromUnloading(self, p, h, plot=False):
         validMask is [values of p,h where stiffness is determined]
   """
   if self.method== Method.CSM:
-    print("*ERROR* Should not land here: CSM method")
+    print("**ERROR** Should not land here: CSM method")
     return None, None, None, None, None
   if self.output['verbose']>2:
     print("Number of unloading segments:"+str(len(self.iLHU))+"  Method:"+str(self.method))
@@ -134,13 +134,13 @@ def stiffnessFromUnloading(self, p, h, plot=False):
   for cycleNum, cycle in enumerate(self.iLHU):
     loadStart, loadEnd, unloadStart, unloadEnd = cycle
     if loadStart>loadEnd or loadEnd>unloadStart or unloadStart>unloadEnd:
-      print('*ERROR* stiffnessFromUnloading: indicies not in order:',cycle)
+      print('**ERROR** stiffnessFromUnloading: indicies not in order:',cycle)
     maskSegment = np.zeros_like(h, dtype=bool)
     maskSegment[unloadStart:unloadEnd+1] = True
     maskForce   = np.logical_and(p<p[loadEnd]*self.model['unloadPMax'], p>p[loadEnd]*self.model['unloadPMin'])
     mask        = np.logical_and(maskSegment,maskForce)
     if len(mask[mask])==0:
-      print('*ERROR* mask of unloading is empty. Cannot fit\n')
+      print('**ERROR** mask of unloading is empty. Cannot fit\n')
       return None, None, None, None, None
     if plot:
       if cycleNum==0:

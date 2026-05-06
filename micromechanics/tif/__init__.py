@@ -38,7 +38,7 @@ class Tif:
     if os.path.exists(fontFile):
       self.fontFile = fontFile
     else:
-      logging.error("**ERROR: FOUND NO FONT FILE")
+      logging.error("**ERROR** FOUND NO FONT FILE")
       self.fontFile = None
     self.fileName = fileName
     #set default values
@@ -116,14 +116,14 @@ class Tif:
     elif valueArray[1].encode('utf-8')==b'\xc2\xb5m':  #um
       self.pixelSize *= 1000
     else:
-      logging.error("  Pixel size not nm or um")
+      logging.error("**ERROR** Pixel size not nm or um")
       return
     valueArray = self.meta['Store_resolution'].split()
     widthPixel  = int(valueArray[0])
     logging.info("  Picture width "+str(self.width)+"[um], pixel size: "+str(self.pixelSize)+" [um], widthPixel "+str(widthPixel))
     if abs(widthPixel*self.pixelSize-self.width)/self.width > 0.01:
-      logging.error("Width, PixelSize, Width "+str(widthPixel)+' '+str(self.pixelSize)+' '+str(self.width))
-      logging.error("Data keys error")
+      logging.error("**ERROR** Width, PixelSize, Width "+str(widthPixel)+' '+str(self.pixelSize)+' '+str(self.width))
+      logging.error("**ERROR** Data keys error")
     return
 
 
@@ -161,7 +161,7 @@ class Tif:
     if all(key.lower() in self.meta for key in requiredKeys):
       self.width = float(self.meta['fov_x'])  #guess it is um
       if xmlObject.getElementsByTagName("FOV_X")[0].getAttribute("units") != "um":
-        print("Error field of view not in um", xmlObject.getElementsByTagName("FOV_X")[0].getAttribute("units"))
+        print("**ERROR** field of view not in um", xmlObject.getElementsByTagName("FOV_X")[0].getAttribute("units"))
         return
       print("Picture width",self.width,'[um]')
       self.pixelSize = float(self.meta['fov_x'])/float(self.meta['width'])  #guess it is um
@@ -170,11 +170,11 @@ class Tif:
       widthPixel  = int(self.meta['width'])
       print("widthPixel",widthPixel)
       if abs(widthPixel*self.pixelSize-self.width)/self.width > 0.01:
-        print("Width, PixelSize, Width", widthPixel,self.pixelSize,self.width)
-        print("Data keys error")
+        print("**ERROR** Width, PixelSize, Width", widthPixel,self.pixelSize,self.width)
+        print("**ERROR** Data keys error")
         return
     else:
-      print("Some required keys were missing. Found keys:\n",self.meta)
+      print("**ERROR** Some required keys were missing. Found keys:\n",self.meta)
       return
 
 
@@ -310,7 +310,7 @@ class Tif:
       draw.rectangle((offsetX+scale/10, offsetY+scale*7/10, offsetX+self.barPixel+scale/10, offsetY+scale*9/10), 'black')    #black bar
       draw.text( (offsetX+(self.barPixel+scale/5-textWidth)/2,offsetY), textString, 'black', font=font)
     else:
-      logging.error("image mode not supported "+self.image.mode)
+      logging.error("**ERROR** image mode not supported "+self.image.mode)
 
 
 
@@ -460,7 +460,7 @@ class Tif:
     elif color=='b':
       lineThreshold = np.where(lineAvg<1)[0]
     else:
-      print('**ERROR, only know colors b,w')
+      print('**ERROR** only know colors b,w')
       return
     if len(lineThreshold)>0:
       self.crop(yMax=lineThreshold[0])
@@ -499,7 +499,7 @@ class Tif:
     if self.image.mode == 'P':
       if method in ['equalization', 'e']:
         self.image = Image.fromarray(exposure.equalize_hist(np.array(self.image))*255).convert('P')
-        print('something not correct here')
+        print('**ERROR** something not correct here')
       if method in ['rescale', 'r']:
         pMin, pMax = np.percentile(self.image, (percent, 100-percent))
         self.image = Image.fromarray(exposure.rescale_intensity(np.array(self.image), in_range=(pMin, pMax))).convert('P')
@@ -507,13 +507,13 @@ class Tif:
         try:
           self.image = Image.fromarray(exposure.equalize_adapthist(np.array(self.image), clip_limit=percent/100.)*255).convert('P')
         except:
-          print("Exception hit in Tif.py:426")
+          print("**ERROR** Exception hit in Tif.py:426")
     elif self.image.mode == "RGB":
-      print('enhancement does not work work for color images')
+      print('**ERROR** enhancement does not work work for color images')
       print('Do first: i.image = i.image.convert(mode="L")')
       print('Do second: i.image = i.image.convert(mode="P")')
     else:
-      print(f"Enhance - image type not supported: {self.image.mode}")
+      print(f"**ERROR** Enhance - image type not supported: {self.image.mode}")
     return
 
 

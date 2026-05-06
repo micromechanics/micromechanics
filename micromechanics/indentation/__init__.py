@@ -92,7 +92,7 @@ class Indentation:
       fileName = str(Path(__file__).parent/'data/Example.xls')
     if not os.path.exists(fileName):
       if fileName!='':
-        print("*ERROR* __init__: file does not exist",fileName)
+        print("**ERROR** __init__: file does not exist",fileName)
         return
       else:
         recognized = True
@@ -155,7 +155,7 @@ class Indentation:
         elif key not in self.model:
           self.model[key]=valueDefault
     else:
-      print('**ERROR defaults not defined for',self.vendor)
+      print('**ERROR** defaults not defined for',self.vendor)
     return
 
 

@@ -207,7 +207,7 @@ def calibrateStiffness(self,critDepth=0.5,critForce=0.0001,plotStiffness=True, r
     mask = np.logical_and(mask, pAll>critForce)
     print("number of data-points:", len(x[mask]))
   if len(mask[mask])==0:
-    print("ERROR too much filtering, no data left. Decrease critForce and critDepth")
+    print("**ERROR** too much filtering, no data left. Decrease critForce and critDepth")
     return None
 
   param, covM = np.polyfit(x[mask],y[mask],1, cov=True)

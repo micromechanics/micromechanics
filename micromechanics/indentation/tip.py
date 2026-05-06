@@ -126,7 +126,7 @@ class Tip:
       rArea[~mask] = deltaY - tan*deltaX
       area = math.pi * rArea * rArea
     else:
-      print("*ERROR*: prefactors last value does not contain type")
+      print("**ERROR** prefactors last value does not contain type")
     area[area<0] = 0.0
     return area/1.e6 # conversion of unit from nm^2 to um^2
 
@@ -157,7 +157,7 @@ class Tip:
     elif self.prefactors[-1]=="perfect":
       h = math.sqrt(area / 24.494)
     else:
-      print("*ERROR*: prefactors last value does not contain type")
+      print("**ERROR** prefactors last value does not contain type")
       return None
     return h
 

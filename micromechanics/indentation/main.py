@@ -266,7 +266,7 @@ def identifyLoadHoldUnload(self,plot=False):
   #store them in a list [[loadStart1, loadEnd1, unloadStart1, unloadEnd1], [loadStart2, loadEnd2, unloadStart2, unloadEnd2],.. ]
   self.iLHU = []
   if len(loadIdx) != len(unloadIdx):
-    print("**ERROR: Load-Hold-Unload identification did not work",loadIdx, unloadIdx  )
+    print("**ERROR** Load-Hold-Unload identification did not work",loadIdx, unloadIdx  )
   else:
     self.output['successTest'].append(self.testName)
   try:
@@ -276,15 +276,15 @@ def identifyLoadHoldUnload(self,plot=False):
         if np.min(newEntry)>0 and np.max(newEntry)<len(self.h):
           self.iLHU.append(newEntry)
         else:
-          print("**ERROR: iLHU values out of bounds", newEntry,' with length',len(self.h))
+          print("**ERROR** iLHU values out of bounds", newEntry,' with length',len(self.h))
           if len(self.iLHU)>0:
             self.iLHU.append([])
       else:
-        print("**ERROR: some segment not found", loadIdx[::2][i], loadIdx[1::2][i], unloadIdx[::2][i], unloadIdx[1::2][i])
+        print("**ERROR** some segment not found", loadIdx[::2][i], loadIdx[1::2][i], unloadIdx[::2][i], unloadIdx[1::2][i])
         if len(self.iLHU)>0:
           self.iLHU.append([])
   except:
-    print("**ERROR: load-unload-segment not found")
+    print("**ERROR** load-unload-segment not found")
     self.iLHU = []
   if len(self.iLHU)>1:
     self.method=Method.MULTI
@@ -320,7 +320,7 @@ def identifyLoadHoldUnloadCSM(self, plot=False):
     try:
       hist,bins= np.histogram( self.p[iHold:] , bins=1000)
     except:
-      print('**ERROR identifyLoadHoldUnloadCSM: 1')
+      print('**ERROR** identifyLoadHoldUnloadCSM: 1')
       self.iLHU = []
       self.iDrift = []
       return False
@@ -467,7 +467,7 @@ def nextTest(self, newTest=True, plotSurface=False):
       else:
         surfaceMatches = np.where(thresValues>thresValue)[0]
       if len(surfaceMatches)==0:
-        print('**ERROR: could not identify surface for threshold', thresValue)
+        print('**ERROR** could not identify surface for threshold', thresValue)
         return False
       surface = surfaceMatches[0]
       # ONLY CHANGE SURFACE, NOT LOAD (only if explicitly stated)
@@ -499,7 +499,7 @@ def nextTest(self, newTest=True, plotSurface=False):
   try:
     self.identifyLoadHoldUnload()
   except:
-    print('**ERROR: could not identify load-hold-unload. Suggestion: try next test')
+    print('**ERROR** could not identify load-hold-unload. Suggestion: try next test')
     print(traceback.format_exc())
   return success
 

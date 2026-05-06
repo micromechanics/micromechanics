@@ -97,12 +97,12 @@ def verifyReadCalc(self, plot=True):
       plt.ylim([0,np.max(self.hc)])
       plt.xlabel('time [s]')
       plt.ylabel(r'contact depth $h_c$ [$\mu m$]')
-      plt.title(f"Error in hc: {np.linalg.norm(hc-self.hc):.2e}" )
+      plt.title(f"**ERROR** in hc: {np.linalg.norm(hc-self.hc):.2e}" )
       showWithTimeout()
     else:
-      print(f"  Error in hc: {np.linalg.norm(hc-self.hc):.2e}")
+      print(f"  **ERROR** in hc: {np.linalg.norm(hc-self.hc):.2e}")
   else:
-    print(f"Error in hc: {abs(hc-self.hc)*100./hc:.3e} %% between {hc:.3e} and {self.hc:.3e}")
+    print(f"**ERROR** in hc: {abs(hc-self.hc)*100./hc:.3e} %% between {hc:.3e} and {self.hc:.3e}")
   if self.method==Method.CSM:
     if plot:
       plt.semilogy(self.t[self.valid],self.Ac,'o',label='read')
@@ -112,12 +112,12 @@ def verifyReadCalc(self, plot=True):
       plt.ylim([0,np.max(self.Ac)])
       plt.xlabel('time [s]')
       plt.ylabel(r'contact area $A_c$ [$\mu m^2$]')
-      plt.title(f"Error in Ac: {np.linalg.norm(Ac-self.Ac):.2e}")
+      plt.title(f"**ERROR** in Ac: {np.linalg.norm(Ac-self.Ac):.2e}")
       showWithTimeout()
     else:
-      print(f"  Error in Ac: {np.linalg.norm(Ac-self.Ac):.2e}")
+      print(f"  **ERROR** in Ac: {np.linalg.norm(Ac-self.Ac):.2e}")
   else:
-    print(f"Error in Ac: {abs(Ac-self.Ac)*100./Ac:.3e} %% between {Ac:.3e} and {self.Ac:.3e}")
+    print(f"**ERROR** in Ac: {abs(Ac-self.Ac)*100./Ac:.3e} %% between {Ac:.3e} and {self.Ac:.3e}")
   if self.method==Method.CSM:
     if plot:
       plt.plot(self.t[self.valid],self.modulusRed,'o',label='read')
@@ -127,12 +127,12 @@ def verifyReadCalc(self, plot=True):
       plt.ylabel('reduced modulus [GPa]')
       plt.xlim(left=0)
       plt.ylim([0,np.max(self.modulusRed)])
-      plt.title(f"Error in modulusRed: {np.linalg.norm(modulusRed-self.modulusRed):.2e}")
+      plt.title(f"**ERROR** in modulusRed: {np.linalg.norm(modulusRed-self.modulusRed):.2e}")
       showWithTimeout()
     else:
-      print(f"  Error in modulusRed: {np.linalg.norm(modulusRed-self.modulusRed):.2e}")
+      print(f"  **ERROR** in modulusRed: {np.linalg.norm(modulusRed-self.modulusRed):.2e}")
   else:
-    print(f"Error in modulusRed: {abs(modulusRed-self.modulusRed)*100./modulusRed:.3e} %% between "+
+    print(f"**ERROR** in modulusRed: {abs(modulusRed-self.modulusRed)*100./modulusRed:.3e} %% between "+
           f"{modulusRed:.3e} and {self.modulusRed:.3e}")
   if self.method==Method.CSM:
     if plot:
@@ -143,12 +143,12 @@ def verifyReadCalc(self, plot=True):
       plt.ylabel('modulus E [GPa]')
       plt.xlim(left=0)
       plt.ylim([0,np.max(self.modulus)])
-      plt.title(f"Error in modulus: {np.linalg.norm(modulus-self.modulus):.2e}")
+      plt.title(f"**ERROR** in modulus: {np.linalg.norm(modulus-self.modulus):.2e}")
       showWithTimeout()
     else:
-      print(f"  Error in modulus: {np.linalg.norm(modulus-self.modulus):.2e}")
+      print(f"  **ERROR** in modulus: {np.linalg.norm(modulus-self.modulus):.2e}")
   else:
-    print(f"Error in modulus: {abs(modulus-self.modulus)*100./modulus:.3e}%% {modulus:.3e}-{self.modulus:.3e}")
+    print(f"**ERROR** in modulus: {abs(modulus-self.modulus)*100./modulus:.3e}%% {modulus:.3e}-{self.modulus:.3e}")
   if self.method==Method.CSM:
     if plot:
       plt.plot(self.t[self.valid],self.hardness,'o',label='read')
@@ -158,11 +158,11 @@ def verifyReadCalc(self, plot=True):
       plt.ylabel('hardness [GPa]')
       plt.xlim(left=0)
       plt.ylim([0,np.max(self.hardness)])
-      plt.title(f"Error in hardness: {np.linalg.norm(hardness-self.hardness):.2e}")
+      plt.title(f"**ERROR** in hardness: {np.linalg.norm(hardness-self.hardness):.2e}")
       showWithTimeout()
     else:
-      print(f"  Error in hardness: {np.linalg.norm((hardness-self.hardness)):.2e}")
+      print(f"  **ERROR** in hardness: {np.linalg.norm((hardness-self.hardness)):.2e}")
   else:
-    print(f"Error in hardness:  {abs(hardness-self.hardness)*100./hardness:.3e} %% between {hardness:.3e} "+
+    print(f"**ERROR** in hardness:  {abs(hardness-self.hardness)*100./hardness:.3e} %% between {hardness:.3e} "+
           f"and {self.hardness:.3e}")
   return

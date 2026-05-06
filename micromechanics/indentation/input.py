@@ -220,7 +220,7 @@ def loadHysitron(self, fileName, plotContact=False):
       self.tip.prefactors = prefact
       self.tip.prefactors.append('iso')
       if (numSegments!=len(segmentTime)) or (numSegments!=len(segmentDeltaP)):
-        print("*ERROR*", numSegments,len(segmentTime),len(segmentDeltaP ) )
+        print("**ERROR**", numSegments,len(segmentTime),len(segmentDeltaP ) )
       segmentDeltaP = np.array(segmentDeltaP)
       segmentPoints = np.array(segmentPoints)
       segmentTime   = np.array(segmentTime)
@@ -337,7 +337,7 @@ def loadHysitron(self, fileName, plotContact=False):
         plt.show()
         print ("Debug pZero and pNoise:",pZero,pNoise)
     else:
-      print("Error", forceTreshold,np.where(self.p>forceTreshold)[0][:10])
+      print("**ERROR**", forceTreshold,np.where(self.p>forceTreshold)[0][:10])
       pZero = 0
       idx   = 0
     ## self.t -= self.t[idx] #do not offset time since segment times are given
@@ -613,7 +613,7 @@ def nextHDF5Test(self):
   if self.metaUser['measurementType'].split()[0] in nameDict:
     nameDict = nameDict[self.metaUser['measurementType'].split()[0]]
   else:
-    print("**ERROR instrument not in terms.json:", self.metaUser['measurementType'].split()[0])
+    print("**ERROR** instrument not in terms.json:", self.metaUser['measurementType'].split()[0])
     return False
 
 
@@ -638,7 +638,7 @@ def nextHDF5Test(self):
         break
 
   if self.valid is None or validFull is None:
-    print('Missing information for',self.metaUser['measurementType'].split()[0],': h or valid data')
+    print('**ERROR** Missing information for',self.metaUser['measurementType'].split()[0],': h or valid data')
     print('Keys exist',inFile)
     return False
 
@@ -660,7 +660,7 @@ def nextHDF5Test(self):
   # Test if essential items exist
   for attrib in ['h','t','p']:
     if not hasattr(self, attrib) or len(getattr(self, attrib))==0:
-      print('Missing information for',self.metaUser['measurementType'].split()[0],': ',attrib)
+      print('**ERROR** Missing information for',self.metaUser['measurementType'].split()[0],': ',attrib)
       print('Keys exist',inFile)
       return False
   self.valid = self.valid[validFull]

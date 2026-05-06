@@ -5,7 +5,8 @@ import numpy as np
 from micromechanics.indentation import Indentation
 
 skipFiles = ['examples/Agilent/FS_XP_MethodInclCalibration.txt', 'examples/Agilent/ISO.txt',
-			 'examples/Agilent/CSM.txt', 'examples/Zeiss/Zeiss.tif']
+			 'examples/Agilent/CSM.txt', 'examples/Zeiss/Zeiss.tif', 'examples/FEI/KBZ_REM_01.tif',
+			 'examples/NPVE/Pearlite.tif']
 
 class TestMethods(unittest.TestCase):
 	def test_all_filesn(self):

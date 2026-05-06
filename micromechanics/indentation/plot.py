@@ -73,7 +73,7 @@ def plot(self, saveFig=False, show=True, plotAllItems=True):
   if self.method != Method.CSM and plotAllItems:
     _, _, maskUnload, optPar, _ = self.stiffnessFromUnloading(self.p, self.h)
     if maskUnload is None or optPar is None:
-      print("**ERROR plot: unloading fit unavailable; run analyse() or check load-hold-unload identification")
+      print("**ERROR** plot: unloading fit unavailable; run analyse() or check load-hold-unload identification")
       return
     h_, p_ = self.h[maskUnload], self.p[maskUnload]
     plt.plot(self.h[maskUnload], self.unloadingPowerFunc(self.h[maskUnload],*optPar), 'C1', label='fit powerlaw')
@@ -92,7 +92,7 @@ def plot(self, saveFig=False, show=True, plotAllItems=True):
           h_ = np.linspace(self.hc, self.h[maskUnload][0], 10)
         plt.plot(h_,   self.slope*h_+stiffnessLineInterceptY, 'r--', lw=2, label='stiffness')
       except:
-        print('**Error something is wrong with plotting unloading-line')
+        print('**ERROR** something is wrong with plotting unloading-line')
         print(traceback.format_exc())
     # plt.legend(loc=0, numpoints=1)
   elif plotAllItems:
@@ -164,7 +164,7 @@ def plotAsDepth(self, entity, hvline=None, vmax=None, vmin=None, show=True):
     show (bool): show figure, else do not show
   """
   if not isinstance(entity, str):
-    print("**ERROR plotAsDepth: entity=[E,H,K,K2P,hc,Ac,modulusRed]")
+    print("**ERROR** plotAsDepth: entity=[E,H,K,K2P,hc,Ac,modulusRed]")
     return
   if hvline is not None:
     plt.axhline(hvline, c='k')
@@ -186,7 +186,7 @@ def plotAsDepth(self, entity, hvline=None, vmax=None, vmin=None, show=True):
     plt.plot(self.h[self.valid], self.k2p, "C0.")
     mask = self.h[self.valid]>0.1
     if np.count_nonzero(mask)<2:
-      print("**ERROR plotAsDepth: not enough data above 0.1 um for K2P fit")
+      print("**ERROR** plotAsDepth: not enough data above 0.1 um for K2P fit")
       return
     fit = np.polyfit(self.h[self.valid][mask], self.k2p[mask],1)
     if show:
@@ -201,7 +201,7 @@ def plotAsDepth(self, entity, hvline=None, vmax=None, vmin=None, show=True):
     plt.plot(self.h[self.valid], self.Ac, "o")
     plt.ylabel(r"Contact area [$\mathrm{\mu m^2}$]")
   else:
-    print("Unknown entity")
+    print("**ERROR** Unknown entity")
     return
   plt.xlabel(r"depth "+r'[$\mathrm{\mu m}$]')
   if vmax is not None:
