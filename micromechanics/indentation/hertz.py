@@ -1,10 +1,15 @@
 """All functions relating to the Hertz equation for contact of sphere and flat surface"""
+from typing import Any
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+  from .core import Indentation
 
 
-def hertzEquation(h,h0,E,R=1):
+def hertzEquation(h:np.ndarray, h0:float, E:float, R:float=1) -> np.ndarray:
   """
   calculate the force for a given reduced Youngsmodulus, tip-radius and penetration depth
 
@@ -26,7 +31,7 @@ class IndentationHertzMixin:
   """
   Hertzian contact and pop-in methods for :class:`Indentation`.
   """
-  def hertzFit(self, forceRange=(1, 25), correctH=True, plot=True):
+  def hertzFit(self:'Indentation', forceRange:tuple[float,float]=(1, 25), correctH:bool=True, plot:bool=True) -> list[float]:# type: ignore[misc]
     """
     Fit the initial force displacement curve to the Hertzian curve
 
@@ -52,7 +57,7 @@ class IndentationHertzMixin:
     if plot:
       plt.plot(self.h,self.p)
       h_ = np.linspace(depthRange[0], depthRange[1])
-      plt.plot(h_, hertzEquation(h_,*para0))
+      plt.plot(h_, hertzEquation(h_, para0[0], para0[1]))
       plt.ylim([0,forceRange[1]*1.2])
       plt.xlim([depthRange[0]-0.01,depthRange[1]+0.01])
       plt.show()
@@ -62,7 +67,7 @@ class IndentationHertzMixin:
 
 
 
-  def popIn(self, correctH=True, plot=True, removeInitialNM=2.):
+  def popIn(self:'Indentation', correctH:bool=True, plot:bool=True, removeInitialNM:float=2.) -> tuple[float, dict[str,Any]]:# type: ignore[misc]
     """
     Search for pop-in by jump in depth rate
 
@@ -109,7 +114,7 @@ class IndentationHertzMixin:
     fitPlast  = np.polyfit(h[iJump+1:iMax],p[iJump+1:iMax],2) #does not have to be parabola, just close fit
     slopePlast= np.polyder(np.poly1d(fitPlast))(h[iJump+1] )
 
-    def funct(depth, prefactor, h0):
+    def funct(depth:np.ndarray, prefactor:float, h0:float) -> np.ndarray:
       diff           = depth-h0
       if isinstance(diff, np.float64):
         diff = max(diff,0.0)

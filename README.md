@@ -48,11 +48,6 @@ Test the code: linting, documentation and then the tests from project main direc
 ``` bash
 pylint $(git ls-files 'micromechanics/*/*.py')
 make -C docs html
-python tests/testVerification.py
-python tests/testAgilent_xls.py
-python tests/testMicromaterials_hdf5.py
-python tests/testFischerScope_hdf5.py
-python tests/testAllFiles.py
 ```
 These tests are also executed as github action once pushed.
 
@@ -60,6 +55,8 @@ or the short form to run all the tests
 ``` bash
 python -m unittest tests/test*
 ```
+
+## For convenience, all tests in one bash command
 
 Check test coverage, including package code and the example files in `docs/source/examples`
 ``` bash
