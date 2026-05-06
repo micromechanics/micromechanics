@@ -53,7 +53,7 @@ class Indentation(IndentationInputMixin, IndentationMainMixin, IndentationTheory
     np.seterr(divide='ignore', invalid='ignore')
     self.nuMat   = nuMat                            # nuMat: material's Posson ratio
     self.method  = Method.ISO                       # iso default: csm uses different methods
-    self.tip     = Tip() if tip is None else tip    # nanoindenter tip and compliance
+    self.tip:Tip = Tip() if tip is None else tip    # nanoindenter tip and compliance
     surface = {} if surface is None else surface
     model = {} if model is None else model
     output = {} if output is None else output
@@ -70,7 +70,8 @@ class Indentation(IndentationInputMixin, IndentationMainMixin, IndentationTheory
                                                             #(StartLoad-StartHold-StartUnload-EndLoad)
     self.iDrift = [-1,-1]                                   #start and end indicies of drift segment
     self.metaVendor = {}                                    #some results come from input file
-    self.metaUser   = {}                                    #metadata added by analysis
+    self.metaUser: dict[str, float|list[float]|str]   = {}  #metadata added by analysis
+
     # define all attributes
     self.testName, self.testList = None, None
     self.h, self.t, self.p, self.valid       = [],[],[],[]

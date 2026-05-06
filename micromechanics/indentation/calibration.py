@@ -1,10 +1,20 @@
 """CALIBRATION METHODS"""
+from typing import TYPE_CHECKING
+from typing_extensions import TypedDict, Unpack
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import savgol_filter#, medfilt
 from scipy import interpolate
 import lmfit
 from .definitions import Method
+
+if TYPE_CHECKING:
+  from .core import Indentation
+
+class CalibrationKwargs(TypedDict, total=False):
+  constantTerm: bool
+  returnArea: bool
+  frameCompliance: float
 
 
 class IndentationCalibrationMixin:
@@ -13,8 +23,9 @@ class IndentationCalibrationMixin:
   """
 
 
-  def calibration(self,eTarget=72.0,numPolynomial=3,critDepthStiffness=1.0, critForce=1.0, critDepthTip=0.0,
-                  plotStiffness=False, plotTip=False, **kwargs):
+  def calibration(self:'Indentation', eTarget:float=72.0, numPolynomial:int=3,critDepthStiffness:float=1.0, # type: ignore[misc]
+                  critForce:float=1.0, critDepthTip:float=0.0, plotStiffness:bool=False, plotTip:bool=False,
+                  **kwargs: Unpack[CalibrationKwargs]) -> bool|tuple[np.ndarray, np.ndarray]:
     """
     Calibrate by first frame-stiffness and then area-function calibration
 
@@ -37,10 +48,14 @@ class IndentationCalibrationMixin:
     """
     constantTerm = kwargs.get('constantTerm', False)
     if 'frameCompliance' in kwargs:
-      frameCompliance = kwargs.get('frameCompliance')
+      frameCompliance = kwargs['frameCompliance']
     else:
-      frameCompliance = self.calibrateStiffness(critDepth=critDepthStiffness, critForce=critForce,
-                                                plotStiffness=plotStiffness)
+      res = self.calibrateStiffness(critDepth=critDepthStiffness, critForce=critForce, plotStiffness=plotStiffness)
+      if isinstance(res, float):
+        frameCompliance = res
+      else:
+        print('**ERROR** calibration failed.')
+        return False
     ## re-create data-frame of all files
     self.restartFile()
     self.tip.compliance = frameCompliance
@@ -83,7 +98,10 @@ class IndentationCalibrationMixin:
     #reverse OliverPharrMethod to determine area function
     modulusRedGoal = self.ReducedModulus(eTarget, self.nuMat)
     Ac = np.array( np.power( slope  / (2.0*modulusRedGoal/np.sqrt(np.pi))  ,2))
-    hc = np.array( h - self.model['beta']*p/slope )
+    beta = self.model['beta']
+    if not isinstance(beta, float):
+      beta = 0.75
+    hc = np.array( h - beta*p/slope )
     #calculate shape function as interpolation of 30 points (log-spacing)
     #  first calculate the  savgol-average using a adaptive window-size
     if numPolynomial is None:
@@ -110,11 +128,12 @@ class IndentationCalibrationMixin:
       else:
         appendix = 'iso'
 
-      def fitFunct(params):     #error function
+      def fitFunct(params:lmfit.Parameters) -> np.ndarray:     #error function
         self.tip.prefactors = [params[x].value for x in params]+[appendix]
         tempArea = self.tip.areaFunction(hc)          #use all datapoints as critDepth is for compliance plot
         residual     = np.abs(Ac-tempArea)/len(Ac)    #normalize by number of points
         return residual
+
       # Parameters, 'value' = initial condition, 'min' and 'max' = boundaries
       params = lmfit.Parameters()
       params.add('m0', value= 24.3, min=10.0, max=60.0)
@@ -153,7 +172,7 @@ class IndentationCalibrationMixin:
     return True
 
 
-  def calibrateStiffness(self,critDepth=0.5,critForce=0.0001,plotStiffness=True, returnData=False):
+  def calibrateStiffness(self:'Indentation',critDepth:float=0.5,critForce:float=0.0001,plotStiffness:bool=True, returnData:bool=False) -> float|tuple[np.ndarray, np.ndarray]:# type: ignore[misc]
     """
     Calibrate by first frame-stiffness from K^2/P of individual measurement
 
@@ -169,10 +188,12 @@ class IndentationCalibrationMixin:
     print("Start compliance fitting")
     ## output representative values
     if self.method==Method.CSM:
-      x, y, h = None, None, None
+      x: None|np.ndarray = None
+      y: None|np.ndarray = None
+      h: None|np.ndarray = None
       while True:
         self.analyse()
-        if x is None:
+        if x is None or y is None or h is None:
           x = 1./np.sqrt(self.p[self.valid]-np.min(self.p[self.valid])+0.001) #add 1nm:prevent runtime error
           y = 1./self.slope
           h = self.h[self.valid]
@@ -189,25 +210,31 @@ class IndentationCalibrationMixin:
         mask = np.logical_and(h>np.max(h)*0.5, x<np.max(x)*0.5)
     else:
       ## create data-frame of all files
-      pAll, hAll, sAll = [], [], []
+      pAll_: list[float] = []
+      hAll_: list[float] = []
+      sAll_: list[float] = []
       while True:
         if self.output['progressBar'] is not None:
           self.output['progressBar'](1-len(self.testList)/len(self.allTestList), 'calibrateStiffness')
         self.analyse()
         if isinstance(self.metaUser['pMax_mN'], list):
-          pAll = pAll+list(self.metaUser['pMax_mN'])
-          hAll = hAll+list(self.metaUser['hMax_um'])
-          sAll = sAll+list(self.metaUser['S_mN/um'])
-        else:
-          pAll = pAll+[self.metaUser['pMax_mN']]
-          hAll = hAll+[self.metaUser['hMax_um']]
-          sAll = sAll+[self.metaUser['S_mN/um']]
+          pAll_ = pAll_+list(self.metaUser['pMax_mN'])
+        elif isinstance(self.metaUser['pMax_mN'], float):
+          pAll_ = pAll_+[self.metaUser['pMax_mN']]
+        if isinstance(self.metaUser['hMax_um'], list):
+          hAll_ = hAll_+list(self.metaUser['hMax_um'])
+        elif isinstance(self.metaUser['hMax_um'], float):
+          hAll_ = hAll_+[self.metaUser['hMax_um']]
+        if isinstance(self.metaUser['S_mN/um'], list):
+          sAll_ = sAll_+list(self.metaUser['S_mN/um'])
+        elif isinstance(self.metaUser['S_mN/um'], float):
+          sAll_ = sAll_+[self.metaUser['S_mN/um']]
         if not self.testList:
           break
         self.nextTest()
-      pAll = np.array(pAll)
-      hAll = np.array(hAll)
-      sAll = np.array(sAll)
+      pAll = np.array(pAll_)
+      hAll = np.array(hAll_)
+      sAll = np.array(sAll_)
       ## determine compliance by intersection of 1/sqrt(p) -- compliance curve
       x = 1./np.sqrt(pAll)
       y = 1./sAll
@@ -216,7 +243,7 @@ class IndentationCalibrationMixin:
       print("number of data-points:", len(x[mask]))
     if len(mask[mask])==0:
       print("**ERROR** too much filtering, no data left. Decrease critForce and critDepth")
-      return None
+      return -1
 
     param, covM = np.polyfit(x[mask],y[mask],1, cov=True)
     print("fit f(x)=",round(param[0],5),"*x+",round(param[1],5))
@@ -254,8 +281,8 @@ class IndentationCalibrationMixin:
       ax.set_xlabel(r"1/sqrt(p) [$\mathrm{mN^{-1/2}}$]")
       ax.set_ylabel(r"meas. compliance [$\mathrm{\mu m/mN}$]")
       ax.legend(loc=4)
-      ax.set_ylim([0,np.max(y[mask])*1.5])
-      ax.set_xlim([0,np.max(x[mask])*1.5])
+      ax.set_xlim((0, np.max(x[mask])*1.5))
+      ax.set_ylim((0, np.max(y[mask])*1.5))
       if plotStiffness:
         plt.show()
     return frameCompliance
