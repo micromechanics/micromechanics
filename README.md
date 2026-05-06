@@ -63,9 +63,10 @@ python -m unittest tests/test*
 
 Check test coverage, including package code and the example files in `docs/source/examples`
 ``` bash
-python -m coverage run -m unittest tests/test*
-for f in docs/source/examples/plot_*.py; do python -m coverage run --append "$f"; done
+MPLBACKEND=Agg python -m coverage run -m unittest tests/test*
+for f in docs/source/examples/plot_*.py; do MPLBACKEND=Agg python -m coverage run --append "$f"; done
 ```
+
 Coverage report for LLMs
 ``` bash
 python -m coverage report -m

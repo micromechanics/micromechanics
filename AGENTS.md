@@ -53,6 +53,20 @@ Follow the existing Python style in the package. The project uses Pylint configu
 
 Tests use Python `unittest`; development dependencies also include `pytest` and coverage tools. Name new tests `tests/test*.py` so they are picked up by `python -m unittest tests/test*`. Prefer focused regression tests using the smallest relevant file from `examples/`. When changing parsers or calibration behavior, run both the related vendor test and `tests/testAllFiles.py`.
 
+To measure coverage, include both the test suite and executable examples:
+
+```bash
+MPLBACKEND=Agg python -m coverage run -m unittest tests/test*
+for f in docs/source/examples/plot_*.py; do MPLBACKEND=Agg python -m coverage run --append "$f"; done
+```
+
+Use `MPLBACKEND=Agg` for example coverage runs so matplotlib examples render without opening interactive windows that must be closed manually. Inspect coverage with:
+
+```bash
+python -m coverage report -m
+python -m coverage html
+```
+
 ## Commit & Pull Request Guidelines
 
 Recent commits use short, imperative summaries such as `Add information and output of relative standard error` or `Simplify indentation plotting`. Keep commit messages specific to the behavior changed. For releases, `./commit.py 'message' [level]` regenerates `requirements.txt`, commits, tags, and pushes; use it only when intentionally creating a version tag.

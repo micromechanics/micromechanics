@@ -11,10 +11,26 @@ import numpy as np
 
 from micromechanics.indentation import Tip
 
+###############################################################################
+# The projected contact area is evaluated as a function of contact depth. All
+# depths passed to ``areaFunction`` are in micrometers, while the calibrated
+# prefactors are stored in the unit convention used by the indentation package.
+
 contact_depth = np.linspace(0.01, 0.8, 120)
+
+###############################################################################
+# A perfect Berkovich tip is the usual analytical reference. The ISO-style tip
+# uses a polynomial area function, and the spherical model is useful for blunt
+# tips or rounded apex behavior at shallow depth.
+
 perfect = Tip("perfect")
 iso = Tip(shape=[24.5, 420.0, -30.0])
 sphere = Tip(shape=[3.0, 70.3, "sphere"])
+
+###############################################################################
+# Larger area at a given depth means the same load would produce a lower
+# hardness. Comparing area functions is therefore a direct way to inspect how a
+# tip calibration changes the mechanical result.
 
 area_perfect = perfect.areaFunction(contact_depth.copy())
 area_iso = iso.areaFunction(contact_depth.copy())

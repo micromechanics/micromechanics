@@ -14,17 +14,24 @@ repository_root = Path(micromechanics.__file__).resolve().parents[1]
 file_name = repository_root / "examples/FischerScope/N1_1.hdf5"
 
 ###############################################################################
-# Inspect the raw file: it does not start at 0 / 0
+# Inspect the raw file first. The initial depth and force offsets show why a
+# surface correction is needed before comparing indentation curves.
+
 indentation = Indentation(str(file_name), nuMat=0.45)
 indentation.plot()
 
 ###############################################################################
-# Use surface correction using a load threshold; the depth is now at 0. But the force not
-# - one can use different values as critical axis and filtering to smooth signals
+# Use a load threshold to define the contact point. This shifts the depth axis so
+# contact starts at zero, but it intentionally leaves the load signal unchanged.
+# Other surface criteria and filters can be selected through the same dictionary.
+
 indentation = Indentation(str(file_name), nuMat=0.45, surface={"load": 0.1})
 indentation.plot()
 
 ###############################################################################
-# Use surface correction using a load threshold and tare the force. Both are now at 0 / 0
+# Add ``tare load`` when the force should also be shifted to zero at contact.
+# This is useful for plots where both axes should represent values relative to
+# first contact.
+
 indentation = Indentation(str(file_name), nuMat=0.45, surface={"load": 0.1, "tare load": True})
 indentation.plot()

@@ -13,18 +13,38 @@ import numpy as np
 from micromechanics.indentation import Indentation
 from micromechanics.indentation.hertz import hertzEquation
 
+###############################################################################
+# Start from an empty :class:`Indentation` object. In a real workflow the depth
+# and force arrays would usually come from an instrument file. Here they are
+# generated explicitly so the fitted contact point and modulus are known.
+
 indentation = Indentation("")
 indentation.output["verbose"] = 2
+
+###############################################################################
+# The Hertz equation describes elastic contact between a spherical indenter and
+# a flat sample. ``true_h0`` shifts the apparent zero of depth, which mimics the
+# practical problem of finding the first physical contact point.
 
 true_h0 = 0.018
 true_reduced_modulus = 9500.0
 depth = np.linspace(0.0, 0.18, 80)
 force = hertzEquation(depth.copy(), true_h0, true_reduced_modulus)
 
+###############################################################################
+# Assign the synthetic loading curve to the indentation object and fit only the
+# low-load elastic part of the curve. The force range should be chosen before
+# plastic deformation or pop-in events dominate the response.
+
 indentation.h = depth.copy()
 indentation.p = force.copy()
 
 fit_h0, fit_reduced_modulus = indentation.hertzFit(forceRange=(0.02, 6.0), correctH=False, plot=False)
+
+###############################################################################
+# Plot the measured curve and the fitted Hertz curve. The dashed line marks the
+# recovered contact point; for this synthetic data it should coincide with the
+# known offset used above.
 
 fit_depth = np.linspace(depth.min(), depth.max(), 200)
 fit_force = hertzEquation(fit_depth.copy(), fit_h0, fit_reduced_modulus)
