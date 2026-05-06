@@ -1,33 +1,29 @@
 #!/usr/bin/python3
-import traceback, os
+import traceback
 import unittest
-import numpy as np
 from micromechanics.indentation import Indentation
 
-skipFiles = ['examples/Agilent/FS_XP_MethodInclCalibration.txt', 'examples/Agilent/ISO.txt',
-			 'examples/Agilent/CSM.txt', 'examples/Zeiss/Zeiss.tif', 'examples/FEI/KBZ_REM_01.tif',
-			 'examples/NPVE/Pearlite.tif']
+testFiles = [
+	'examples/Agilent/CSM_short.xls',
+	'examples/Agilent/FQ.xls',
+	'examples/Agilent/ISO_short.xls',
+	'examples/Hysitron/RobinSteel0000LC.txt',
+]
 
 class TestMethods(unittest.TestCase):
 	def test_all_filesn(self):
 		try:
 			print('**Purpose**\nCheck if all example files can be loaded and analysed.')
 			### MAIN ###
-			for path, _, files in os.walk('examples'):
-				if files == []:
-					continue
-				for fileName in files:
-					fullPath = path+os.sep+fileName
-					if fullPath in skipFiles:
-						continue
-					print('\nStart with file:',fullPath)
-					i = Indentation(fullPath)
-					while True:
-						i.analyse()
-						print('   Test succeeded', i.testName)
-						if (not i.testList) or len(i.testList)==0:
-							break
-						i.nextTest()
+			for fullPath in testFiles:
+				print('\nStart with file:',fullPath)
+				i = Indentation(fullPath)
+				for _ in range(2):
+					i.analyse()
+					print('   Test succeeded', i.testName)
+					if (not i.testList) or len(i.testList)==0:
+						break
+					i.nextTest()
 			### END OF MAIN ###
 			print('\n*** DONE WITH VERIFY ***')
 

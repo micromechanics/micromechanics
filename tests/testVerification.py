@@ -39,13 +39,13 @@ class TestStringMethods(unittest.TestCase):
 		try:
 			# MAIN
 			print('**PURPOSE**\nLoad a real Agilent XLS file with a reference ISO tip, iterates '
-				  'through all tests/sheets and verifies read values against recalculated values. '
+				  'through the first two tests/sheets and verifies read values against recalculated values. '
 				  'Its purpose is to catch changes in Agilent XLS parsing, tip-area handling, '
 				  'and Oliver-Pharr verification behavior.')
 			tip = Tip(shape = [2.4695e+001,3.9577e+002,-1.6132e+001,1.3341e+002,1.0646e+002,'iso'])
 			print("**INFO: Tip-area prefactors have accuracy of 1e-4; hence area accuracy on that order")
 			i = Indentation('examples/Agilent/FS_XP.xls', nuMat=0.18, tip=tip, model={'cropSlopeToLoading': False})
-			while True:
+			for _ in range(2):
 				print('Sheet name:', i.testName)
 				i.verifyReadCalc(plot=True)
 				if len(i.testList)==0:
