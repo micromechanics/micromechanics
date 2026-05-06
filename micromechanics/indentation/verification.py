@@ -1,9 +1,13 @@
 """VERIFY METHODS"""
+from typing import TYPE_CHECKING
 import numpy as np
 import matplotlib.pyplot as plt
 from .definitions import Method
 
-def showWithTimeout(timeout=1):
+if TYPE_CHECKING:
+  from .core import Indentation
+
+def showWithTimeout(timeout:float=1) -> None:
   """Show the current matplotlib figure for a limited time."""
   plt.show(block=False)
   plt.pause(timeout)
@@ -14,7 +18,7 @@ class IndentationVerificationMixin:
   Verification helpers for :class:`Indentation`.
   """
 
-  def verifyOneData(self):
+  def verifyOneData(self:'Indentation') -> None:# type: ignore[misc]
     """
     Test one data set to ensure everything still working: OliverPharrMethod and area functions
     (normal and inverse)
@@ -53,7 +57,7 @@ class IndentationVerificationMixin:
     return
 
 
-  def verifyOneData1(self):
+  def verifyOneData1(self:'Indentation') -> None:# type: ignore[misc]
     """
     Test one data set to ensure everything still working: OliverPharrMethod and area functions (normal and inverse)
     """
@@ -85,7 +89,7 @@ class IndentationVerificationMixin:
     return
 
 
-  def verifyReadCalc(self, plot=True):
+  def verifyReadCalc(self:'Indentation', plot:bool=True) -> None:# type: ignore[misc]
     """
     Compare Young's modulus data saved in the file to Young's modulus data calculated by these functions
 
