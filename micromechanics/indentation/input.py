@@ -132,15 +132,15 @@ class IndentationInputMixin:
       self.valid[self.valid] = slope[self.valid] > 0.0  #only valid points if stiffness is positiv
     else:
       self.valid = validFull
-    for index in self.indicies:
-      data = np.array(df[self.indicies[index]][1:-1], dtype=np.float64)
+    for value in self.indicies.values():
+      data = np.array(df[value][1:-1], dtype=np.float64)
       mask = np.isfinite(data)
       mask[mask] = data[mask]<1e99
       self.valid = np.logical_and(self.valid, mask)                       #adopt/reduce mask continously
 
     #Run through all items again and crop to only valid data
-    for index in self.indicies:
-      data = np.array(df[self.indicies[index]][1:-1], dtype=np.float64)
+    for index, value in self.indicies.items():
+      data = np.array(df[value][1:-1], dtype=np.float64)
       if not index in self.fullData:
         data = data[self.valid]
       else:
@@ -149,15 +149,6 @@ class IndentationInputMixin:
 
     self.valid = self.valid[validFull]
     #  now all fields (incl. p) are full and defined
-
-    # self.identifyLoadHoldUnload()
-    #TODO_P2 Why is there this code?
-    # if self.onlyLoadingSegment and self.method==Method.CSM:
-    #   # print("Length test",len(self.valid), len(self.h[self.valid]), len(self.p[self.valid])  )
-    #   iMin, iMax = 2, self.iLHU[0][1]
-    #   self.valid[iMax:] = False
-    #   self.valid[:iMin] = False
-    #   self.slope = self.slope[iMin:np.sum(self.valid)+iMin]
 
     #correct data and evaluate missing
     self.h /= 1.e3 #from nm in um
@@ -599,7 +590,6 @@ class IndentationInputMixin:
   def nextHDF5Test(self:'Indentation') -> bool: # type: ignore[misc]
     """
     Go to next branch in HDF5 file
-    - TODO check for non CSM
 
     Returns:
         bool: success
@@ -609,7 +599,6 @@ class IndentationInputMixin:
       return False
     while len(self.testList)>0:
       self.testName = self.testList.pop(0)
-      #  print(self.surface, self.testName)  #TODO_P1 ensure that it works for surfaceFind and skipped tests
       if self.testName not in self.surface or 'surfaceIdx' in self.surface[self.testName]:
         break
     if self.testName in self.surface and 'surfaceIdx' not in self.surface[self.testName]:  #handle last test
@@ -697,13 +686,6 @@ class IndentationInputMixin:
       # self.valid = self.valid[mask]
     else:
       self.p -= self.p[0]
-
-    # # Do drift correction #TODO_P1
-    # self.h -= self.t*self.driftRate  #SB
-
-    # inFile = [element for element in inFile if element not in nameDict['__ignore__']]
-    # if len(inFile)>0:
-    #   print("**INFO on",self.metaUser['measurementType'].split()[0],"fields not imported:",inFile)
     self.iLHU   = []
     self.iDrift = [-1,-1]
     if hasattr(self, 'slope') and np.ndim(self.slope)>0 and len(self.slope)>60: #if more than 30: CSM
