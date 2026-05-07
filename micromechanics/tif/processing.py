@@ -55,7 +55,7 @@ class TifProcessingMixin:
     Args:
       color (str): color to crop black=b, white=w
     """
-    lineAvg = np.sum(self.image, axis=1) /self.image.size[0]
+    lineAvg = np.sum(np.array(self.image), axis=1) /self.image.size[0]
     if color=='w':
       lineThreshold = np.where(lineAvg>254)[0]
     elif color=='b':
@@ -77,7 +77,7 @@ class TifProcessingMixin:
     """
     self.pixelSize /= scaleFactor
     widthPixel, heightPixel = self.image.size
-    self.image = self.image.resize((int(widthPixel*scaleFactor), int(heightPixel*scaleFactor)), Image.NEAREST)
+    self.image = self.image.resize((int(widthPixel*scaleFactor), int(heightPixel*scaleFactor)), Image.Resampling.NEAREST)
     return
 
 
@@ -102,7 +102,7 @@ class TifProcessingMixin:
         self.image = Image.fromarray(exposure.equalize_hist(np.array(self.image))*255).convert('P')
         print('**ERROR** something not correct here')
       if method in ['rescale', 'r']:
-        pMin, pMax = np.percentile(self.image, (percent, 100-percent))
+        pMin, pMax = np.percentile(np.array(self.image), (percent, 100-percent))
         self.image = Image.fromarray(exposure.rescale_intensity(np.array(self.image), in_range=(pMin, pMax))).convert('P')
       if method in ['adaptive', 'a']:
         try:
@@ -129,7 +129,7 @@ class TifProcessingMixin:
     if level < 1:
       return
     for _ in range(0, recursive):
-      self.image = Image.fromarray(  ndimage.median_filter(self.image, level) )
+      self.image = Image.fromarray(  ndimage.median_filter(np.array(self.image), level) )
     self.image = self.image.convert("P")
     return
 
@@ -145,7 +145,7 @@ class TifProcessingMixin:
     if level < 1:
       return
     for _ in range(0, recursive):
-      self.image = Image.fromarray(  ndimage.gaussian_filter(self.image, level) )
+      self.image = Image.fromarray(  ndimage.gaussian_filter(np.array(self.image), level) )
     return
 
 
@@ -158,8 +158,8 @@ class TifProcessingMixin:
        plot (bool): plot graphs during processing
        save (bool): only save once set true; allows to test varios settings before saving
     """
-    level = ndimage.gaussian_filter(self.image, level)
-    imArray = np.array(self.image).astype(np.float64) - level
+    background = ndimage.gaussian_filter(np.array(self.image), level)
+    imArray = np.array(self.image).astype(np.float64) - background
     imArray -= np.min(imArray)
     imArray *= 255.0/np.max(imArray)
     imArray = imArray.astype(np.uint8)
@@ -193,7 +193,7 @@ class TifProcessingMixin:
              this is to verify ones choice
        points (int): smoothness of curve, the more the smoother
     """
-    def curve(x,magnitude,offset, yoffset):
+    def curve(x:np.ndarray, magnitude:float, offset:float, yoffset:float) -> np.ndarray:
       #print "min max",np.min(x), np.max(x), np.mean(x)
       mask = x<offset
       y = np.empty_like(x)
@@ -318,5 +318,8 @@ class TifProcessingMixin:
     """
     Reset it if you want to restart after making unwanted change
     """
-    self.image = self.origImage
+    if self.origImage is None:
+      print("**ERROR** original image not available")
+      return
+    self.image = self.origImage.copy()
     return

@@ -47,6 +47,7 @@ If you want to contribute to the development, we develop at [github](https://git
 Test the code: linting, documentation and then the tests from project main directory
 ``` bash
 pylint $(git ls-files 'micromechanics/*/*.py')
+mypy micromechanics
 make -C docs html
 ```
 These tests are also executed as github action once pushed.

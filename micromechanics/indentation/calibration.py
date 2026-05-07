@@ -12,6 +12,7 @@ if TYPE_CHECKING:
   from .core import Indentation
 
 class CalibrationKwargs(TypedDict, total=False):
+  """ Calibration kwargs  for type-annotations """
   constantTerm: bool
   returnArea: bool
   frameCompliance: float

@@ -44,12 +44,12 @@ class Tif(TifInputMixin, TifScaleBarMixin, TifDisplayMixin, TifProcessingMixin, 
     self.fileName:str = fileName
     #set default values
     self.meta:dict[str,str]    = {}
-    self.image:Image.Image     = None
-    self.origImage:Image.Image = None
+    self.image:Image.Image
+    self.origImage:Image.Image|None = None
     self.pixelSize:float       = -1
     self.width:float           = -1
     self.bestLength:float      = -1
-    self.barPixel:float        = -1
+    self.barPixel:int          = -1
 
     #read input file and identify the type
     self.producer = "Else"

@@ -51,8 +51,9 @@ class TifScaleBarMixin:
     draw = ImageDraw.Draw(self.image)
     widthPixel, heightPixel = self.image.size
     if scale < 0:
-      scale = widthPixel / 16
-    font = ImageFont.truetype(self.fontFile,int(scale/5*3) )
+      scale = int(widthPixel / 16)
+    fontSize = max(1, int(scale/5*3))
+    font = ImageFont.truetype(self.fontFile, fontSize)
     #identify top-left corner of scale bar section
     if   site=="BR":  offsetX = widthPixel-self.barPixel-scale/5;    offsetY = heightPixel-scale
     elif site=="TL":  offsetX = 0;                                   offsetY = 0

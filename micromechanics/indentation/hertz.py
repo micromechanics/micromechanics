@@ -1,9 +1,8 @@
 """All functions relating to the Hertz equation for contact of sphere and flat surface"""
-from typing import Any
+from typing import Any, TYPE_CHECKING
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import curve_fit
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
   from .core import Indentation

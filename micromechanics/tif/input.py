@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import logging
 import re
 import warnings
-from xml.dom import minidom
+from xml.etree import ElementTree
 
 from PIL import Image
 
@@ -25,7 +25,7 @@ class TifInputMixin:
     with warnings.catch_warnings():
       warnings.filterwarnings('ignore',category=ResourceWarning)  #Image open sometimes triggers "ResourceWarning"
       self.image     = Image.open(self.fileName).convert("L").convert("P")
-    self.origImage = self.image.copy()
+    self.origImage:Image.Image|None = self.image.copy()
     #parse for information
     self.meta['measurementType'] = 'Zeiss SEM TIF-Image'
     with open(self.fileName,'r', encoding='iso-8859-1') as fIn:
@@ -80,25 +80,25 @@ class TifInputMixin:
           xmlLine = line
           break
     xmlLine  = re.sub(r'[^\x00-\x7F]+',' ', xmlLine)  #clean off any non-ascii characters
-    xmlData  = minidom.parseString(xmlLine)           #parse it
-    xmlObject= xmlData.documentElement                #make an object
+    xmlObject= ElementTree.fromstring(xmlLine)        #parse it
     requiredKeys = ['Width', 'Height', 'FOV_X', 'Ux', 'Vy']
     optionalKeys = ['Contrast', 'Brightness']
     for key in requiredKeys + optionalKeys:
-      elements = xmlObject.getElementsByTagName(key)
-      if elements and elements[0].childNodes:
-        self.meta[key.lower()] = elements[0].childNodes[0].data
+      element = xmlObject.find('.//'+key)
+      if element is not None and element.text is not None:
+        self.meta[key.lower()] = element.text
 
     # meta data checks and handling
     if all(key.lower() in self.meta for key in requiredKeys):
       self.width = float(self.meta['fov_x'])  #guess it is um
-      if xmlObject.getElementsByTagName("FOV_X")[0].getAttribute("units") != "um":
-        print("**ERROR** field of view not in um", xmlObject.getElementsByTagName("FOV_X")[0].getAttribute("units"))
+      fovElement = xmlObject.find(".//FOV_X")
+      if fovElement is None or fovElement.get("units") != "um":
+        print("**ERROR** field of view not in um", None if fovElement is None else fovElement.get("units"))
         return
       print("Picture width",self.width,'[um]')
       self.pixelSize = float(self.meta['fov_x'])/float(self.meta['width'])  #guess it is um
       print("Pixel size",self.pixelSize,'[um]')
-      self.meta['pixelSize'] = self.pixelSize
+      self.meta['pixelSize'] = str(self.pixelSize)
       widthPixel  = int(self.meta['width'])
       print("widthPixel",widthPixel)
       if abs(widthPixel*self.pixelSize-self.width)/self.width > 0.01:
@@ -123,10 +123,10 @@ class TifInputMixin:
     #parse for information
     self.meta['measurementType'] = 'FEI SEM TIF-Image'
     with open(self.fileName,'rb') as fIn:
-      metadata = fIn.read()
-      found = int(metadata.hex().find('5B557365725D'.lower())/2) #/2 since two letters=1byte; corresponds to [USER]
-      metadata = bytearray(source=metadata[found:]).decode('utf-8', errors='replace').split('\n')
-      self.meta = {i.split('=')[0]:i.split('=')[1].strip() for i in metadata if '=' in i }
+      metadataBytes = fIn.read()
+      found = int(metadataBytes.hex().find('5B557365725D'.lower())/2) #/2 since two letters=1byte; corresponds to [USER]
+      metadataLines = metadataBytes[found:].decode('utf-8', errors='replace').split('\n')
+      self.meta = {i.split('=')[0]:i.split('=')[1].strip() for i in metadataLines if '=' in i }
 
     # metadata handling
     self.width = float(self.meta['HorFieldsize'])*1.e6  #uses SI unit m
