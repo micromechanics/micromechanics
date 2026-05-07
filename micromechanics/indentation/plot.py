@@ -1,8 +1,13 @@
 """Plotting of nanoindentation data"""
+from typing import TYPE_CHECKING
 import traceback
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
 from .definitions import Method
+
+if TYPE_CHECKING:
+  from .core import Indentation
 
 
 class IndentationPlotMixin:
@@ -10,7 +15,7 @@ class IndentationPlotMixin:
   Plotting methods for :class:`Indentation`.
   """
 
-  def plotTestingMethod(self, saveFig=False, show=True, double=False):
+  def plotTestingMethod(self:'Indentation', saveFig:bool=False, show:bool=True, double:bool=False) -> Axes:# type: ignore[misc]
     """
     plot testing method
 
@@ -57,7 +62,7 @@ class IndentationPlotMixin:
     return ax1
 
 
-  def plot(self, saveFig=False, show=True, plotAllItems=True):
+  def plot(self:'Indentation', saveFig:bool|str=False, show:bool|int=True, plotAllItems:bool=True) -> None:# type: ignore[misc]
     """
     Plot force-depth curve with all data
 
@@ -120,7 +125,7 @@ class IndentationPlotMixin:
     return
 
 
-  def plotAll(self, saveFig=False, show=True, legend=True):
+  def plotAll(self:'Indentation', saveFig:bool=False, show:bool|int=True, legend:bool=True) -> Axes:# type: ignore[misc]
     """
     Plot force-depth curves of all tests in the file
 
@@ -154,7 +159,7 @@ class IndentationPlotMixin:
     return ax
 
 
-  def plotAsDepth(self, entity, hvline=None, vmax=None, vmin=None, show=True):
+  def plotAsDepth(self:'Indentation', entity:str, hvline:float|None=None, vmax:float|None=None, vmin:float|None=None, show:bool=True) -> None:# type: ignore[misc]
     """
     Plot as function of depth either Young's modulus, hardness,
     stiffnessSquaredForce, ContactDepth, Contact Area, reducedModulus  |br|
