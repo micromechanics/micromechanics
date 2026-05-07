@@ -2,19 +2,22 @@
 """
 Image processing methods for SEM TIF images.
 """
+from typing import TYPE_CHECKING
 import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 from scipy import ndimage
 from skimage import exposure
 
+if TYPE_CHECKING:
+  from .core import Tif
 
 class TifProcessingMixin:
   """
   Image processing methods for :class:`Tif`.
   """
 
-  def crop(self, xMin=-1, xMax=-1, yMin=-1, yMax=-1):
+  def crop(self:'Tif', xMin:int=-1, xMax:int=-1, yMin:int=-1, yMax:int=-1) -> None:  # type: ignore[misc]
     """
     Crop image: set those that you want to crop, unset ones are not altered
 
@@ -44,7 +47,7 @@ class TifProcessingMixin:
     return
 
 
-  def autoCrop(self, color='w'):
+  def autoCrop(self:'Tif', color:str='w') -> None:  # type: ignore[misc]
     """
     Automatically crop the bottom bar from the image.
     The top line cropped is the line that only contains white/black pixel
@@ -65,7 +68,7 @@ class TifProcessingMixin:
     return
 
 
-  def scale(self, scaleFactor=1):
+  def scale(self:'Tif', scaleFactor:float=1) -> None:  # type: ignore[misc]
     """
     Scale image by a factor. Scale by factor two decreases the pixelSize and increases the image size by factor two
 
@@ -78,7 +81,7 @@ class TifProcessingMixin:
     return
 
 
-  def enhance(self, method='rescale', percent=1):
+  def enhance(self:'Tif', method:str='rescale', percent:int=1) -> None:  # type: ignore[misc]
     """
     Automatic contrast improvement |br|
     mode = 1 black-white |br|
@@ -115,7 +118,7 @@ class TifProcessingMixin:
     return
 
 
-  def medianFilter(self, level=1, recursive=1):
+  def medianFilter(self:'Tif', level:int=1, recursive:int=1) -> None:  # type: ignore[misc]
     """
     Use median filter (remove single pixel noise)
 
@@ -131,7 +134,7 @@ class TifProcessingMixin:
     return
 
 
-  def gaussFilter(self, level=1, recursive=1):
+  def gaussFilter(self:'Tif', level:int=1, recursive:int=1) -> None:  # type: ignore[misc]
     """
     Use gaussian filter (smooth pixels, much more smoothing than median)
 
@@ -146,7 +149,7 @@ class TifProcessingMixin:
     return
 
 
-  def gaussLevel(self, level=100, plot=True, save=False):
+  def gaussLevel(self:'Tif', level:int=100, plot:bool=True, save:bool=False) -> None:  # type: ignore[misc]
     """
     excenturate and remove gradients
 
@@ -176,7 +179,8 @@ class TifProcessingMixin:
     return
 
 
-  def contrast(self,magnitude=1, offset=0.5, yoffset=1.0, save=False, plot=False, points=31):
+  def contrast(self:'Tif', magnitude:float=1, offset:float=0.5, yoffset:float=1.0, save:bool=False,  # type: ignore[misc]
+               plot:bool=False, points:int=31) -> None:
     """
     Manual contrast improvement: fast but memory expensive
 
@@ -226,7 +230,7 @@ class TifProcessingMixin:
     return
 
 
-  def topology(self, axis="V", upperEnd=4.0, start=-1, end=-1):
+  def topology(self:'Tif', axis:'str'="V", upperEnd:float=4.0, start:int=-1, end:int=-1) -> None:  # type: ignore[misc]
     """
     EXPERIMENTAL:
     rescale grey values such that each row/collum has the same average, cancel topological shadowing
@@ -274,7 +278,7 @@ class TifProcessingMixin:
     return
 
 
-  def removeGrayGradient(self, save=False, plot=True):
+  def removeGrayGradient(self:'Tif', save:bool=False, plot:bool=True) -> None:  # type: ignore[misc]
     """
     remove gradient that may occur in cross sections
 
@@ -310,7 +314,7 @@ class TifProcessingMixin:
     return
 
 
-  def reset(self):
+  def reset(self:'Tif') -> None:  # type: ignore[misc]
     """
     Reset it if you want to restart after making unwanted change
     """

@@ -3,11 +3,14 @@
 Display and file output helpers for SEM TIF images.
 """
 import os
-
+from typing import TYPE_CHECKING
 import matplotlib.pyplot as plt
 import numpy as np
 from skimage import exposure
 from skimage.util import img_as_float
+
+if TYPE_CHECKING:
+  from .core import Tif
 
 
 class TifDisplayMixin:
@@ -15,7 +18,7 @@ class TifDisplayMixin:
   Display and save methods for :class:`Tif`.
   """
 
-  def show(self):
+  def show(self:'Tif') -> None:  # type: ignore[misc]
     """
     Show image on screen
     """
@@ -27,7 +30,7 @@ class TifDisplayMixin:
     return
 
 
-  def plot(self, axis='on', showDuration=-1):
+  def plot(self:'Tif', axis:str='on', showDuration:int=-1) -> None:  # type: ignore[misc]
     """
     Show image on screen by plotting it: showing the pixel coordinates, which is handy for cropping
 
@@ -46,7 +49,7 @@ class TifDisplayMixin:
     return
 
 
-  def hist(self, log=False, show=True):
+  def hist(self:'Tif', log:bool=False, show:bool=True) -> None:  # type: ignore[misc]
     """
     Show grey-scale histogram and cumulative histogram
 
@@ -71,7 +74,7 @@ class TifDisplayMixin:
     return
 
 
-  def save(self, fileType="jpg", scale=None, convertGrayscale=True):
+  def save(self:'Tif', fileType:str="jpg", scale:float|None=None, convertGrayscale:bool=True) -> None:  # type: ignore[misc]
     """
     Save file as jpg, use the same base as initial TIF image
 

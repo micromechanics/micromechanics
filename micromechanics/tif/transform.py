@@ -2,16 +2,19 @@
 """
 Geometry transforms for SEM TIF images.
 """
+from typing import TYPE_CHECKING
 import numpy as np
 from PIL import Image
 
+if TYPE_CHECKING:
+  from .core import Tif
 
 class TifTransformMixin:
   """
   Rotation and flip methods for :class:`Tif`.
   """
 
-  def rotateCCW(self):
+  def rotateCCW(self:'Tif') -> None: # type: ignore[misc]
     """
     rotate image counter clock-wise
     """
@@ -21,7 +24,7 @@ class TifTransformMixin:
     return
 
 
-  def rotateCW(self):
+  def rotateCW(self:'Tif') -> None: # type: ignore[misc]
     """
     rotate image clock-wise
     """
@@ -31,7 +34,7 @@ class TifTransformMixin:
     return
 
 
-  def rotate180(self):
+  def rotate180(self:'Tif') -> None: # type: ignore[misc]
     """
     rotate image by 180 degrees
     """
@@ -39,7 +42,7 @@ class TifTransformMixin:
     return
 
 
-  def flip(self):
+  def flip(self:'Tif') -> None: # type: ignore[misc]
     """
     flip image vertically
     """

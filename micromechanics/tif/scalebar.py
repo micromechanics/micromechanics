@@ -2,18 +2,21 @@
 """
 Scale-bar helpers for SEM TIF images.
 """
+from typing import TYPE_CHECKING
 import logging
 import math
 
 from PIL import ImageDraw, ImageFont
 
+if TYPE_CHECKING:
+  from .core import Tif
 
 class TifScaleBarMixin:
   """
   Scale-bar methods for :class:`Tif`.
   """
 
-  def findScaleBar(self,length=None):
+  def findScaleBar(self:'Tif', length:float|None=None) -> None:  # type: ignore[misc]
     """
     Find the optimal scale-bar, if no length is given
 
@@ -34,7 +37,7 @@ class TifScaleBarMixin:
     return
 
 
-  def addScaleBar(self, site="BL", length=None, scale = -1):
+  def addScaleBar(self:'Tif', site:str="BL", length:float|None=None, scale:int = -1) -> None:  # type: ignore[misc]
     """
     Add scale-bar to image
 

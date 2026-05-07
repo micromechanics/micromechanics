@@ -2,6 +2,7 @@
 """
 Input and metadata readers for SEM TIF images.
 """
+from typing import TYPE_CHECKING
 import logging
 import re
 import warnings
@@ -9,13 +10,15 @@ from xml.dom import minidom
 
 from PIL import Image
 
+if TYPE_CHECKING:
+  from .core import Tif
 
 class TifInputMixin:
   """
   File loading helpers for :class:`Tif`.
   """
 
-  def initZeiss(self):
+  def initZeiss(self:'Tif') -> None:  # type: ignore[misc]
     """
     Init ZEISS file
     """
@@ -57,7 +60,7 @@ class TifInputMixin:
     return
 
 
-  def initNPVE(self):
+  def initNPVE(self:'Tif') -> None:  # type: ignore[misc]
     """
     Init NPVE file, no original image saved since files are large
     """
@@ -107,7 +110,7 @@ class TifInputMixin:
       return
 
 
-  def initFEI(self):
+  def initFEI(self:'Tif') -> None:  # type: ignore[misc]
     """
     Init FEI / ThermoFischer file
     """
@@ -135,7 +138,7 @@ class TifInputMixin:
     return
 
 
-  def initConventional(self, pixelSize=1):
+  def initConventional(self:'Tif', pixelSize:float=1) -> None:  # type: ignore[misc]
     """
     Init conventional file
 
@@ -154,7 +157,7 @@ class TifInputMixin:
     return
 
 
-  def setData(self, image, pixelSize, copy=True ):
+  def setData(self:'Tif', image:Image.Image, pixelSize:float, copy:bool=True ) -> None:  # type: ignore[misc]
     """
     import data, image and pixelSize from another source |br|
     (image, pixelSize): image and pixelSize in a list
