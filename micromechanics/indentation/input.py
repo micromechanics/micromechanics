@@ -52,7 +52,7 @@ class IndentationInputMixin:
           ,"Harmonic Displacement":"hHarmonic", "Harmonic Load":"pHarmonic","Phase Angle":"phaseAngle"\
           ,"Load vs Disp Slope":"pVsHSlope","d(Force)/d(Disp)":"pVsHSlope", "_Column": "Column"\
           ,"_Frame": "Frame"\
-          ,"Support Spring Stiffness":"slopeSupport", "Frame Stiffness": "frameStiffness"\
+          ,"Frame Stiffness": "frameStiffness"\
           ,"Harmonic Stiffness":"slopeInvalid"\
           ,"Harmonic Contact Stiffness":"slope", "STIFFNESS":"slope","Stiffness":"slope" \
           ,"Stiffness Squared Over Load":"k2p","Dyn. Stiff.^2/Load":"k2p"\
@@ -63,7 +63,8 @@ class IndentationInputMixin:
           ,"Y Axis Position":"yCoarse"\
           ,"TotalLateralForce": "L", "X Force": "pX", "_XForce": "pX", "Y Force": "pY", "_YForce": "pY"\
           ,"_XDeflection": "Ux", "_YDeflection": "Uy" }
-    self.fullData = ['h','p','t','pVsHSlope','hRaw','pRaw','tTotal','slopeSupport']
+          #"Support Spring Stiffness":"slopeSupport",
+    self.fullData = ['h','p','t','pVsHSlope','hRaw','pRaw','tTotal']
     if self.output['verbose']>1:
       print("Open Agilent file: "+fileName)
     for idx, dfName in enumerate(self.datafile.keys()):
@@ -162,7 +163,6 @@ class IndentationInputMixin:
     self.h /= 1.e3 #from nm in um
     if "Ac" in self.indicies         : self.Ac /= 1.e6  #from nm in um
     if "slope" in self.indicies       : self.slope /= 1.e3 #from N/m in mN/um
-    if "slopeSupport" in self.indicies: self.slopeSupport /= 1.e3 #from N/m in mN/um
     if 'hc' in self.indicies         : self.hc /= 1.e3  #from nm in um
     if 'hRaw' in self.indicies        : self.hRaw /= 1.e3  #from nm in um
     if "k2p" not in self.indicies and 'slope' in self.indicies:
@@ -309,7 +309,7 @@ class IndentationInputMixin:
       idxMask = int( np.where(self.p>forceTreshold)[0][0])
       fractionMinH = 0.5
       hFraction    = (1.-fractionMinH)*self.h[idxMinH]+fractionMinH*self.h[idxMask]
-      idxMask = np.argmin(np.abs(self.h-hFraction))
+      idxMask = int(np.argmin(np.abs(self.h-hFraction)))
       if idxMask>2:
         mask     = np.zeros_like(self.h, dtype=bool)
         mask[:idxMask] = True
@@ -329,7 +329,7 @@ class IndentationInputMixin:
         maskInitLoad = np.logical_and(self.p>pZero+pNoise*2. , self.p<forceTreshold)
         maskInitLoad[np.argmax(self.p):] = False
         fitInitLoad  = np.polyfit(self.p[maskInitLoad],self.h[maskInitLoad],2)#inverse h-p -> next line easier
-        hZero        = np.polyval(fitInitLoad, pZero)
+        hZero        = float(np.polyval(fitInitLoad, pZero))
         ## idx = np.where(  self.p>(pZero+pNoise)  )[0][0] OLD SYSTEM NOT AS ACCURATE, better fitInitLoad
         if plotContact:
           plt.axhline(pZero,c='g', label='pZero')

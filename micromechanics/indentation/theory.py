@@ -203,16 +203,20 @@ class IndentationTheoryMixin:
       #   hf0    = h[mask][-1]/2.0
       #   m0     = 2
       #   B0     = max(abs(p[mask][0] / np.power(h[mask][0]-hf0,m0)), 0.001)  #prevent neg. or zero
-      bounds = [[0,0,0.8],[np.inf, max(np.min(h[mask]),hf0), 10]]
+      xFit = np.asarray(h[mask], dtype=np.float64)
+      yFit = np.asarray(p[mask], dtype=np.float64)
+      bounds = (np.array([0.0, 0.0, 0.8], dtype=np.float64),
+                np.array([np.inf, max(np.min(xFit), hf0), 10.0], dtype=np.float64))
       B0  = min( max(B0,  bounds[0][0]), bounds[1][0])  #ensure parameters are in bounds
       hf0 = min( max(hf0, bounds[0][1]), bounds[1][1])  #ensure parameters are in bounds
       m0  = min( max(m0,  bounds[0][2]), bounds[1][2])  #ensure parameters are in bounds
+      p0 = np.array([B0, hf0, m0], dtype=np.float64)
       if self.output['verbose']>2:
         print("Initial fitting values B,hf,m", B0,hf0,m0)
         print("  Bounds", bounds)
       try:
-        opt, _ = curve_fit(self.unloadingPowerFunc, h[mask],p[mask],      # pylint: disable=unbalanced-tuple-unpacking
-                          p0=[B0,hf0,m0], bounds=bounds, ftol=1e-4, maxfev=3000 )#set ftol to 1e-4 if accept more and fail less
+        opt, _ = curve_fit(self.unloadingPowerFunc, xFit, yFit,      # pylint: disable=unbalanced-tuple-unpacking
+                          p0=p0, bounds=bounds, ftol=1e-4, maxfev=3000 )#set ftol to 1e-4 if accept more and fail less
                           # sigma=np.arange(len(mask[mask]))+1, weights that decrease from beginning to end
         if self.output['verbose']>2:
           print("  Optimal values B,hf,m", opt[0], opt[1], opt[2])
