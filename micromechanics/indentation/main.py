@@ -105,7 +105,8 @@ class IndentationMainMixin:
     compliance0:float = self.tip.compliance
     prefactors:np.ndarray|None = None
 
-    def errorFunction(compliance:float) -> float:
+    def errorFunction(complianceArray:np.ndarray) -> float:
+      compliance = float(complianceArray[0])
       stiffness   = 1./(1./self.sRaw-compliance) # type: ignore[attr-defined]
       stiffness2load = np.divide(np.multiply(stiffness,stiffness),self.p)
       h   = self.hRaw-compliance*self.p
@@ -118,11 +119,11 @@ class IndentationMainMixin:
       print("*WARNING*: too short vector",len(h_))
       return 9999999.
     if calibrate:
-      result = fmin_l_bfgs_b(errorFunction, compliance0, bounds=[(-0.1,0.1)], \
+      result = fmin_l_bfgs_b(errorFunction, np.array([compliance0], dtype=np.float64), bounds=[(-0.1,0.1)], \
                               approx_grad=True, epsilon=0.000001, factr=1e11)
       print("  Best values   ",result[0], "\tOptimum residual:",np.round(result[1],3))
       print('  Number of function evaluations~size of globalData',result[2]['funcalls'])
-      compliance0 = result[0]
+      compliance0 = float(result[0][0])
       #self.correct_H_S()
     if plot:
       stiffness = 1./(1./self.sRaw-compliance0) # type: ignore[attr-defined]
@@ -421,35 +422,48 @@ class IndentationMainMixin:
       self.valid = self.valid[1:][~maskTooClose]
 
     # SURFACE FIND
-    thresValue = None
-    thresValues = None
+    thresValue:float|None = None
+    thresValues:np.ndarray|None = None
     if self.testName in self.surface:
       surface = self.surface[self.testName]['surfaceIdx']
       self.h -= self.h[surface]  #only change surface, not force
     else:
       found = False
       if 'load' in self.surface:
-        thresValues = self.p
-        thresValue  = self.surface['load']
-        found = True
+        surfaceValue = self.surface['load']
+        if isinstance(surfaceValue, (int, float)):
+          thresValues = self.p
+          thresValue  = float(surfaceValue)
+          found = True
       elif 'stiffness' in self.surface:
-        thresValues = self.slope
-        thresValue  = self.surface['stiffness']
-        found = True
+        surfaceValue = self.surface['stiffness']
+        if isinstance(surfaceValue, (int, float)):
+          thresValues = self.slope
+          thresValue  = float(surfaceValue)
+          found = True
       elif 'phase angle' in self.surface:
-        thresValues = self.phase
-        thresValue  = self.surface['phase angle']
-        found = True
+        surfaceValue = self.surface['phase angle']
+        if isinstance(surfaceValue, (int, float)):
+          thresValues = self.phase
+          thresValue  = float(surfaceValue)
+          found = True
       elif 'abs(dp/dh)' in self.surface:
-        thresValues = np.abs(np.gradient(self.p,self.h))
-        thresValue  = self.surface['abs(dp/dh)']
-        found = True
+        surfaceValue = self.surface['abs(dp/dh)']
+        if isinstance(surfaceValue, (int, float)):
+          thresValues = np.abs(np.gradient(self.p,self.h))
+          thresValue  = float(surfaceValue)
+          found = True
       elif 'dp/dt' in self.surface:
-        thresValues = np.gradient(self.p,self.t)
-        thresValue  = self.surface['dp/dt']
-        found = True
+        surfaceValue = self.surface['dp/dt']
+        if isinstance(surfaceValue, (int, float)):
+          thresValues = np.gradient(self.p,self.t)
+          thresValue  = float(surfaceValue)
+          found = True
 
       if found:
+        if thresValues is None or thresValue is None:
+          print('**ERROR** invalid surface threshold configuration')
+          return False
         #interpolate nan with neighboring values
         nans = np.isnan(thresValues)
 
@@ -464,7 +478,7 @@ class IndentationMainMixin:
             numpy.array: output
           """
           return z.nonzero()[0]
-        thresValues[nans]= np.interp(tempX(nans), tempX(~nans), thresValues[~nans]) # type: ignore[index]
+        thresValues[nans]= np.interp(tempX(nans), tempX(~nans), thresValues[~nans])
 
         #filter this data
         if 'median filter' in self.surface:
@@ -473,11 +487,11 @@ class IndentationMainMixin:
           thresValues = gaussian_filter1d(thresValues, self.surface['gauss filter']) # type: ignore[call-overload]
         elif 'butterfilter' in self.surface:
           valueB, valueA = signal.butter(*self.surface['butterfilter']) # type: ignore[call-overload]
-          thresValues = signal.filtfilt(valueB, valueA, thresValues) # type: ignore[arg-type]
+          thresValues = signal.filtfilt(valueB, valueA, thresValues)
         if 'phase angle' in self.surface:
           surfaceMatches = np.where(thresValues<thresValue)[0]
         else:
-          surfaceMatches = np.where(thresValues>thresValue)[0] # type: ignore[operator]
+          surfaceMatches = np.where(thresValues>thresValue)[0]
         if len(surfaceMatches)==0:
           print('**ERROR** could not identify surface for threshold', thresValue)
           return False

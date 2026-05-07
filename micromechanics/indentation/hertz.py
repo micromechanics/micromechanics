@@ -47,10 +47,13 @@ class IndentationHertzMixin:
     fitMask[np.argmax(self.p):] = False
     if np.count_nonzero(fitMask)<3:
       raise ValueError("hertzFit: not enough data points in forceRange before maximum load")
-    depthRange = [self.h[fitMask].min(), self.h[fitMask].max()]
-    para0 = [0., 5000.]
-    bounds = [[-depthRange[0],0],[depthRange[0], 50000.]]
-    fitElast, _ = curve_fit(hertzEquation, self.h[fitMask], self.p[fitMask], p0=para0, bounds=bounds) # pylint: disable=unbalanced-tuple-unpacking
+    xFit = np.asarray(self.h[fitMask], dtype=np.float64)
+    yFit = np.asarray(self.p[fitMask], dtype=np.float64)
+    depthRange = (float(xFit.min()), float(xFit.max()))
+    para0 = np.array([0.0, 5000.0], dtype=np.float64)
+    bounds = (np.array([-depthRange[0], 0.0], dtype=np.float64),
+              np.array([depthRange[0], 50000.0], dtype=np.float64))
+    fitElast, _ = curve_fit(hertzEquation, xFit, yFit, p0=para0, bounds=bounds) # pylint: disable=unbalanced-tuple-unpacking
     if self.output['verbose']>1:
       print('Depth range', depthRange)
       print('Optimal parameters (h0,prefactor)',fitElast)

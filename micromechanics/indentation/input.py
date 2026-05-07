@@ -553,8 +553,8 @@ class IndentationInputMixin:
         'post_test_analysis' in self.datafile and \
         'com_github_micromechanics' in self.datafile['post_test_analysis'] and \
         'config' in self.datafile['post_test_analysis']['com_github_micromechanics'].attrs:
-        self.surface = self.datafile['post_test_analysis']['com_github_micromechanics'].attrs['config']
-        self.surface = json.loads(self.surface)
+        surfaceConfig = self.datafile['post_test_analysis']['com_github_micromechanics'].attrs['config']
+        self.surface = json.loads(surfaceConfig)
     except:
       pass
     for key in self.datafile:
@@ -572,12 +572,12 @@ class IndentationInputMixin:
     converter = converter.decode('utf-8') if isinstance(converter, bytes) else converter
     converter = converter.split('/')[-1]
     #                 converter:   Vendor, Human readable description
-    converterList = {'hap2hdf.py':[Vendor.FischerScopeHDF5, 'Fischer Scope Indentation HDF5'],
-                    'Micromaterials2hdf.py': [Vendor.MicromaterialsHDF5, 'Micromaterials Indentation HDF5'],
-                    'xls2hdf.py': [Vendor.AgilentHDF5, 'MTS Indentation HDF5'],
-                    'nmd2hdf.py': [Vendor.KLAHDF5, 'KLA G200X Indentation HDF5'],
-                    'converter_femtotools.py': [Vendor.FemtotoolsHDF5, 'Femtotools Indentation HDF5'],
-                    'dat2hdf.py':[Vendor.SurfaceHDF5, 'SURFACE Indentation HDF5'],
+    converterList:dict[str, tuple[Vendor, str]] = {'hap2hdf.py':(Vendor.FischerScopeHDF5, 'Fischer Scope Indentation HDF5'),
+                    'Micromaterials2hdf.py': (Vendor.MicromaterialsHDF5, 'Micromaterials Indentation HDF5'),
+                    'xls2hdf.py': (Vendor.AgilentHDF5, 'MTS Indentation HDF5'),
+                    'nmd2hdf.py': (Vendor.KLAHDF5, 'KLA G200X Indentation HDF5'),
+                    'converter_femtotools.py': (Vendor.FemtotoolsHDF5, 'Femtotools Indentation HDF5'),
+                    'dat2hdf.py':(Vendor.SurfaceHDF5, 'SURFACE Indentation HDF5'),
                     }
     if converter not in converterList:
       print("**ERROR** Unsupported HDF5 converter:", converter)
@@ -629,7 +629,7 @@ class IndentationInputMixin:
 
 
     #determine valid masks: loop through all entries and ensure that they all make sense
-    self.valid = None
+    valid = None
     validFull = None
     for key in nameDict:
       if key in ['__ignore__','__note__']:
@@ -638,17 +638,17 @@ class IndentationInputMixin:
         if name in branch:
           data = np.array(branch[name], dtype=np.float64)
           mask = np.logical_and(np.isfinite(data), data<1e99)
-          if self.valid is None:
-            self.valid = mask
+          if valid is None:
+            valid = mask
           else:
-            self.valid = np.logical_and(self.valid, mask) #adopt/reduce mask continuously
+            valid = np.logical_and(valid, mask) #adopt/reduce mask continuously
           if key=='slope':
-            self.valid = np.logical_and(self.valid, data>0.0)
+            valid = np.logical_and(valid, data>0.0)
           if key=='h':
             validFull = np.isfinite(np.array(branch[name], dtype=np.float64))
           break
 
-    if self.valid is None or validFull is None:
+    if valid is None or validFull is None:
       print('**ERROR** Missing information for',measurementType.split()[0],': h or valid data')
       print('Keys exist',inFile)
       return False
@@ -663,7 +663,7 @@ class IndentationInputMixin:
           if key in ['h','p','t']:
             data = data[validFull]
           else:
-            data = data[self.valid]
+            data = data[valid]
           setattr(self, key, data*multiplyer)
           inFile.remove(name)
           break
@@ -674,7 +674,7 @@ class IndentationInputMixin:
         print('**ERROR** Missing information for',measurementType.split()[0],': ',attrib)
         print('Keys exist',inFile)
         return False
-    self.valid = self.valid[validFull]
+    self.valid = valid[validFull]
 
     #cleaning
     converter = self.datafile.attrs['uri']
