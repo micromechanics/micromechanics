@@ -38,17 +38,6 @@ from .tip import Tip
 from .verification import IndentationVerificationMixin
 
 
-ModelValue = float|bool|str
-SurfaceSettings = dict[str, object]
-
-
-class OutputKwargs(TypedDict, total=False):
-  verbose: int
-  plotLoadHoldUnload: bool
-  ax: Axes|list[Axes]|np.ndarray|None
-  plotWithLabel: bool
-  progressBar: Callable[[float, str], None]|None
-  successTest: list[str]
 
 
 class Indentation(IndentationInputMixin, IndentationMainMixin, IndentationTheoryMixin, IndentationHertzMixin, IndentationPlotMixin,
@@ -56,8 +45,8 @@ class Indentation(IndentationInputMixin, IndentationMainMixin, IndentationTheory
   """
   Main class of indentation
   """
-  def __init__(self, fileName:str='', nuMat:float= 0.3, tip:Tip|None=None, surface:SurfaceSettings|None=None,
-               model:dict[str, ModelValue]|None=None, output:OutputKwargs|None=None) -> None:
+  def __init__(self, fileName:str='', nuMat:float= 0.3, tip:Tip|None=None, surface:dict[str, dict[str, Any]]|None=None,
+               model:dict[str, float|bool|str]|None=None, output:dict[str, Any]|None=None) -> None:
     """
     Initialize indentation experiment data
 
@@ -75,16 +64,10 @@ class Indentation(IndentationInputMixin, IndentationMainMixin, IndentationTheory
     self.vendor:Vendor
     self.fileType:FileType
     self.tip:Tip = Tip() if tip is None else tip    # nanoindenter tip and compliance
-    surfaceInput:SurfaceSettings = {} if surface is None else surface
-    modelInput:dict[str, ModelValue] = {} if model is None else model
-    outputInput:OutputKwargs = {} if output is None else output
-    self.surface:SurfaceSettings = cast(SurfaceSettings, copy.deepcopy(_DefaultSurface))  # dictionary describing the surface find
-    self.surface.update(surfaceInput)
-    self.model:dict[str, ModelValue] = copy.deepcopy(_DefaultModel)    # dictionary for all numerical parameters that determine the results
-    self.modelUserChoice:dict[str, ModelValue] = dict(modelInput)
-    self.model.update(self.modelUserChoice)
-    self.output:OutputKwargs = cast(OutputKwargs, copy.deepcopy(_DefaultOutput))   # dictionary for all output parameters, axis
-    self.output.update(outputInput)
+    self.surface = copy.deepcopy(_DefaultSurface) if surface is None else copy.deepcopy(_DefaultSurface)|surface
+    self.modelUserChoice = {} if model is None else model
+    self.model   = copy.deepcopy(_DefaultModel)   if model is None else copy.deepcopy(_DefaultModel)|model
+    self.output  = copy.deepcopy(_DefaultOutput)  if output is None else copy.deepcopy(_DefaultOutput)|output
 
     self.newFileRead               = True                # file was just loaded
     self.iLHU:list[list[int]]      = [ [-1,-1,-1,-1] ]   # indicies of Load-Hold-Unload cycles
@@ -175,11 +158,7 @@ class Indentation(IndentationInputMixin, IndentationMainMixin, IndentationTheory
     fill defaults depending on vendor, if information is not yet present
     """
     if self.vendor in _DefaultVendorDependent:
-      for key, valueDefault in _DefaultVendorDependent[self.vendor].items():
-        if key in self.modelUserChoice:
-          self.model[key] =  self.modelUserChoice[key]
-        elif key not in self.model:
-          self.model[key]=valueDefault
+      self.model = self.model|_DefaultVendorDependent[self.vendor]|self.modelUserChoice
     else:
       print('**ERROR** defaults not defined for',self.vendor)
     return

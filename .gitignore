@@ -13,3 +13,4 @@ docs/source/sg_execution_times.rst
 .coverage
 coverage.txt
 htmlcov/
+testAll.sh
