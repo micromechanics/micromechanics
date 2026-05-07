@@ -38,7 +38,8 @@ class FileType(IntEnum):
   Single = 1  #single test in file                                              # pylint: disable=invalid-name
   Multi  = 2  #multiple tests in file                                           # pylint: disable=invalid-name
 
-#TODO_P1 defaults to documentation
+# DOCUMENTATION TABLES ARE GENERATED FROM THE FORMATTING OF THE DEFAULT DICTIONARIES BELOW.
+# IF YOU CHANGE THEIR LAYOUT, CHECK docs/source/conf.py AND REBUILD THE DOCUMENTATION.
 _DefaultModel:dict[str, float|bool|str] = {
   'nuTip':      0.07,
   'modulusTip': 1140,       # GPa from Oliver,Pharr Method paper

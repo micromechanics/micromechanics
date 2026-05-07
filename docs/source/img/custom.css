@@ -1,0 +1,6 @@
+.rst-content table.docutils td,
+.rst-content table.docutils th {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}

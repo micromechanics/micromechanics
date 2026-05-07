@@ -5,3 +5,8 @@ Nanoindentation Library
    :members:
    :undoc-members:
    :show-inheritance:
+
+Default Dictionaries
+--------------------
+
+.. include:: generated/indentation_defaults.rst
