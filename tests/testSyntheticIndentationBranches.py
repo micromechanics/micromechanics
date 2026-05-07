@@ -76,7 +76,9 @@ class TestSyntheticIndentationBranches(unittest.TestCase):
     perfect = Tip("perfect")
     self.assertTrue(np.all(iso_plus_constant.areaFunction(depth.copy()) > 0))
     self.assertTrue(np.all(sphere.areaFunction(depth.copy()) > 0))
-    self.assertGreater(perfect.areaFunctionInverse(1.0), 0)
+    inverse_area = perfect.areaFunctionInverse(np.array([1.0]))
+    self.assertIsNotNone(inverse_area)
+    self.assertGreater(inverse_area[0], 0)
     self.assertIn("prefactors", repr(perfect))
 
 

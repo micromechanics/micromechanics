@@ -223,8 +223,7 @@ class IndentationInputMixin:
           if label == "Segment Points"      : segmentPoints.append(int(value))
           if label == "Time Stamp"          : self.timeStamp = ":".join(line.rstrip().split(":")[1:])
           #pylint: enable=multiple-statements
-        self.tip.prefactors = prefact
-        self.tip.prefactors.append('iso')
+        self.tip.prefactors = prefact+['iso']
         if (numSegments!=len(segmentTime)) or (numSegments!=len(segmentDeltaP)):
           print("**ERROR**", numSegments,len(segmentTime),len(segmentDeltaP ) )
         segmentDeltaP = np.array(segmentDeltaP)

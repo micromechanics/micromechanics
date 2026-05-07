@@ -1,12 +1,15 @@
 """Nanoindenter tip: shape / area-function and the compliance"""
 import math
+from typing import Any
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import newton
+from scipy.interpolate import interp1d
+
 
 class Tip:
   """The main class to define indenter shape and other default values."""
-  def __init__(self, shape="perfect", interpFunction=None, compliance=0.0, plot=False, verbose=0):
+  def __init__(self, shape:Any="perfect", interpFunction:interp1d|None=None, compliance:float=0.0, plot:bool=False, verbose:int=0):
     """
     Initialize indenter shape
 
@@ -18,16 +21,19 @@ class Tip:
       verbose (bool): output
     """
     #define indenter shape: could be overwritten
+    self.shape = 'perfect'
+    self.areaPrefactors = []
+    self.interpFunction = None
     if callable(interpFunction):
-      self.prefactors = None
+      self.shape = 'interpolation'
       self.interpFunction = interpFunction
     elif shape[-1]=="sphere" or shape[-1]=="iso":
-      self.prefactors = shape
+      self.shape = shape[-1]
+      self.areaPrefactors = shape[:-1]
     elif isinstance(shape, list):  #assume iso
-      self.prefactors = shape
-      self.prefactors.append("iso")
-    else:
-      self.prefactors = ["perfect"]
+      self.areaPrefactors = shape
+      self.shape = 'iso'
+    # Compliance
     self.compliance = compliance
     self.complianceSlope       = -1
     self.relativeStandardError = -1
@@ -44,20 +50,45 @@ class Tip:
     return
 
 
-  def __repr__(self):
+  @property
+  def prefactors(self) -> list[Any]|None:
+    """Backward-compatible representation of the tip area function."""
+    print('**DEPRICATION** For backward compatibility, use tip.areaPrefactors instead.')
+    if self.shape == 'interpolation':
+      return None
+    return self.areaPrefactors+[self.shape]
+
+
+  @prefactors.setter
+  def prefactors(self, prefactors:list[Any]|None) -> None:
+    print('**DEPRICATION** For backward compatibility, use tip.areaPrefactors instead.')
+    if prefactors is None:
+      self.shape = 'interpolation'
+      self.areaPrefactors = []
+      return
+    if prefactors[-1] in ('iso', 'isoPlusConstant', 'perfect', 'sphere'):
+      self.shape = prefactors[-1]
+      self.areaPrefactors = prefactors[:-1]
+    else:
+      self.shape = 'iso'
+      self.areaPrefactors = prefactors
+
+
+  def __repr__(self) -> str:
     """ Print tip information
     Returns:
       str: text representation
     """
     outString = 'compliance: '+str(self.compliance)+';   '
-    if self.prefactors is None:
+    if self.shape == 'interpolation':
+      assert self.interpFunction is not None
       outString+= 'with interpolation function with '+str(len(self.interpFunction.x))+' points'
     else:
-      outString+= 'prefactors: '+str(self.prefactors)
+      outString+= f'shape {self.shape} with prefactors: {self.areaPrefactors}'
     return outString
 
 
-  def setInterpolationFunction(self,interpFunction):
+  def setInterpolationFunction(self, interpFunction:interp1d) -> None:
     """
     The interpolation of tip-shape function Ac = f(hc)
 
@@ -67,12 +98,13 @@ class Tip:
     Args:
        interpFunction (function): numpy interpolation function
     """
+    self.shape = 'interpolation'
     self.interpFunction = interpFunction
-    self.prefactors = None
+    self.areaPrefactors = []
     return
 
 
-  def areaFunction(self, h):
+  def areaFunction(self, h:np.ndarray) -> np.ndarray:
     """
     AREA FUNCTION: from contact depth hc calculate area |br|
     all functions inside are using [nm]; the outside of this function uses [um]|br|
@@ -96,25 +128,25 @@ class Tip:
     threshH = 1.e-3 #1pm
     h[h< threshH] = threshH
     area = np.zeros_like(h)
-    if self.prefactors is None:
+    if self.shape == 'interpolation':
+      assert self.interpFunction is not None
       self.interpFunction.bounds_error=False
       self.interpFunction.fill_value='extrapolate'
       return self.interpFunction(h/1000.)
-    if self.prefactors[-1]=='iso':
-      for i in range(0, len(self.prefactors)-1):
-        exponent = 2./math.pow(2,i)
-        area += self.prefactors[i]*np.power(h,exponent)
-        #print(i, self.prefactors[i], h,exponent, area)
-    elif self.prefactors[-1]=='isoPlusConstant':
-      h += self.prefactors[-2]
-      for i in range(0, len(self.prefactors)-2):
-        exponent = 2./math.pow(2,i)
-        area += self.prefactors[i]*np.power(h,exponent)
-    elif self.prefactors[-1]=='perfect':
+    if self.shape =='iso':
+      for idx, pref in enumerate(self.areaPrefactors):
+        exponent = 2./math.pow(2,idx)
+        area += pref*np.power(h,exponent)
+    elif self.shape=='isoPlusConstant':
+      h += self.areaPrefactors[-1]
+      for idx, pref in enumerate(self.areaPrefactors[:-1]):
+        exponent = 2./math.pow(2,idx)
+        area += pref * np.power(h,exponent)
+    elif self.shape == 'perfect':
       area = 24.494*np.power(h,2)
-    elif self.prefactors[-1]=='sphere':
-      radius = self.prefactors[0]*1000.
-      openingAngle = self.prefactors[1]
+    elif self.shape=='sphere':
+      radius       = self.areaPrefactors[0]*1000.
+      openingAngle = self.areaPrefactors[1]
       cos      = math.cos(openingAngle/180.0*math.pi)
       sin      = math.sin(openingAngle/180.0*math.pi)
       tan      = math.tan(openingAngle/180.0*math.pi)
@@ -126,12 +158,12 @@ class Tip:
       rArea[~mask] = deltaY - tan*deltaX
       area = math.pi * rArea * rArea
     else:
-      print("**ERROR** prefactors last value does not contain type")
+      print("**ERROR** shape is unkown:", self.shape)
     area[area<0] = 0.0
     return area/1.e6 # conversion of unit from nm^2 to um^2
 
 
-  def areaFunctionInverse(self, area, hc0=70):
+  def areaFunctionInverse(self, area:np.ndarray, hc0:np.ndarray|None=None) -> np.ndarray|None:
     """
     INVERSE AREA FUNCTION: from area calculate contact depth hc |br|
     using Newton iteration with initial guess contact depth hc0
@@ -148,21 +180,24 @@ class Tip:
     Returns:
        numpy.array: h = total penetration depth
     """
+    if hc0 is None:
+      hc0 = np.full_like(area, 70.0, dtype=float)
     ## define function in form f(x)-y=0
-    def function(height):
-      return self.areaFunction(np.array([height]))-area
+    def function(height:Any) -> Any:
+      return self.areaFunction(height)-area
     ## solve
-    if self.prefactors[-1]=="iso":
+    if self.shape=="iso":
       h = newton(function, hc0)
-    elif self.prefactors[-1]=="perfect":
-      h = math.sqrt(area / 24.494)
+    elif self.shape=="perfect":
+      h = np.sqrt(area / 24.494)
     else:
       print("**ERROR** prefactors last value does not contain type")
       return None
     return h
 
 
-  def plotIndenterShape(self, maxDepth=1, steps=50, show=True, tipLabel=None, fileName=None):
+  def plotIndenterShape(self, maxDepth:float=1, steps:int=50, show:bool=True, tipLabel:str='this tip',
+                        fileName:str='') -> None:
     """
     check indenter shape: plot shape function against perfect Berkovich |br|
     analytical: perfect shape is 2.792254*x
@@ -178,8 +213,6 @@ class Tip:
     hc = np.linspace(0, maxDepth, steps)
     rNonPerfect = np.sqrt( self.areaFunction(hc)/math.pi)
     rPerfect  = 2.792254*hc
-    if tipLabel is None:
-      tipLabel = 'this tip'
     plt.plot(rPerfect,hc, '-k', label='Berkovich')
     plt.plot(np.tan(np.radians(60.0))*hc,hc, '--k', label='$60^o$')
     plt.plot(rNonPerfect, hc, 'C1-', label=tipLabel)
@@ -190,7 +223,7 @@ class Tip:
     plt.ylim([0,maxDepth/zoom])
     plt.grid()
     if show:
-      if fileName is not None:
+      if fileName:
         plt.savefig(fileName, dpi=150, bbox_inches='tight')
       plt.show()
     return

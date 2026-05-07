@@ -7,3 +7,4 @@ coverage
 mypy
 sphinx
 sphinx_rtd_theme
+scipy-stubs==1.17.1.4

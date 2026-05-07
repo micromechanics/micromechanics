@@ -47,6 +47,6 @@ ax.legend()
 ###############################################################################
 # The inverse area function maps a measured contact area back to contact depth.
 
-known_area = perfect.areaFunction(np.array([0.35]))[0]
+known_area = perfect.areaFunction(np.array([0.35]))
 recovered_depth = perfect.areaFunctionInverse(known_area)
-print(f"Recovered depth for the perfect tip: {recovered_depth:.3f} um")
+print(f"Use initial depth 0.35um and recovered depth for the perfect tip: {recovered_depth[0]:.3f} um")
