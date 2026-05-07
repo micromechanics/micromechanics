@@ -1,6 +1,7 @@
 """Most central functions for nanoindentation"""
 
 import traceback
+from typing import TYPE_CHECKING
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import ndimage
@@ -8,14 +9,17 @@ from scipy import signal
 from scipy.ndimage import gaussian_filter1d
 from scipy.optimize import fmin_l_bfgs_b
 from .definitions import Vendor, Method
+from .theory import _dictToFloat
 
+if TYPE_CHECKING:
+  from .core import Indentation
 
 class IndentationMainMixin:
   """
   Main analysis workflow methods for :class:`Indentation`.
   """
 
-  def calcYoungsModulus(self, minDepth=-1, plot=False):
+  def calcYoungsModulus(self:'Indentation', minDepth:float=-1, plot:bool=False) -> float: # type: ignore[misc]
     """
     Calculate and plot Young's modulus as a function of the depth |br|
     use corrected h and stiffness (do not recalculate)
@@ -28,15 +32,14 @@ class IndentationMainMixin:
         float: average Young's modulus, minDepth>0
     """
     self.modulusRed, self.Ac, self.hc = \
-      self.OliverPharrMethod(self.slope, self.p[self.valid], self.h[self.valid], self.model['nonMetal'])
-    modulus = self.YoungsModulus(self.modulusRed)
+      self.OliverPharrMethod(self.slope, self.p[self.valid], self.h[self.valid], _dictToFloat(self.model['nonMetal'], 1.0))
+    modulus = np.asarray(self.YoungsModulus(self.modulusRed))
+    eAve, eStd = -1.0, 0.0
     if minDepth>0:
       #eAve = np.average(       self.modulusRed[ self.h>minDepth ] )
       eAve = np.average( modulus[  np.bitwise_and(modulus>0, self.h[self.valid]>minDepth) ] )
       eStd = np.std(     modulus[  np.bitwise_and(modulus>0, self.h[self.valid]>minDepth) ] )
       print("Average and StandardDeviation of Young's Modulus",round(eAve,1) ,round(eStd,1) ,' [GPa]')
-    else:
-      eAve, eStd = -1, 0
     if plot:
       h = self.h[self.valid]
       mark = '-' if len(modulus)>1 else 'o'
@@ -57,7 +60,7 @@ class IndentationMainMixin:
     return eAve
 
 
-  def calcHardness(self, minDepth=-1, plot=False):
+  def calcHardness(self:'Indentation', minDepth:float=-1, plot:bool=False) -> None: # type: ignore[misc]
     """
     Calculate and plot Hardness as a function of the depth
 
@@ -67,7 +70,7 @@ class IndentationMainMixin:
     """
     #use area function
     hardness=self.p[self.valid]/self.OliverPharrMethod(self.slope, self.p[self.valid], self.h[self.valid], \
-      self.model['nonMetal'])[1]
+      _dictToFloat(self.model['nonMetal'], 1.0))[1]
     if plot:
       mark = '-' if len(hardness)>1 else 'o'
       plt.plot(self.h[self.valid], hardness, mark+'b', label='calc')
@@ -88,7 +91,7 @@ class IndentationMainMixin:
     return
 
 
-  def calcStiffness2Force(self, minDepth=0.01, plot=True, calibrate=False):
+  def calcStiffness2Force(self:'Indentation', minDepth:float=0.01, plot:bool=True, calibrate:bool=False) -> np.ndarray|None: # type: ignore[misc]
     """
     Calculate and plot stiffness squared over force as a function of the depth
 
@@ -99,11 +102,11 @@ class IndentationMainMixin:
     Returns:
         list: prefactors
     """
-    compliance0 = self.tip.compliance
-    prefactors = None
+    compliance0:float = self.tip.compliance
+    prefactors:np.ndarray|None = None
 
-    def errorFunction(compliance):
-      stiffness   = 1./(1./self.sRaw-compliance)
+    def errorFunction(compliance:float) -> float:
+      stiffness   = 1./(1./self.sRaw-compliance) # type: ignore[attr-defined]
       stiffness2load = np.divide(np.multiply(stiffness,stiffness),self.p)
       h   = self.hRaw-compliance*self.p
       h_ = h[ h>minDepth ]
@@ -111,7 +114,7 @@ class IndentationMainMixin:
       if len(h_)>4:
         prefactors = np.polyfit(h_,stiffness2load,1)
         print(compliance,"Fit f(x)=",prefactors[0],"*x+",prefactors[1])
-        return np.abs(prefactors[0])
+        return float(np.abs(prefactors[0]))
       print("*WARNING*: too short vector",len(h_))
       return 9999999.
     if calibrate:
@@ -122,8 +125,7 @@ class IndentationMainMixin:
       compliance0 = result[0]
       #self.correct_H_S()
     if plot:
-      stiffness = 1./(1./self.sRaw-compliance0)
-      #vy: AttributeError: 'Indentation' object has no attribute 'sRaw'
+      stiffness = 1./(1./self.sRaw-compliance0) # type: ignore[attr-defined]
       stiffness2load = np.divide(np.multiply(stiffness,stiffness),self.p)
       h   = self.hRaw-compliance0*self.p
       h_ = h[ h>minDepth ]
@@ -137,7 +139,7 @@ class IndentationMainMixin:
     return prefactors
 
 
-  def analyse(self):
+  def analyse(self:'Indentation') -> None: # type: ignore[misc]
     """
     update slopes/stiffness, Young's modulus and hardness after displacement correction by:
 
@@ -147,7 +149,7 @@ class IndentationMainMixin:
     ONLY DO ONCE AFTER LOADING FILE: if this causes issues introduce flag analysed
       which is toggled during loading and analysing
     """
-    self.h -= self.model['driftRate'] * self.t
+    self.h -= _dictToFloat(self.model['driftRate'], 0.0) * self.t
     self.h -= self.tip.compliance * self.p
 
     if self.method == Method.CSM:
@@ -177,7 +179,7 @@ class IndentationMainMixin:
     return
 
 
-  def identifyLoadHoldUnload(self,plot=False):
+  def identifyLoadHoldUnload(self:'Indentation', plot:bool=False) -> bool: # type: ignore[misc]
     """
     internal method: identify ALL load - hold - unload segments in data
 
@@ -195,17 +197,19 @@ class IndentationMainMixin:
       p = signal.medfilt(self.p, 5)
     else:
       p = gaussian_filter1d(self.p, 5)
+    relForceRateNoise = _dictToFloat(self.model['relForceRateNoise'], 0.02)
+    forceNoise        = _dictToFloat(self.model['forceNoise'],        0.001)
     rate = np.gradient(p, self.t)
     rate /= np.max(rate)
-    loadMask  = np.logical_and(rate >  self.model['relForceRateNoise'], p>self.model['forceNoise'])
-    unloadMask= np.logical_and(rate < -self.model['relForceRateNoise'], p>self.model['forceNoise'])
+    loadMask  = np.logical_and(rate >  relForceRateNoise, p>forceNoise)
+    unloadMask= np.logical_and(rate < -relForceRateNoise, p>forceNoise)
     if plot:     # verify visually
       plt.plot(rate)
       plt.axhline(0, c='k')
-      plt.axhline( self.model['relForceRateNoise'], c='k', linestyle='dashed')
-      plt.axhline(-self.model['relForceRateNoise'], c='k', linestyle='dashed')
+      plt.axhline( relForceRateNoise, c='k', linestyle='dashed')
+      plt.axhline(-relForceRateNoise, c='k', linestyle='dashed')
       if plot:
-        plt.ylim([-8*self.model['relForceRateNoise'], 8*self.model['relForceRateNoise']])
+        plt.ylim([-8*relForceRateNoise, 8*relForceRateNoise])
       plt.xlabel('time incr. []')
       plt.ylabel(r'rate [$\mathrm{mN/sec}$]')
       plt.title('Identify load, hold, unload: loading and unloading segments - prior to cleaning')
@@ -214,11 +218,12 @@ class IndentationMainMixin:
     loadMaskTry = loadMask
     unloadMaskTry = unloadMask
     if len(loadMask)>100 and len(unloadMask)>100:
-      size = self.model['maxSizeFluctuations']
-      loadMaskTry = ndimage.binary_closing(loadMask, structure=np.ones((size,)) )
-      unloadMaskTry = ndimage.binary_closing(unloadMask, structure=np.ones((size,)))
-      loadMaskTry = ndimage.binary_opening(loadMaskTry, structure=np.ones((size,)))
-      unloadMaskTry = ndimage.binary_opening(unloadMaskTry, structure=np.ones((size,)))
+      size = int(_dictToFloat(self.model['maxSizeFluctuations'], 10.0))
+      structure = np.ones((size,), dtype=bool)
+      loadMaskTry = ndimage.binary_closing(loadMask,        structure=structure)
+      unloadMaskTry = ndimage.binary_closing(unloadMask,    structure=structure)
+      loadMaskTry = ndimage.binary_opening(loadMaskTry,     structure=structure)
+      unloadMaskTry = ndimage.binary_opening(unloadMaskTry, structure=structure)
     if np.any(loadMaskTry) and np.any(unloadMaskTry):
       loadMask = loadMaskTry
       unloadMask = unloadMaskTry
@@ -236,9 +241,9 @@ class IndentationMainMixin:
       x_ = np.arange(len(rate))[unloadMask]
       y_ = np.zeros_like(rate)[unloadMask]
       ax[0].plot(x_, y_, 'C2.', label='unload mask')
-      ax[0].axhline( self.model['relForceRateNoise'], c='k', linestyle='dashed')
-      ax[0].axhline(-self.model['relForceRateNoise'], c='k', linestyle='dashed')
-      ax[0].set_ylim([-8*self.model['relForceRateNoise'], 8*self.model['relForceRateNoise']])
+      ax[0].axhline( relForceRateNoise, c='k', linestyle='dashed')
+      ax[0].axhline(-relForceRateNoise, c='k', linestyle='dashed')
+      ax[0].set_ylim([-8*relForceRateNoise, 8*relForceRateNoise])
       ax[0].legend()
       ax[0].set_ylabel(r'rate [$\mathrm{mN/sec}$]')
     #find index where masks are changing from true-false
@@ -306,7 +311,7 @@ class IndentationMainMixin:
     return True
 
 
-  def identifyLoadHoldUnloadCSM(self, plot=False):
+  def identifyLoadHoldUnloadCSM(self:'Indentation', plot:bool=False) -> bool: # type: ignore[misc]
     """
     internal method: identify load - hold - unload segment in CSM data |br|
     Backup: if identifyLoadHoldUnload fails
@@ -317,10 +322,11 @@ class IndentationMainMixin:
     Returns:
       bool: success of identifying hold-load-unload sequence
     """
-    iSurface = np.min(np.where( self.h>=0                     ))
-    iLoad    = np.min(np.where( self.p-np.max(self.p)*self.model['unloadPMax']>0 ))
+    iSurface = int(np.min(np.where( self.h>=0                     )))
+    unloadPMax = _dictToFloat(self.model['unloadPMax'], 0.99)
+    iLoad    = int(np.min(np.where( self.p-np.max(self.p)*unloadPMax>0 )))
     if iLoad<len(self.p)-1:
-      iHold  = np.max(np.where( self.p-np.max(self.p)*self.model['unloadPMax']>0 ))
+      iHold  = int(np.max(np.where( self.p-np.max(self.p)*unloadPMax>0 )))
       if iHold==iLoad:
         iHold += 1
       try:
@@ -331,12 +337,11 @@ class IndentationMainMixin:
         self.iDrift = []
         return False
       pDrift   = bins[np.argmax(hist)+1]
-      pCloseToDrift = np.logical_and(self.p>pDrift*self.model['unloadPMax'], \
-                                    self.p<pDrift/self.model['unloadPMax'])
+      pCloseToDrift = np.logical_and(self.p>pDrift*unloadPMax, self.p<pDrift/unloadPMax)
       pCloseToDrift[:iHold] = False
       if len(pCloseToDrift[pCloseToDrift])>3:
-        iDriftS  = np.min(np.where( pCloseToDrift ))
-        iDriftE  = np.max(np.where( pCloseToDrift ))
+        iDriftS  = int(np.min(np.where( pCloseToDrift )))
+        iDriftE  = int(np.max(np.where( pCloseToDrift )))
       else:
         iDriftS   = len(self.p)-2
         iDriftE   = len(self.p)-1
@@ -377,7 +382,7 @@ class IndentationMainMixin:
     return True
 
 
-  def nextTest(self, newTest=True, plotSurface=False):
+  def nextTest(self:'Indentation', newTest:bool=True, plotSurface:bool=False) -> bool: # type: ignore[misc]
     """
     Wrapper for all next test for all vendors
 
@@ -448,7 +453,7 @@ class IndentationMainMixin:
         #interpolate nan with neighboring values
         nans = np.isnan(thresValues)
 
-        def tempX(z):
+        def tempX(z:np.ndarray) -> np.ndarray:
           """
           Temporary function
 
@@ -459,20 +464,20 @@ class IndentationMainMixin:
             numpy.array: output
           """
           return z.nonzero()[0]
-        thresValues[nans]= np.interp(tempX(nans), tempX(~nans), thresValues[~nans])
+        thresValues[nans]= np.interp(tempX(nans), tempX(~nans), thresValues[~nans]) # type: ignore[index]
 
         #filter this data
         if 'median filter' in self.surface:
-          thresValues = signal.medfilt(thresValues, self.surface['median filter'])
+          thresValues = signal.medfilt(thresValues, self.surface['median filter']) # type: ignore[call-overload]
         elif 'gauss filter' in self.surface:
-          thresValues = gaussian_filter1d(thresValues, self.surface['gauss filter'])
+          thresValues = gaussian_filter1d(thresValues, self.surface['gauss filter']) # type: ignore[call-overload]
         elif 'butterfilter' in self.surface:
-          valueB, valueA = signal.butter(*self.surface['butterfilter'])
-          thresValues = signal.filtfilt(valueB, valueA, thresValues)
+          valueB, valueA = signal.butter(*self.surface['butterfilter']) # type: ignore[call-overload]
+          thresValues = signal.filtfilt(valueB, valueA, thresValues) # type: ignore[arg-type]
         if 'phase angle' in self.surface:
           surfaceMatches = np.where(thresValues<thresValue)[0]
         else:
-          surfaceMatches = np.where(thresValues>thresValue)[0]
+          surfaceMatches = np.where(thresValues>thresValue)[0] # type: ignore[operator]
         if len(surfaceMatches)==0:
           print('**ERROR** could not identify surface for threshold', thresValue)
           return False
@@ -511,7 +516,7 @@ class IndentationMainMixin:
     return success
 
 
-  def saveToUserMeta(self):
+  def saveToUserMeta(self:'Indentation') -> None: # type: ignore[misc]
     """
     save results to user-metadata
     """
