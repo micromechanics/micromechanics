@@ -39,7 +39,7 @@ class FileType(IntEnum):
   Multi  = 2  #multiple tests in file                                           # pylint: disable=invalid-name
 
 #TODO_P1 defaults to documentation
-_DefaultModel = {
+_DefaultModel:dict[str, float|bool|str] = {
   'nuTip':      0.07,
   'modulusTip': 1140,       # GPa from Oliver,Pharr Method paper
   'beta':       0.75,       # beta: contact depth coefficient
@@ -48,8 +48,8 @@ _DefaultModel = {
 
   'unloadPMax':0.99,        # upper end of fitting domain of unloading stiffness: Vendor-specific change
   'unloadPMin':0.5,         # lower end of fitting domain of unloading stiffness: Vendor-specific change
-  'unloadInitialM': None,   # initial value of m that is used to determine the initial values of B and hf,
-                            # which are then used to fit the unloading curve. 1<m0<10, if None then best m0 is automatically identified
+  'unloadInitialM': -1,     # initial value of m that is used to determine the initial values of B and hf,
+                            # which are then used to fit the unloading curve. 1<m0<10, if -1 then best m0 is automatically identified
   'relForceRateNoise':0.02, # threshold of dp/dt use to identify start of loading: Vendor-specific change
   'relForceRateNoiseFilter': 'median',
   'forceNoise': 0.001,      # threshold force to identify start of loading
@@ -58,7 +58,7 @@ _DefaultModel = {
   'cropSlopeToLoading': True# crop the slope to the domain between the surface and loading, after those are identified
 }
 
-_DefaultVendorDependent = {
+_DefaultVendorDependent:dict[Vendor, dict[str, float]] = {
   Vendor.Agilent:           {'unloadPMax':0.999,'unloadPMin':0.5, 'relForceRateNoise':0.02},
   Vendor.Hysitron:          {'unloadPMax':0.95, 'unloadPMin':0.4, 'relForceRateNoise':0.2},
   Vendor.Micromaterials:    {'unloadPMax':0.99, 'unloadPMin':0.5, 'relForceRateNoise':0.02},
