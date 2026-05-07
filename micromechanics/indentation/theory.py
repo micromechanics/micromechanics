@@ -1,16 +1,30 @@
 """CONVENTIONAL NANOINDENTATION FUNCTIONS: area, E,."""
-import math, traceback
+from typing import TYPE_CHECKING
+import math
 import numpy as np
 import matplotlib.pylab as plt
 from scipy.optimize import curve_fit
 from .definitions import Method
+
+if TYPE_CHECKING:
+  from .core import Indentation
+
+UnloadingFitResult = tuple[list[float], np.ndarray, np.ndarray|None, np.ndarray|tuple[float, float, float]|None, list[bool]]
+UnloadingFitError = tuple[None, None, None, None, None]
+
+def _dictToFloat(value:object, fallback:float) -> float:
+  if isinstance(value, bool):
+    return fallback
+  if isinstance(value, int|float):
+    return float(value)
+  return fallback
 
 class IndentationTheoryMixin:
   """
   Contact mechanics and fitting methods for :class:`Indentation`.
   """
 
-  def YoungsModulus(self, modulusRed, nuThis=-1):
+  def YoungsModulus(self:'Indentation', modulusRed:float|np.ndarray, nuThis:float=-1) -> float|np.ndarray:# type: ignore[misc]
     """
     Calculate the Youngs modulus from the reduced Youngs modulus
 
@@ -24,11 +38,13 @@ class IndentationTheoryMixin:
     nu = self.nuMat
     if nuThis>0:
       nu = nuThis
-    modulus = (1.0-nu*nu) / ( 1.0/modulusRed - (1.0-self.model['nuTip']**2)/self.model['modulusTip'])
+    nuTip      = _dictToFloat(self.model['nuTip'],      0.07)
+    modulusTip = _dictToFloat(self.model['modulusTip'], 1140.0)
+    modulus = (1.0-nu*nu) / ( 1.0/modulusRed - (1.0-nuTip**2)/modulusTip)
     return modulus
 
 
-  def ReducedModulus(self, modulus, nuThis=-1):
+  def ReducedModulus(self:'Indentation', modulus:float|np.ndarray, nuThis:float=-1) -> float|np.ndarray:# type: ignore[misc]
     """
     Calculate the reduced modulus from the Youngs modulus
 
@@ -42,11 +58,13 @@ class IndentationTheoryMixin:
     nu = self.nuMat
     if nuThis>0:
       nu = nuThis
-    modulusRed =  1.0/(  (1.0-nu*nu)/modulus + (1.0-self.model['nuTip']**2)/self.model['modulusTip'])
+    nuTip      = _dictToFloat(self.model['nuTip'],      0.07)
+    modulusTip = _dictToFloat(self.model['modulusTip'], 1140.0)
+    modulusRed =  1.0/(  (1.0-nu*nu)/modulus + (1.0-nuTip**2)/modulusTip)
     return modulusRed
 
 
-  def OliverPharrMethod(self, stiffness, pMax, h, nonMetal=1.):
+  def OliverPharrMethod(self:'Indentation', stiffness:np.ndarray, pMax:np.ndarray, h:np.ndarray, nonMetal:float=1.) -> list[np.ndarray]:# type: ignore[misc]
     """
     Conventional Oliver-Pharr indentation method to calculate reduced Modulus modulusRed
 
@@ -67,14 +85,15 @@ class IndentationTheoryMixin:
         list: modulusRed, Ac, hc
     """
     threshAc = 1.e-12  #units in um: threshold = 1pm^2
-    hc = h - nonMetal*self.model['beta']*pMax/stiffness
+    beta = _dictToFloat(self.model['beta'], 0.75)
+    hc = h - nonMetal*beta*pMax/stiffness
     Ac   = self.tip.areaFunction(hc)
     Ac[Ac< threshAc] = threshAc  # prevent zero or negative area that might lock sqrt
     modulus   = stiffness / (2.0*np.sqrt(Ac)/np.sqrt(np.pi))
     return [modulus, Ac, hc]
 
 
-  def inverseOliverPharrMethod(self, stiffness, pMax, modulusRed, nonMetal=1.):
+  def inverseOliverPharrMethod(self:'Indentation', stiffness:np.ndarray, pMax:np.ndarray, modulusRed:np.ndarray, nonMetal:float=1.) -> np.ndarray:# type: ignore[misc]
     """
     Inverse Oliver-Pharr indentation method to calculate contact area Ac
 
@@ -93,12 +112,13 @@ class IndentationTheoryMixin:
     Ac = np.power(stiffness / (2.0*modulusRed/np.sqrt(np.pi)), 2)
     hc0 = np.sqrt(Ac / 24.494)           # first guess: perfect Berkovich
     hc = self.tip.areaFunctionInverse(Ac, hc0=hc0)
-    h = hc + nonMetal*self.model['beta']*pMax/stiffness
+    beta = _dictToFloat(self.model['beta'], 0.75)
+    h = hc + nonMetal*beta*pMax/stiffness
     return h.flatten()
 
 
   @staticmethod  # type: ignore[misc]
-  def unloadingPowerFunc(h,B,hf,m):
+  def unloadingPowerFunc(h:np.ndarray, B:float, hf:float, m:float) -> np.ndarray:
     """
     internal function describing the unloading regime
 
@@ -111,7 +131,7 @@ class IndentationTheoryMixin:
     return value
 
 
-  def stiffnessFromUnloading(self, p, h, plot=False):
+  def stiffnessFromUnloading(self:'Indentation', p:np.ndarray, h:np.ndarray, plot:bool=False) -> UnloadingFitResult|UnloadingFitError:# type: ignore[misc]
     """
     Calculate single unloading stiffness from Unloading; see G200 manual, p7-6
 
@@ -129,7 +149,10 @@ class IndentationTheoryMixin:
       return None, None, None, None, None
     if self.output['verbose']>2:
       print("Number of unloading segments:"+str(len(self.iLHU))+"  Method:"+str(self.method))
-    stiffness, mask, opt, powerlawFit = [], None, None, []
+    stiffness: list[float] = []
+    mask: np.ndarray|None = None
+    opt: np.ndarray|tuple[float, float, float]|None = None
+    powerlawFit: list[bool] = []
     validMask = np.zeros_like(p, dtype=bool)
     if plot:
       if self.output['ax'] is not None:
@@ -143,7 +166,9 @@ class IndentationTheoryMixin:
         print('**ERROR** stiffnessFromUnloading: indicies not in order:',cycle)
       maskSegment = np.zeros_like(h, dtype=bool)
       maskSegment[unloadStart:unloadEnd+1] = True
-      maskForce   = np.logical_and(p<p[loadEnd]*self.model['unloadPMax'], p>p[loadEnd]*self.model['unloadPMin'])
+      unloadPMax = _dictToFloat(self.model['unloadPMax'], 0.99)
+      unloadPMin = _dictToFloat(self.model['unloadPMin'], 0.5)
+      maskForce   = np.logical_and(p<p[loadEnd]*unloadPMax, p>p[loadEnd]*unloadPMin)
       mask        = np.logical_and(maskSegment,maskForce)
       if len(mask[mask])==0:
         print('**ERROR** mask of unloading is empty. Cannot fit\n')
@@ -158,13 +183,18 @@ class IndentationTheoryMixin:
       #   log p=logB+m*logh   one could argue that h>hf and that this is a great approximation and use it to get initial B,m
       #   but that might not be so great and still cumbersome
       # Easier: try a few values of m, find the one that is best for the middle point and stick with that going into the fitting
-      m0  = np.logspace(0.1, 1, 5) if self.model['unloadInitialM'] <0 else self.model['unloadInitialM']
-      hf0 = (h[mask][0]/p[mask][0]**(1/m0) - h[mask][-1]/p[mask][-1]**(1/m0))/(1/p[mask][0]**(1/m0) -1/p[mask][-1]**(1/m0))
-      B0  = p[mask][0]/(h[mask][0]-hf0)**m0
-      if self.model['unloadInitialM'] < 0:
-        pMid = B0*(h[mask][int(len(h[mask])/2)]-hf0)**m0
+      unloadInitialM = _dictToFloat(self.model['unloadInitialM'], -1.0)
+      if unloadInitialM < 0:
+        m0Values  = np.logspace(0.1, 1, 5)
+        hf0Values = (h[mask][0]/p[mask][0]**(1/m0Values) - h[mask][-1]/p[mask][-1]**(1/m0Values))/(1/p[mask][0]**(1/m0Values) -1/p[mask][-1]**(1/m0Values))
+        B0Values  = p[mask][0]/(h[mask][0]-hf0Values)**m0Values
+        pMid = B0Values*(h[mask][int(len(h[mask])/2)]-hf0Values)**m0Values
         idxBest = np.abs(pMid-p[mask][int(len(h[mask])/2)]).argmin()
-        m0, hf0, B0 = m0[idxBest], hf0[idxBest], B0[idxBest]
+        m0, hf0, B0 = float(m0Values[idxBest]), float(hf0Values[idxBest]), float(B0Values[idxBest])
+      else:
+        m0  = unloadInitialM
+        hf0 = float((h[mask][0]/p[mask][0]**(1/m0) - h[mask][-1]/p[mask][-1]**(1/m0))/(1/p[mask][0]**(1/m0) -1/p[mask][-1]**(1/m0)))
+        B0  = float(p[mask][0]/(h[mask][0]-hf0)**m0)
       # elif self.model['unloadInitialValues']=='metal': # Assuming a more linear unloading curve
       #   B0  = (p[mask][-1]-p[mask][0])/(h[mask][-1]-h[mask][0])
       #   hf0 = h[mask][0] - p[mask][0]/B0
