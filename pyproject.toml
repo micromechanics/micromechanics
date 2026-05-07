@@ -5,3 +5,4 @@ requires = ["setuptools >= 43.0.0", "wheel"]
 ignore_missing_imports = true
 disallow_untyped_defs = true
 check_untyped_defs = true
+warn_unused_ignores = true

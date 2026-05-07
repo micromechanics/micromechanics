@@ -22,7 +22,11 @@ Coding rules:
 import os
 import copy
 from pathlib import Path
+from collections.abc import Callable
+from typing import cast, Any
+from typing_extensions import TypedDict
 import numpy as np
+from matplotlib.axes import Axes
 from .calibration import IndentationCalibrationMixin
 from .definitions import (FileType, Method, Vendor, _DefaultModel, _DefaultOutput, _DefaultSurface, _DefaultVendorDependent)
 from .hertz import IndentationHertzMixin
@@ -33,12 +37,27 @@ from .theory import IndentationTheoryMixin
 from .tip import Tip
 from .verification import IndentationVerificationMixin
 
+
+ModelValue = float|bool|str
+SurfaceSettings = dict[str, object]
+
+
+class OutputKwargs(TypedDict, total=False):
+  verbose: int
+  plotLoadHoldUnload: bool
+  ax: Axes|list[Axes]|np.ndarray|None
+  plotWithLabel: bool
+  progressBar: Callable[[float, str], None]|None
+  successTest: list[str]
+
+
 class Indentation(IndentationInputMixin, IndentationMainMixin, IndentationTheoryMixin, IndentationHertzMixin, IndentationPlotMixin,
                   IndentationCalibrationMixin, IndentationVerificationMixin):
   """
   Main class of indentation
   """
-  def __init__(self, fileName=None, nuMat= 0.3, tip=None, surface=None, model=None, output=None):
+  def __init__(self, fileName:str='', nuMat:float= 0.3, tip:Tip|None=None, surface:SurfaceSettings|None=None,
+               model:dict[str, ModelValue]|None=None, output:OutputKwargs|None=None) -> None:
     """
     Initialize indentation experiment data
 
@@ -53,37 +72,49 @@ class Indentation(IndentationInputMixin, IndentationMainMixin, IndentationTheory
     np.seterr(divide='ignore', invalid='ignore')
     self.nuMat   = nuMat                            # nuMat: material's Posson ratio
     self.method  = Method.ISO                       # iso default: csm uses different methods
+    self.vendor:Vendor
+    self.fileType:FileType
     self.tip:Tip = Tip() if tip is None else tip    # nanoindenter tip and compliance
-    surface = {} if surface is None else surface
-    model = {} if model is None else model
-    output = {} if output is None else output
-    self.surface = copy.deepcopy(_DefaultSurface)  # dictionary describing the surface find
-    self.surface.update(surface)
-    self.model   = copy.deepcopy(_DefaultModel)    # dictionary for all numerical parameters that determine the results
-    self.modelUserChoice = dict(model)
+    surfaceInput:SurfaceSettings = {} if surface is None else surface
+    modelInput:dict[str, ModelValue] = {} if model is None else model
+    outputInput:OutputKwargs = {} if output is None else output
+    self.surface:SurfaceSettings = cast(SurfaceSettings, copy.deepcopy(_DefaultSurface))  # dictionary describing the surface find
+    self.surface.update(surfaceInput)
+    self.model:dict[str, ModelValue] = copy.deepcopy(_DefaultModel)    # dictionary for all numerical parameters that determine the results
+    self.modelUserChoice:dict[str, ModelValue] = dict(modelInput)
     self.model.update(self.modelUserChoice)
-    self.output  = copy.deepcopy(_DefaultOutput)   # dictionary for all output parameters, axis
-    self.output.update(output)
+    self.output:OutputKwargs = cast(OutputKwargs, copy.deepcopy(_DefaultOutput))   # dictionary for all output parameters, axis
+    self.output.update(outputInput)
 
-    self.newFileRead = True                                 #file was just loaded
-    self.iLHU   = [ [-1,-1,-1,-1] ]                         #indicies of Load-Hold-Unload cycles
-                                                            #(StartLoad-StartHold-StartUnload-EndLoad)
-    self.iDrift = [-1,-1]                                   #start and end indicies of drift segment
-    self.metaVendor = {}                                    #some results come from input file
-    self.metaUser: dict[str, float|list[float]|str]   = {}  #metadata added by analysis
+    self.newFileRead               = True                # file was just loaded
+    self.iLHU:list[list[int]]      = [ [-1,-1,-1,-1] ]   # indicies of Load-Hold-Unload cycles
+                                                         # (StartLoad-StartHold-StartUnload-EndLoad)
+    self.iDrift:list[int]          = [-1,-1]             # start and end indicies of drift segment
+    self.metaVendor:dict[str, Any] = {}                  # some results come from input file
+    self.metaUser: dict[str, float|list[float]|str] = {} # type: ignore[assignment]  #metadata added by analysis
 
     # define all attributes
-    self.testName, self.testList = None, None
-    self.h, self.t, self.p, self.valid       = [],[],[],[]
-    self.hRaw = []
-    self.slope, self.k2p, self.hc, self.Ac = [],[],[],[]
-    self.modulus, self.modulusRed, self.hardness = [],[],[]
+    self.testName              = ''
+    self.testList:list[str]    = []
+    self.allTestList:list[str] = []
+    self.h                     = np.array([], dtype=np.float64)
+    self.t                     = np.array([], dtype=np.float64)
+    self.p                     = np.array([], dtype=np.float64)
+    self.valid                 = np.array([], dtype=bool)
+    self.hRaw                  = np.array([], dtype=np.float64)
+    self.slope                 = np.array([], dtype=np.float64)
+    self.k2p                   = np.array([], dtype=np.float64)
+    self.hc                    = np.array([], dtype=np.float64)
+    self.Ac                    = np.array([], dtype=np.float64)
+    self.modulus               = np.array([], dtype=np.float64)
+    self.modulusRed            = np.array([], dtype=np.float64)
+    self.hardness              = np.array([], dtype=np.float64)
 
     #initialize and load first data set
     #set default parameters
     success = False
     recognized = False
-    if fileName is None:
+    if not fileName:
       fileName = str(Path(__file__).parent/'data/Example.xls')
     if not os.path.exists(fileName):
       if fileName!='':
@@ -139,7 +170,7 @@ class Indentation(IndentationInputMixin, IndentationMainMixin, IndentationTheory
     return
 
 
-  def fillVendorDefaults(self):
+  def fillVendorDefaults(self) -> None:
     """
     fill defaults depending on vendor, if information is not yet present
     """
@@ -157,7 +188,7 @@ class Indentation(IndentationInputMixin, IndentationMainMixin, IndentationTheory
   #defining an iterator for cleaner usage
   #https://www.programiz.com/python-programming/iterator
   #Building Custom Iterators
-  def __iter__(self):
+  def __iter__(self) -> 'Indentation':
     """
     Python iterator
 
@@ -169,7 +200,7 @@ class Indentation(IndentationInputMixin, IndentationMainMixin, IndentationTheory
     return self
 
 
-  def __next__(self):
+  def __next__(self) -> str:
     """
     Go to next iterator
 
