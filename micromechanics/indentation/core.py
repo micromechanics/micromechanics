@@ -64,10 +64,13 @@ class Indentation(IndentationInputMixin, IndentationMainMixin, IndentationTheory
     self.vendor:Vendor
     self.fileType:FileType
     self.tip:Tip = Tip() if tip is None else tip    # nanoindenter tip and compliance
-    self.surface = copy.deepcopy(_DefaultSurface) if surface is None else copy.deepcopy(_DefaultSurface)|surface
-    self.modelUserChoice = {} if model is None else model
-    self.model   = copy.deepcopy(_DefaultModel)   if model is None else copy.deepcopy(_DefaultModel)|model
-    self.output  = copy.deepcopy(_DefaultOutput)  if output is None else copy.deepcopy(_DefaultOutput)|output
+    self.surface:dict[str, dict[str, Any]]         = copy.deepcopy(_DefaultSurface) if surface is None else \
+                                                     copy.deepcopy(_DefaultSurface)|surface
+    self.modelUserChoice:dict[str, float|bool|str] = {} if model is None else model
+    self.model:dict[str, float|bool|str]           = copy.deepcopy(_DefaultModel) if model is None else \
+                                                     copy.deepcopy(_DefaultModel)|model
+    self.output:dict[str, Any]                     = copy.deepcopy(_DefaultOutput) if output is None else \
+                                                     copy.deepcopy(_DefaultOutput)|output
 
     self.newFileRead               = True                # file was just loaded
     self.iLHU:list[list[int]]      = [ [-1,-1,-1,-1] ]   # indicies of Load-Hold-Unload cycles
@@ -80,18 +83,18 @@ class Indentation(IndentationInputMixin, IndentationMainMixin, IndentationTheory
     self.testName              = ''
     self.testList:list[str]    = []
     self.allTestList:list[str] = []
-    self.h                     = np.array([], dtype=np.float64)
-    self.t                     = np.array([], dtype=np.float64)
-    self.p                     = np.array([], dtype=np.float64)
-    self.valid                 = np.array([], dtype=bool)
-    self.hRaw                  = np.array([], dtype=np.float64)
-    self.slope                 = np.array([], dtype=np.float64)
-    self.k2p                   = np.array([], dtype=np.float64)
-    self.hc                    = np.array([], dtype=np.float64)
-    self.Ac                    = np.array([], dtype=np.float64)
-    self.modulus               = np.array([], dtype=np.float64)
-    self.modulusRed            = np.array([], dtype=np.float64)
-    self.hardness              = np.array([], dtype=np.float64)
+    self.h         :np.ndarray = np.array([], dtype=np.float64)
+    self.t         :np.ndarray = np.array([], dtype=np.float64)
+    self.p         :np.ndarray = np.array([], dtype=np.float64)
+    self.valid     :np.ndarray = np.array([], dtype=bool)
+    self.hRaw      :np.ndarray = np.array([], dtype=np.float64)
+    self.slope     :np.ndarray = np.array([], dtype=np.float64)
+    self.k2p       :np.ndarray = np.array([], dtype=np.float64)
+    self.hc        :np.ndarray = np.array([], dtype=np.float64)
+    self.Ac        :np.ndarray = np.array([], dtype=np.float64)
+    self.modulus   :np.ndarray = np.array([], dtype=np.float64)
+    self.modulusRed:np.ndarray = np.array([], dtype=np.float64)
+    self.hardness  :np.ndarray = np.array([], dtype=np.float64)
 
     #initialize and load first data set
     #set default parameters

@@ -1,6 +1,7 @@
 """All instrument specific input functions"""
 import io, re, json
 from pathlib import Path
+from typing import TYPE_CHECKING, Any
 from zipfile import ZipFile
 import h5py
 import numpy as np
@@ -8,13 +9,16 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from .definitions import Method, Vendor, _DefaultSurface
 
+if TYPE_CHECKING:
+  from .core import Indentation
+
 
 class IndentationInputMixin:
   """
   File loading and file iteration methods for :class:`Indentation`.
   """
 
-  def loadAgilent(self, fileName):
+  def loadAgilent(self:'Indentation', fileName:str) -> bool: # type: ignore[misc]
     """
     Initialize G200 excel file for processing
 
@@ -26,7 +30,7 @@ class IndentationInputMixin:
     """
     self.testList = []
     self.fileName = fileName    #one file can have multiple tests
-    self.indicies = {}
+    self.indicies:dict[str, str] = {}
     for sheetName in ['Required Inputs', 'Pre-Test Inputs']:
       try:
         workbook = pd.read_excel(fileName,sheet_name=sheetName)
@@ -38,7 +42,7 @@ class IndentationInputMixin:
         self.output['verbose']>0:
       print("*WARNING*: Poisson Ratio different than in file.",self.nuMat,self.metaVendor['Poissons Ratio'])
     self.datafile = pd.read_excel(fileName, sheet_name=None)
-    tagged = []
+    tagged:list[str] = []
     code = {"Load On Sample":"p", "Force On Surface":"p", "LOAD":"p", "Load":"p"\
           ,"_Load":"pRaw", "Raw Load":"pRaw","Force":"pRaw"\
           ,"Displacement Into Surface":"h", "DEPTH":"h", "Depth":"h"\
@@ -95,7 +99,7 @@ class IndentationInputMixin:
     return self.nextTest()
 
 
-  def nextAgilentTest(self, newTest=True):
+  def nextAgilentTest(self:'Indentation', newTest:bool=True) -> bool: # type: ignore[misc]
     """
     Go to next sheet in worksheet and prepare indentation data
 
@@ -166,7 +170,7 @@ class IndentationInputMixin:
     return True
 
 
-  def loadHysitron(self, fileName, plotContact=False):
+  def loadHysitron(self:'Indentation', fileName:str, plotContact:bool=False) -> bool: # type: ignore[misc]
     """
     Load Hysitron hld or txt file for processing, only contains one test
 
@@ -191,20 +195,23 @@ class IndentationInputMixin:
           print("Open Hysitron file: "+self.fileName)
 
         #read meta-data
-        prefact = [0]*6
-        segmentTime = []
-        segmentDeltaP = []
-        segmentPoints = []
+        prefact                   = [0.0]*6
+        segmentTime:list[float]   = []
+        segmentDeltaP:list[float] = []
+        segmentPoints:list[int]   = []
         numSegments = 0
         pStart = 0.0
+        value = 0.0
         while True:
           line = inFile.readline()
           label = line.split(":")[0]
           try:
-            data = line.split(":")[1].split(" ")
-            value = float(data[1])
+            lineParts = line.split(":")[1].split(" ")
+            value = float(lineParts[1])
           except:
-            value = line.split(":")[1].rstrip()
+            if label == "Time Stamp":
+              self.timeStamp = ":".join(line.rstrip().split(":")[1:])
+            continue
           #pylint: disable=multiple-statements
           if label == "Sample Approach Data Points": break
           if label == "Machine Comp": self.compliance = value #assume nm/uN = um/mN
@@ -216,19 +223,17 @@ class IndentationInputMixin:
           if label == "Tip C5":       prefact[5] = value #nm^2/nm^0.0625
           if label == "Contact Threshold": forceTreshold = value/1.e3 #uN
           if label == "Drift Rate":   self.metaVendor['drift_rate'] = value/1.e3 #um/s
-          if label == "Number of Segments"  : numSegments  = value
+          if label == "Number of Segments"  : numSegments  = int(value)
           if label == "Segment Begin Time"  : segmentTime.append(value)
           if label == "Segment Begin Demand": pStart     = value
           if label == "Segment End Demand"  : segmentDeltaP.append( (value-pStart)/1.e3 ) #to mN
           if label == "Segment Points"      : segmentPoints.append(int(value))
-          if label == "Time Stamp"          : self.timeStamp = ":".join(line.rstrip().split(":")[1:])
           #pylint: enable=multiple-statements
         self.tip.prefactors = prefact+['iso']
         if (numSegments!=len(segmentTime)) or (numSegments!=len(segmentDeltaP)):
           print("**ERROR**", numSegments,len(segmentTime),len(segmentDeltaP ) )
-        segmentDeltaP = np.array(segmentDeltaP)
-        segmentPoints = np.array(segmentPoints)
-        segmentTime   = np.array(segmentTime)
+        segmentDeltaPArray = np.array(segmentDeltaP)
+        segmentPointsArray = np.array(segmentPoints)
 
         #read approach data
         line = inFile.readline() #Time_s  MotorDisp_mm    Piezo Extension_nm"
@@ -237,10 +242,10 @@ class IndentationInputMixin:
           data +=inFile.readline()
 
         #read drift data
-        value = inFile.readline().split(":")[1]
+        numDrift = int(inFile.readline().split(":")[1])
         line = inFile.readline()  #Time_s	Disp_nm",value
         data = ""
-        for idx in range(int(value)):
+        for idx in range(numDrift):
           data +=inFile.readline()
         if len(data)>1:
           self.dataDrift = np.loadtxt( StringIO(str(data))  )
@@ -248,10 +253,10 @@ class IndentationInputMixin:
 
         #read test data
         #Time_s	Disp_nm	Force_uN	LoadCell_nm	PiezoDisp_nm	Disp_V	Force_V	Piezo_LowV
-        value = inFile.readline().split(":")[1]
+        numTest = int(inFile.readline().split(":")[1])
         line = inFile.readline()
         data = ""
-        for idx in range(int(value)):
+        for idx in range(numTest):
           data +=inFile.readline()
         dataTest = np.loadtxt( StringIO(str(data))  )
         #store data
@@ -262,11 +267,11 @@ class IndentationInputMixin:
 
         # create loading-holding-unloading cycles
         #since the first / last point of each segment are double in both segments
-        listLoading = np.where(segmentDeltaP>0.1 )[0]
-        listUnload  = np.where(segmentDeltaP<-0.1)[0]
-        segmentPoints  -= 1
-        segmentPoints[0]+=1
-        segPnts   = np.cumsum(segmentPoints)
+        listLoading = np.where(segmentDeltaPArray>0.1 )[0]
+        listUnload  = np.where(segmentDeltaPArray<-0.1)[0]
+        segmentPointsArray  -= 1
+        segmentPointsArray[0]+=1
+        segPnts   = np.cumsum(segmentPointsArray)
         #don't use identifyLoadHoldUnload since those points are known
         self.iLHU = []
         for idxLoad, idxUnload in zip(listLoading, listUnload):
@@ -352,7 +357,7 @@ class IndentationInputMixin:
 
 
 
-  def loadMicromaterials(self, fileName):
+  def loadMicromaterials(self:'Indentation', fileName:str|io.TextIOWrapper) -> bool: # type: ignore[misc]
     """
     Load Micromaterials txt/zip file for processing, contains only one test
 
@@ -396,7 +401,7 @@ class IndentationInputMixin:
     return True
 
 
-  def nextMicromaterialsTest(self):
+  def nextMicromaterialsTest(self:'Indentation') -> bool: # type: ignore[misc]
     """
     Go to next file in zip or hdf5-file
 
@@ -414,7 +419,7 @@ class IndentationInputMixin:
     return success
 
 
-  def loadFischerScope(self,fileName):
+  def loadFischerScope(self:'Indentation', fileName:str) -> bool: # type: ignore[misc]
     """
     Initialize txt-file from Fischer-Scope for processing
 
@@ -424,7 +429,7 @@ class IndentationInputMixin:
     Returns:
       bool: success
     """
-    self.metaVendor = {'date':[], 'shape correction':[], 'coordinate x':[], 'coordinate y':[],
+    self.metaVendor:dict[str,Any] = {'date':[], 'shape correction':[], 'coordinate x':[], 'coordinate y':[],
             'work elastic':[], 'work nonelastic':[], 'EIT/(1-vs^2) [GPa]':[], 'HIT [N/mm]':[],
             'HUpl [N/mm]': [], 'hr [um]':[], 'hmax [um]':[], 'Compliance [um/N]':[],
             'epsilon':[], 'fit range': []}
@@ -449,8 +454,8 @@ class IndentationInputMixin:
       #read all lines after initial lines
       for line in fIn:
         pattern = identifier+r"   \d\d\.\d\d\.\d\d\d\d  \d\d:\d\d:\d\d"
-        dataInLine = line.replace(',','.').split()
-        dataInLine = [float(item) if self.isfloat(item) else None for item in dataInLine]
+        dataInLineStr = line.replace(',','.').split()
+        dataInLine = [float(item) if self.isfloat(item) else None for item in dataInLineStr]
         if re.match(pattern, line) is not None:
           ## finish old individual measurement
           if block is not None:
@@ -507,7 +512,7 @@ class IndentationInputMixin:
     return True
 
 
-  def nextFischerScopeTest(self):
+  def nextFischerScopeTest(self:'Indentation') -> bool: # type: ignore[misc]
     """
     Go to next test
 
@@ -523,7 +528,7 @@ class IndentationInputMixin:
     return True
 
 
-  def loadHDF5(self,fileName):
+  def loadHDF5(self:'Indentation', fileName:str) -> bool: # type: ignore[misc]
     """
     Initialize hdf5-file that all converters are producing
 
@@ -591,7 +596,7 @@ class IndentationInputMixin:
     return True
 
 
-  def nextHDF5Test(self):
+  def nextHDF5Test(self:'Indentation') -> bool: # type: ignore[misc]
     """
     Go to next branch in HDF5 file
     - TODO check for non CSM
@@ -615,10 +620,11 @@ class IndentationInputMixin:
       setattr(self, attrib, [])
     with open(Path(__file__).parent/'terms.json', encoding='utf-8') as fIn:
       nameDict   = json.load(fIn)
-    if self.metaUser['measurementType'].split()[0] in nameDict:
-      nameDict = nameDict[self.metaUser['measurementType'].split()[0]]
+    measurementType = self.metaUser['measurementType'] if isinstance(self.metaUser['measurementType'], str) else '__ERRORR__'
+    if measurementType.split()[0] in nameDict:
+      nameDict = nameDict[measurementType.split()[0]]
     else:
-      print("**ERROR** instrument not in terms.json:", self.metaUser['measurementType'].split()[0])
+      print("**ERROR** instrument not in terms.json:", measurementType.split()[0])
       return False
 
 
@@ -643,7 +649,7 @@ class IndentationInputMixin:
           break
 
     if self.valid is None or validFull is None:
-      print('**ERROR** Missing information for',self.metaUser['measurementType'].split()[0],': h or valid data')
+      print('**ERROR** Missing information for',measurementType.split()[0],': h or valid data')
       print('Keys exist',inFile)
       return False
 
@@ -665,7 +671,7 @@ class IndentationInputMixin:
     # Test if essential items exist
     for attrib in ['h','t','p']:
       if not hasattr(self, attrib) or len(getattr(self, attrib))==0:
-        print('**ERROR** Missing information for',self.metaUser['measurementType'].split()[0],': ',attrib)
+        print('**ERROR** Missing information for',measurementType.split()[0],': ',attrib)
         print('Keys exist',inFile)
         return False
     self.valid = self.valid[validFull]
@@ -708,7 +714,7 @@ class IndentationInputMixin:
 
 
   @staticmethod
-  def isfloat(value):
+  def isfloat(value:str) -> bool:
     """
     Determine if value is float
 
@@ -725,7 +731,7 @@ class IndentationInputMixin:
       return False
 
 
-  def restartFile(self):
+  def restartFile(self:'Indentation') -> None: # type: ignore[misc]
     """
     Restart processing the current file by resetting all values back to the initial
     """
