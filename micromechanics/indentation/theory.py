@@ -117,7 +117,7 @@ class IndentationTheoryMixin:
     return h.flatten()
 
 
-  @staticmethod  # type: ignore[misc]
+  @staticmethod
   def unloadingPowerFunc(h:np.ndarray, B:float, hf:float, m:float) -> np.ndarray:
     """
     internal function describing the unloading regime

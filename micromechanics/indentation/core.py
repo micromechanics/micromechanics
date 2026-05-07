@@ -89,6 +89,7 @@ class Indentation(IndentationInputMixin, IndentationMainMixin, IndentationTheory
     self.valid     :np.ndarray = np.array([], dtype=bool)
     self.hRaw      :np.ndarray = np.array([], dtype=np.float64)
     self.slope     :np.ndarray = np.array([], dtype=np.float64)
+    self.phase     :np.ndarray = np.array([], dtype=np.float64)
     self.k2p       :np.ndarray = np.array([], dtype=np.float64)
     self.hc        :np.ndarray = np.array([], dtype=np.float64)
     self.Ac        :np.ndarray = np.array([], dtype=np.float64)

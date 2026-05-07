@@ -40,14 +40,16 @@ class IndentationVerificationMixin:
     print("      modulusRed  = 182.338858733495 GPa")
     print("      Stiffness Squared Over Load=51529.9093101531 GPa")
     print("      ContactArea = 598047.490101769 nm^2")
-    [modulusRed, Ac, _]  = self.OliverPharrMethod(np.array([harmStiff]), np.array([load]), \
-      np.array([totalDepth]))
+    [modulusRed, Ac, _]  = self.OliverPharrMethod(np.array([harmStiff]), np.array([load]), np.array([totalDepth]))
     print("   Evaluated by this python method")
     print("      reducedModulus [GPa] =",round(modulusRed[0],4),"  with error=", \
       round((modulusRed[0]-182.338858733495)*100/182.338858733495,4),'%')
     print("      ContactArea    [um2] =",round(Ac[0],4),"  with error=", \
       round((Ac[0]-598047.490101769/1.e6)*100/598047.490101769/1.e6,4),'%')
     modulus = self.YoungsModulus(modulusRed)
+    if not isinstance(modulus, np.ndarray):
+      print("**ERROR** YoungsModulus")
+      return
     print("      Youngs Modulus [GPa] =",round(modulus[0],4),"  with error=", \
       round((modulus[0]-190.257729329881)*100/190.257729329881,4),'%')
     totalDepth2 = self.inverseOliverPharrMethod(np.array([harmStiff]), np.array([load]), modulusRed)
@@ -80,6 +82,9 @@ class IndentationVerificationMixin:
     [modulusRed, _, _]  = self.OliverPharrMethod(np.array([harmStiff]), np.array([load]), \
       np.array([totalDepth]))
     modulus = self.YoungsModulus(modulusRed)
+    if not isinstance(modulus, np.ndarray):
+      print("**ERROR** YoungsModulus")
+      return
     print("      Youngs Modulus [GPa] =",modulus[0],"  with error=", \
       round((modulus[0]-75.1620054287519)*100/75.1620054287519,4),'%'  )
     totalDepth2 = self.inverseOliverPharrMethod(np.array([harmStiff]), np.array([load]), modulusRed)
