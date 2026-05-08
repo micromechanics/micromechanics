@@ -1,7 +1,3 @@
-[![Linting](https://github.com/micromechanics/micromechanics/actions/workflows/pylint.yml/badge.svg)](https://github.com/micromechanics/micromechanics/actions/workflows/pylint.yml)
-[![Documentation](https://github.com/micromechanics/micromechanics/actions/workflows/docs.yml/badge.svg)](https://github.com/micromechanics/micromechanics/actions/workflows/docs.yml)
-[![pypi.org](https://github.com/micromechanics/micromechanics/actions/workflows/pypi.yml/badge.svg)](https://github.com/micromechanics/micromechanics/actions/workflows/pypi.yml)
-
 # Micromechanics library for experimental micromechanics
 
 This library allows to read datafiles from different nanoindenters and allows to analyse it by evaluating the hardness and Young's modulus using the Oliver-Pharr method. It also includes functions for frame stiffness and area function calibration as well as a number of plotting functions. Additionally the library allows to read SEM images and optimize them
@@ -11,7 +7,7 @@ The library can read:
 - txt files from FischerScope
 - zip-files which include all the txt files of the Micromaterials NanoXtreme
 - HDF5 files produced by the supported converters/common format
-- Tif images from Zeiss and FEI/ThermoFischer
+- Tif images from Zeiss, NPVE and FEI/ThermoFischer
 
 
 Install by

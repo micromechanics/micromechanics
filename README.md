@@ -1,8 +1,3 @@
-[![Linting](https://github.com/micromechanics/micromechanics/actions/workflows/pylint.yml/badge.svg)](https://github.com/micromechanics/micromechanics/actions/workflows/pylint.yml)
-[![Documentation](https://github.com/micromechanics/micromechanics/actions/workflows/docs.yml/badge.svg)](https://github.com/micromechanics/micromechanics/actions/workflows/docs.yml)
-[![pypi.org](https://github.com/micromechanics/micromechanics/actions/workflows/pypi.yml/badge.svg)](https://github.com/micromechanics/micromechanics/actions/workflows/pypi.yml)
-[![Tests](https://github.com/micromechanics/micromechanics/actions/workflows/tests.yml/badge.svg)](https://github.com/micromechanics/micromechanics/actions/workflows/tests.yml)
-
 # Micromechanics library for experimental micromechanics
 
 This library allows to read datafiles from different nanoindenters and allows to analyse it by evaluating the hardness and Young's modulus using the Oliver-Pharr method. It also includes functions for frame stiffness and area function calibration as well as a number of plotting functions. Additionally the library allows to read SEM images and optimize them
@@ -12,7 +7,7 @@ The library can read:
 - txt files from FischerScope
 - zip-files which include all the txt files of the Micromaterials NanoXtreme
 - HDF5 files produced by the supported converters/common format
-- Tif images from Zeiss and FEI/ThermoFischer
+- Tif images from Zeiss, NPVE and FEI/ThermoFischer
 
 
 Install by
@@ -74,27 +69,4 @@ python -m coverage report -m
 For an HTML coverage report, run
 ``` bash
 python -m coverage html
-```
-
-Then upload/create-pull-request to github, via
-``` bash
-./commit.py 'my message'
-```
-
-## How to find bugs that occurred in a past commit
-Steps:
-- Git history in nice ASCII  => save in file in distant folder; along with notes
-- go to point in history (do not change the present)
-- find diff: always old^ new
-- run your tests
-- undo your changes since checkout
-- go back to present
-
-``` bash
-git log --oneline --graph
-git checkout bf0b634
-git diff e7eac50^ fed7119  #(old^ new)
-# test
-git reset --hard
-git checkout main
 ```
