@@ -14,7 +14,10 @@ import ast
 import os, sys, datetime
 import re
 from pathlib import Path
-sys.path.insert(0, os.path.abspath('../../micromechanics/tif'))
+
+repositoryRoot = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(repositoryRoot))
+sys.path.insert(0, str(repositoryRoot / 'micromechanics' / 'tif'))
 
 # -- Project information -----------------------------------------------------
 
