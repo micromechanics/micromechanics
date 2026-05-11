@@ -18,15 +18,11 @@ class IndentationInputMixin:
   File loading and file iteration methods for :class:`Indentation`.
   """
 
-  def _removeTooCloseInputPoints(self:'Indentation', h:np.ndarray|None=None, p:np.ndarray|None=None, # type: ignore[misc]
-                                 t:np.ndarray|None=None, valid:np.ndarray|None=None) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray|None]:
+  def _removeTooCloseInputPoints(self:'Indentation', h:np.ndarray, p:np.ndarray, t:np.ndarray, # type: ignore[misc]
+                                 valid:np.ndarray|None=None) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray|None]:
     """
     Remove nearly duplicate time points from package-unit input arrays.
     """
-    updateSelf = h is None or p is None or t is None
-    if updateSelf:
-      h, p, t, valid = self.h, self.p, self.t, self.valid
-    assert h is not None and p is not None and t is not None
     if self.method == Method.CSM or len(t)<2:
       return h, p, t, valid
     gradTime = np.diff(t)
@@ -35,28 +31,33 @@ class IndentationInputMixin:
     p = p[1:][~maskTooClose]
     h = h[1:][~maskTooClose]
     valid = None if valid is None else valid[1:][~maskTooClose]
-    if updateSelf:
-      self.t, self.p, self.h = t, p, h
-      if valid is not None:
-        self.valid = valid
     return h, p, t, valid
 
 
-  def _setRawData(self:'Indentation', h:np.ndarray, p:np.ndarray, t:np.ndarray, valid:np.ndarray, # type: ignore[misc]
-                  slope:np.ndarray|None=None, phase:np.ndarray|None=None,
-                  provenance:dict[str, dict[str, Any]]|None=None, preserveReadResults:bool=False) -> None:
+  def setRawData(self:'Indentation', h:np.ndarray, p:np.ndarray, t:np.ndarray, valid:np.ndarray|None=None, # type: ignore[misc]
+                 slope:np.ndarray|None=None, phase:np.ndarray|None=None,
+                 provenance:dict[str, dict[str, Any]]|None=None, preserveReadResults:bool=False) -> None:
     """
     Store package-unit input arrays as raw data and expose a working copy on self.
     """
+    if valid is None:
+      valid = np.ones_like(t, dtype=bool)
     self.raw.h = h.copy()
     self.raw.p = p.copy()
     self.raw.t = t.copy()
     self.raw.valid = valid.copy()
     self.raw.slope = np.array([], dtype=float) if slope is None else slope.copy()
     self.raw.phase = np.array([], dtype=float) if phase is None else phase.copy()
-    if provenance is not None:
-      self.provenance = provenance
-    self.provenance.setdefault('raw', {})['state'] = 'loaded'
+    if provenance is None:
+      provenance = {
+        'raw': {'state': 'manual_snapshot'},
+        'h': {'source': 'manual_depth', 'surface': False, 'drift': False, 'frameCompliance': False},
+        'p': {'source': 'manual_load', 'tare': False},
+        'slope': {'source': 'manual_stiffness' if slope is not None else 'not_provided', 'frameCompliance': False}
+      }
+    self.provenance = provenance
+    if 'raw' not in self.provenance:
+      self.provenance['raw'] = {'state': 'loaded'}
     self._restoreRaw()
     self.iLHU:list[list[int]] = []
     self.iDrift = [-1,-1]
@@ -64,6 +65,7 @@ class IndentationInputMixin:
       for name in ('k2p', 'hc', 'Ac', 'modulus', 'modulusRed', 'hardness'):
         setattr(self, name, np.array([], dtype=float))
     return
+
 
   def loadAgilent(self:'Indentation', fileName:str) -> bool: # type: ignore[misc]
     """
@@ -211,12 +213,14 @@ class IndentationInputMixin:
     self.h, self.p, self.t, self.valid = hInput.copy(), pInput.copy(), tInput.copy(), validInput.copy()
     if "k2p" not in self.indicies and 'slope' in self.indicies:
       self.k2p = slopeInput * slopeInput / pInput[validInput]
-    self._removeTooCloseInputPoints()
+    self.h, self.p, self.t, validClean = self._removeTooCloseInputPoints(self.h, self.p, self.t, self.valid)
+    if validClean is not None:
+      self.valid = validClean
     prov = {'h': {'source': 'Agilent_loaded_depth', 'surface': False, 'drift': False, 'frameCompliance': False},
             'p': {'source': 'Agilent_loaded_load', 'tare': False},
             'slope': {'source': 'Agilent_loaded_stiffness', 'frameCompliance': False}}
     preserveReadResults = any(name in parsed for name in ('k2p', 'hc', 'Ac', 'modulus', 'modulusRed', 'hardness'))
-    self._setRawData(self.h, self.p, self.t, self.valid, slopeInput if len(slopeInput)>0 else None,
+    self.setRawData(self.h, self.p, self.t, self.valid, slopeInput if len(slopeInput)>0 else None,
                      phaseInput if len(phaseInput)>0 else None, prov, preserveReadResults=preserveReadResults)
     return True
 
@@ -294,7 +298,7 @@ class IndentationInputMixin:
         numDrift = int(inFile.readline().split(":")[1])
         line = inFile.readline()  #Time_s	Disp_nm",value
         data = ""
-        for idx in range(numDrift):
+        for _ in range(numDrift):
           data +=inFile.readline()
         if len(data)>1:
           self.dataDrift = np.loadtxt( StringIO(str(data))  )
@@ -305,7 +309,7 @@ class IndentationInputMixin:
         numTest = int(inFile.readline().split(":")[1])
         line = inFile.readline()
         data = ""
-        for idx in range(numTest):
+        for _ in range(numTest):
           data +=inFile.readline()
         dataTest = np.loadtxt( StringIO(str(data))  )
         #store data
@@ -331,11 +335,13 @@ class IndentationInputMixin:
         self.p = dataTest[:,1]/1.e3
         #set unknown values
         self.valid = np.ones_like(self.h, dtype=bool)
-    self._removeTooCloseInputPoints()
+    self.h, self.p, self.t, validClean = self._removeTooCloseInputPoints(self.h, self.p, self.t, self.valid)
+    if validClean is not None:
+      self.valid = validClean
     prov = {'h': {'source': 'Hysitron_loaded_depth', 'surface': False, 'drift': False, 'frameCompliance': False},
             'p': {'source': 'Hysitron_loaded_load', 'tare': False},
             'slope': {'source': 'not_provided', 'frameCompliance': False}}
-    self._setRawData(self.h, self.p, self.t, self.valid, None, self.phase if self.phase is not None else None, prov)
+    self.setRawData(self.h, self.p, self.t, self.valid, None, self.phase if self.phase is not None else None, prov)
     return True
 
 
@@ -370,7 +376,7 @@ class IndentationInputMixin:
       prov = {'h': {'source': 'Micromaterials_loaded_depth', 'surface': False, 'drift': False, 'frameCompliance': False},
               'p': {'source': 'Micromaterials_loaded_load', 'tare': False},
               'slope': {'source': 'not_provided', 'frameCompliance': False}}
-      self._setRawData(h, p, t, valid, provenance=prov)
+      self.setRawData(h, p, t, valid, provenance=prov)
     elif fileName.endswith('.zip'):
       #if zip-archive of multilpe files: datafile has to remain open
       #    next pylint statement for github actions
@@ -516,7 +522,7 @@ class IndentationInputMixin:
     prov = {'h': {'source': 'FischerScope_loaded_depth', 'surface': False, 'drift': False, 'frameCompliance': False},
             'p': {'source': 'FischerScope_loaded_load', 'tare': False},
             'slope': {'source': 'not_provided', 'frameCompliance': False}}
-    self._setRawData(h, p, t, valid, provenance=prov)
+    self.setRawData(h, p, t, valid, provenance=prov)
     return True
 
 
@@ -673,7 +679,7 @@ class IndentationInputMixin:
     slopeInput = parsed['slope'] if 'slope' in parsed else np.array([], dtype=float)
     phaseInput = parsed['phase'] if 'phase' in parsed else np.array([], dtype=float)
     preserveReadResults = any(name in parsed for name in ('k2p', 'hc', 'Ac', 'modulus', 'modulusRed', 'hardness'))
-    self._setRawData(hInput, pInput, tInput, validInput,
+    self.setRawData(hInput, pInput, tInput, validInput,
                      slopeInput if len(slopeInput)>0 else None,
                      phaseInput if len(phaseInput)>0 else None,
                      preserveReadResults=preserveReadResults)
@@ -687,20 +693,23 @@ class IndentationInputMixin:
       #Fischer-Scope reset the time multiple times
       resetPoints = np.where((self.t[1:]-self.t[:-1])<0)[0]
       if len(resetPoints)>0:
-        self._setRawData(self.raw.h[resetPoints[-1]:], self.raw.p[resetPoints[-1]:],
+        self.setRawData(self.raw.h[resetPoints[-1]:], self.raw.p[resetPoints[-1]:],
                          self.raw.t[resetPoints[-1]:], np.ones_like(self.raw.t[resetPoints[-1]:], dtype=bool),
                          self.raw.slope[resetPoints[-1]:] if len(self.raw.slope)==len(self.raw.t) else self.raw.slope,
-                         self.raw.phase[resetPoints[-1]:] if len(self.raw.phase)==len(self.raw.t) else self.raw.phase)
+                         self.raw.phase[resetPoints[-1]:] if len(self.raw.phase)==len(self.raw.t) else self.raw.phase,
+                         preserveReadResults=preserveReadResults)
     else:
-      self._setRawData(self.raw.h, self.raw.p-self.raw.p[0], self.raw.t, self.raw.valid,
-                       self.raw.slope, self.raw.phase)
+      self.setRawData(self.raw.h, self.raw.p-self.raw.p[0], self.raw.t, self.raw.valid,
+                       self.raw.slope, self.raw.phase, preserveReadResults=preserveReadResults)
     if hasattr(self, 'slope') and np.ndim(self.slope)>0 and len(self.slope)>60: #if more than 30: CSM
       self.method = Method.CSM
     if self.output['plotLoadHoldUnload']:
       self.plotTestingMethod()
-    self._removeTooCloseInputPoints()
+    self.h, self.p, self.t, validClean = self._removeTooCloseInputPoints(self.h, self.p, self.t, self.valid)
+    if validClean is not None:
+      self.valid = validClean
     source = self.vendor.name
-    self._setRawData(self.h, self.p, self.t, self.valid,
+    self.setRawData(self.h, self.p, self.t, self.valid,
                      self.slope if isinstance(self.slope, np.ndarray) else None,
                      self.phase if isinstance(self.phase, np.ndarray) else None, {
       'h': {'source': f'{source}_loaded_depth', 'surface': False, 'drift': False, 'frameCompliance': False},

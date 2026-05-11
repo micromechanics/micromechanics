@@ -36,8 +36,7 @@ force = hertzEquation(depth.copy(), true_h0, true_reduced_modulus)
 # low-load elastic part of the curve. The force range should be chosen before
 # plastic deformation or pop-in events dominate the response.
 
-indentation.h = depth.copy()
-indentation.p = force.copy()
+indentation.setRawData(depth.copy(), force.copy(), np.arange(len(depth), dtype=float))
 
 fit_h0, fit_reduced_modulus = indentation.hertzFit(forceRange=(0.02, 6.0), correctH=False, plot=False)
 

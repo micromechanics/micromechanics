@@ -108,12 +108,12 @@ class TestCoverageBranchTargets(unittest.TestCase):
     indentation.method = Method.CSM
     indentation.testName = "test"
     indentation.surface = surface
-    indentation.h = np.linspace(-0.03, 0.12, 8)
-    indentation.p = np.linspace(0.0, 0.7, 8)
-    indentation.t = np.linspace(0.0, 7.0, 8)
-    indentation.valid = np.ones(8, dtype=bool)
-    indentation.slope = np.linspace(0.01, 0.8, 8)
-    indentation.phase = np.linspace(0.8, 0.01, 8)
+    h = np.linspace(-0.03, 0.12, 8)
+    p = np.linspace(0.0, 0.7, 8)
+    t = np.linspace(0.0, 7.0, 8)
+    slope = np.linspace(0.01, 0.8, 8)
+    phase = np.linspace(0.8, 0.01, 8)
+    indentation.setRawData(h, p, t, np.ones(8, dtype=bool), slope=slope, phase=phase)
     indentation.model["cropSlopeToLoading"] = False
     def identify():
       indentation.iLHU = [[0, 2, 5, 6]]

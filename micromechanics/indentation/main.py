@@ -26,73 +26,7 @@ class IndentationMainMixin:
       value = getattr(self.raw, name)
       if isinstance(value, np.ndarray) and len(value)>0:
         setattr(self, name, value.copy())
-    self._setWorkingProvenance('raw')
-    return
-
-
-  def _setWorkingProvenance(self:'Indentation', state:str) -> None: # type: ignore[misc]
-    """
-    Record whether working arrays are raw or analysis-derived.
-    """
-    self.provenance.setdefault('working', {})['state'] = state
-    return
-
-
-  def _workingIsAnalysisResult(self:'Indentation') -> bool: # type: ignore[misc]
-    """
-    Check whether working arrays currently contain analyse()-derived changes.
-    """
-    return self.provenance.get('working', {}).get('state') == 'analysed'
-
-
-  def _rawIsEmpty(self:'Indentation') -> bool: # type: ignore[misc]
-    """
-    Check if no input path has populated raw data yet.
-    """
-    return len(self.raw.h)==0 and len(self.raw.p)==0 and len(self.raw.t)==0
-
-
-  def _workingDataDiffersFromRaw(self:'Indentation') -> bool: # type: ignore[misc]
-    """
-    Check whether direct assignments on self have replaced the raw snapshot.
-    """
-    for name in ('h', 'p', 't', 'valid'):
-      value = getattr(self, name)
-      rawValue = getattr(self.raw, name)
-      if not isinstance(value, np.ndarray) or not isinstance(rawValue, np.ndarray):
-        continue
-      if value.shape != rawValue.shape:
-        return True
-      if bool in (value.dtype, rawValue.dtype):
-        if not np.array_equal(value, rawValue):
-          return True
-      elif not np.allclose(value, rawValue, equal_nan=True):
-        return True
-    if isinstance(self.slope, np.ndarray) and len(self.raw.slope)>0:
-      if self.slope.shape != self.raw.slope.shape:
-        return True
-      if not np.allclose(self.slope, self.raw.slope, equal_nan=True):
-        return True
-    return False
-
-
-  def _snapshotWorkingAsRaw(self:'Indentation', source:str='manual_self') -> None: # type: ignore[misc]
-    """
-    Store the current working arrays as raw data for manual/synthetic objects.
-    """
-    self.raw.h = self.h.copy()
-    self.raw.p = self.p.copy()
-    self.raw.t = self.t.copy()
-    self.raw.valid = self.valid.copy()
-    self.raw.slope = self.slope.copy()
-    self.raw.phase = self.phase.copy()
-    self.provenance = {
-      'raw': {'state': 'manual_snapshot'},
-      'working': {'state': 'raw'},
-      'h': {'source': f'{source}_h', 'surface': False, 'drift': False, 'frameCompliance': False},
-      'p': {'source': f'{source}_p', 'tare': False},
-      'slope': {'source': f'{source}_slope', 'frameCompliance': False}
-    }
+    self.provenance.setdefault('working', {})['state'] = 'raw'
     return
 
 
@@ -365,12 +299,12 @@ class IndentationMainMixin:
     The correction step is repeatable because it restores the loaded/prepared raw
     arrays before applying drift and compliance corrections.
     """
-    if self._rawIsEmpty() or (not self._workingIsAnalysisResult() and len(self.iLHU)==0 and self._workingDataDiffersFromRaw()):
+    if len(self.raw.h)==0 and len(self.raw.p)==0 and len(self.raw.t)==0:
       # Backward compatibility for synthetic/manual objects that assign arrays
       # directly on self instead of going through an input reader.
-      self._snapshotWorkingAsRaw()
+      self.setRawData(self.h, self.p, self.t, self.valid, self.slope, self.phase)
     self._restoreRaw()
-    self._setWorkingProvenance('analysed')
+    self.provenance.setdefault('working', {})['state'] = 'analysed'
     self.correctThermalDrift()
     self.correctStiffness()
     if not self.findAndApplySurfaceCorrection():
@@ -385,11 +319,10 @@ class IndentationMainMixin:
 
     if self.method == Method.CSM:
       if self.model['cropSlopeToLoading'] and len(self.iLHU)>0 and len(self.iLHU[0])>=2 and len(self.slope)==len(self.h[self.valid]):
-        iSurface, iLoad = self.iLHU[0][0], self.iLHU[0][1]
         slopeFull = np.zeros_like(self.h)
         slopeFull[self.valid] = self.slope
         self.valid = np.zeros_like(self.h, dtype=bool)
-        self.valid[iSurface:iLoad] = True
+        self.valid[self.iLHU[0][0]: self.iLHU[0][1]] = True
         self.slope = slopeFull[self.valid]
     else:
       unloadingSlope, unloadingValid, _, _ , _= self.stiffnessFromUnloading(self.p, self.h)
@@ -640,8 +573,8 @@ class IndentationMainMixin:
     if not success:
       return success
 
-    if self._rawIsEmpty() or (not self._workingIsAnalysisResult() and len(self.iLHU)==0 and self._workingDataDiffersFromRaw()):
-      self._snapshotWorkingAsRaw()
+    if len(self.raw.h)==0 and len(self.raw.p)==0 and len(self.raw.t)==0:
+      self.setRawData(self.h, self.p, self.t, self.valid, self.slope, self.phase)
     self._restoreRaw()
     if not newTest:
       self.iLHU = []

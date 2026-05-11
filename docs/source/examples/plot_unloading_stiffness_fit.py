@@ -33,8 +33,7 @@ force = np.r_[loading_force, unloading_force]
 
 indentation = Indentation("")
 indentation.method = Method.ISO
-indentation.h = depth
-indentation.p = force
+indentation.setRawData(depth, force, np.arange(len(depth), dtype=float))
 indentation.iLHU = [[0, len(loading_depth)-1, len(loading_depth), len(depth)-1]]
 indentation.output["verbose"] = 3
 
