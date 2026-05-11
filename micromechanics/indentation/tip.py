@@ -52,7 +52,12 @@ class Tip:
 
   @property
   def prefactors(self) -> list[Any]|None:
-    """Backward-compatible representation of the tip area function."""
+    """
+    Backward-compatible representation of the tip area function.
+
+    Returns:
+      list[Any] | None: area-function prefactors followed by the shape name, or None for interpolation tips.
+    """
     print('**DEPRICATION** For backward compatibility, use tip.areaPrefactors instead.')
     if self.shape == 'interpolation':
       return None

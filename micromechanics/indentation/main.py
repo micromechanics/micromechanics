@@ -51,6 +51,14 @@ class IndentationMainMixin:
   def applySurfaceCorrection(self:'Indentation', surfaceIndex:int, usesValid:bool=False, tareLoad:bool=False) -> bool: # type: ignore[misc]
     """
     Apply the selected surface offset to the working arrays.
+
+    Args:
+      surfaceIndex (int): index of the surface/contact point.
+      usesValid (bool): True if ``surfaceIndex`` is relative to ``self.h[self.valid]``.
+      tareLoad (bool): True to subtract the surface load from ``self.p``.
+
+    Returns:
+      bool: True if the correction was applied or not needed; False on invalid index.
     """
     if surfaceIndex < 0:
       return True
@@ -75,6 +83,12 @@ class IndentationMainMixin:
   def findAndApplySurfaceCorrection(self:'Indentation', plotSurface:bool=False) -> bool: # type: ignore[misc]
     """
     Find and apply surface correction on the current working arrays.
+
+    Args:
+      plotSurface (bool): plot the surface detection signal and selected point.
+
+    Returns:
+      bool: True if surface correction succeeded or was not configured; False on failure.
     """
     thresValue:float|None = None
     thresValues:np.ndarray|None = None

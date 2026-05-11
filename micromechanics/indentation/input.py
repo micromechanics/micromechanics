@@ -13,6 +13,24 @@ if TYPE_CHECKING:
   from .core import Indentation
 
 
+def getProv(source:str, slopeSource:str|None=None) -> dict[str, dict[str, Any]]:
+  """
+  Build provenance for package-unit loaded data with no analysis corrections.
+
+  Args:
+    source (str): instrument/source prefix for loaded depth and load arrays.
+    slopeSource (str | None): explicit stiffness source, or None to derive it from ``source``.
+
+  Returns:
+    dict[str, dict[str, Any]]: provenance entries for depth, load, and stiffness arrays.
+  """
+  return {
+    'h': {'surface': False, 'drift': False, 'frameCompliance': False, 'source': f'{source}_loaded_depth'},
+    'p': {'tare': False, 'source': f'{source}_loaded_load'},
+    'slope': {'frameCompliance': False, 'source': f'{source}_loaded_stiffness' if slopeSource is None else slopeSource}
+  }
+
+
 class IndentationInputMixin:
   """
   File loading and file iteration methods for :class:`Indentation`.
@@ -22,6 +40,15 @@ class IndentationInputMixin:
                                  valid:np.ndarray|None=None) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray|None]:
     """
     Remove nearly duplicate time points from package-unit input arrays.
+
+    Args:
+      h (np.ndarray): depth array.
+      p (np.ndarray): load array.
+      t (np.ndarray): time array.
+      valid (np.ndarray | None): optional valid mask with the same length as ``t``.
+
+    Returns:
+      tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray | None]: cleaned depth, load, time, and valid arrays.
     """
     if self.method == Method.CSM or len(t)<2:
       return h, p, t, valid
@@ -36,9 +63,22 @@ class IndentationInputMixin:
 
   def setRawData(self:'Indentation', h:np.ndarray, p:np.ndarray, t:np.ndarray, valid:np.ndarray|None=None, # type: ignore[misc]
                  slope:np.ndarray|None=None, phase:np.ndarray|None=None,
-                 provenance:dict[str, dict[str, Any]]|None=None, preserveReadResults:bool=False) -> None:
+                 provenance:dict[str, dict[str, Any]]|None=None, keepFileData:bool=False) -> None:
     """
     Store package-unit input arrays as raw data and expose a working copy on self.
+
+    Args:
+      h (np.ndarray): depth array in package units.
+      p (np.ndarray): load array in package units.
+      t (np.ndarray): time array in package units.
+      valid (np.ndarray | None): optional valid mask; defaults to all True.
+      slope (np.ndarray | None): optional stiffness array in package units.
+      phase (np.ndarray | None): optional phase array.
+      provenance (dict[str, dict[str, Any]] | None): optional provenance metadata.
+      keepFileData (bool): flag - keep vendor-supplied results such as hc and modulus.
+                            - True means “these result arrays came from the file; keep them.” (Agilent, HDF5)
+                            - False means “these result arrays would be stale analysis outputs; clear them.”  (Hysitron, Micromaterial, manual setting)
+
     """
     if valid is None:
       valid = np.ones_like(t, dtype=bool)
@@ -61,7 +101,7 @@ class IndentationInputMixin:
     self._restoreRaw()
     self.iLHU:list[list[int]] = []
     self.iDrift = [-1,-1]
-    if not preserveReadResults:
+    if not keepFileData:
       for name in ('k2p', 'hc', 'Ac', 'modulus', 'modulusRed', 'hardness'):
         setattr(self, name, np.array([], dtype=float))
     return
@@ -216,12 +256,9 @@ class IndentationInputMixin:
     self.h, self.p, self.t, validClean = self._removeTooCloseInputPoints(self.h, self.p, self.t, self.valid)
     if validClean is not None:
       self.valid = validClean
-    prov = {'h': {'source': 'Agilent_loaded_depth', 'surface': False, 'drift': False, 'frameCompliance': False},
-            'p': {'source': 'Agilent_loaded_load', 'tare': False},
-            'slope': {'source': 'Agilent_loaded_stiffness', 'frameCompliance': False}}
-    preserveReadResults = any(name in parsed for name in ('k2p', 'hc', 'Ac', 'modulus', 'modulusRed', 'hardness'))
+    keepFileData = any(name in parsed for name in ('k2p', 'hc', 'Ac', 'modulus', 'modulusRed', 'hardness'))
     self.setRawData(self.h, self.p, self.t, self.valid, slopeInput if len(slopeInput)>0 else None,
-                     phaseInput if len(phaseInput)>0 else None, prov, preserveReadResults=preserveReadResults)
+                    phaseInput if len(phaseInput)>0 else None, getProv('Agilent'), keepFileData=keepFileData)
     return True
 
 
@@ -338,10 +375,8 @@ class IndentationInputMixin:
     self.h, self.p, self.t, validClean = self._removeTooCloseInputPoints(self.h, self.p, self.t, self.valid)
     if validClean is not None:
       self.valid = validClean
-    prov = {'h': {'source': 'Hysitron_loaded_depth', 'surface': False, 'drift': False, 'frameCompliance': False},
-            'p': {'source': 'Hysitron_loaded_load', 'tare': False},
-            'slope': {'source': 'not_provided', 'frameCompliance': False}}
-    self.setRawData(self.h, self.p, self.t, self.valid, None, self.phase if self.phase is not None else None, prov)
+    self.setRawData(self.h, self.p, self.t, self.valid, None, self.phase if self.phase is not None else None,
+                    getProv('Hysitron', 'not_provided'))
     return True
 
 
@@ -373,10 +408,7 @@ class IndentationInputMixin:
       p = dataTest[:,2]
       h, p, t, _ = self._removeTooCloseInputPoints(h, p, t)
       valid = np.ones_like(t, dtype=bool)
-      prov = {'h': {'source': 'Micromaterials_loaded_depth', 'surface': False, 'drift': False, 'frameCompliance': False},
-              'p': {'source': 'Micromaterials_loaded_load', 'tare': False},
-              'slope': {'source': 'not_provided', 'frameCompliance': False}}
-      self.setRawData(h, p, t, valid, provenance=prov)
+      self.setRawData(h, p, t, valid, provenance=getProv('Micromaterials', 'not_provided'))
     elif fileName.endswith('.zip'):
       #if zip-archive of multilpe files: datafile has to remain open
       #    next pylint statement for github actions
@@ -519,10 +551,7 @@ class IndentationInputMixin:
     p = np.array(df['F'])
     h, p, t, _ = self._removeTooCloseInputPoints(h, p, t)
     valid = np.ones_like(t, dtype=bool)
-    prov = {'h': {'source': 'FischerScope_loaded_depth', 'surface': False, 'drift': False, 'frameCompliance': False},
-            'p': {'source': 'FischerScope_loaded_load', 'tare': False},
-            'slope': {'source': 'not_provided', 'frameCompliance': False}}
-    self.setRawData(h, p, t, valid, provenance=prov)
+    self.setRawData(h, p, t, valid, provenance=getProv('FischerScope', 'not_provided'))
     return True
 
 
@@ -678,11 +707,7 @@ class IndentationInputMixin:
     tInput = parsed['t']
     slopeInput = parsed['slope'] if 'slope' in parsed else np.array([], dtype=float)
     phaseInput = parsed['phase'] if 'phase' in parsed else np.array([], dtype=float)
-    preserveReadResults = any(name in parsed for name in ('k2p', 'hc', 'Ac', 'modulus', 'modulusRed', 'hardness'))
-    self.setRawData(hInput, pInput, tInput, validInput,
-                     slopeInput if len(slopeInput)>0 else None,
-                     phaseInput if len(phaseInput)>0 else None,
-                     preserveReadResults=preserveReadResults)
+    keepFileData = any(name in parsed for name in ('k2p', 'hc', 'Ac', 'modulus', 'modulusRed', 'hardness'))
 
     #cleaning
     converter = self.datafile.attrs['uri']
@@ -691,31 +716,27 @@ class IndentationInputMixin:
     if converter == 'hap2hdf.py':
       ## Old and correct approach
       #Fischer-Scope reset the time multiple times
-      resetPoints = np.where((self.t[1:]-self.t[:-1])<0)[0]
+      resetPoints = np.where((tInput[1:]-tInput[:-1])<0)[0]
       if len(resetPoints)>0:
-        self.setRawData(self.raw.h[resetPoints[-1]:], self.raw.p[resetPoints[-1]:],
-                         self.raw.t[resetPoints[-1]:], np.ones_like(self.raw.t[resetPoints[-1]:], dtype=bool),
-                         self.raw.slope[resetPoints[-1]:] if len(self.raw.slope)==len(self.raw.t) else self.raw.slope,
-                         self.raw.phase[resetPoints[-1]:] if len(self.raw.phase)==len(self.raw.t) else self.raw.phase,
-                         preserveReadResults=preserveReadResults)
+        start = resetPoints[-1]
+        hInput, pInput, tInput = hInput[start:], pInput[start:], tInput[start:]
+        validInput = np.ones_like(tInput, dtype=bool)
+        if len(slopeInput)==len(parsed['t']):
+          slopeInput = slopeInput[start:]
+        if len(phaseInput)==len(parsed['t']):
+          phaseInput = phaseInput[start:]
     else:
-      self.setRawData(self.raw.h, self.raw.p-self.raw.p[0], self.raw.t, self.raw.valid,
-                       self.raw.slope, self.raw.phase, preserveReadResults=preserveReadResults)
-    if hasattr(self, 'slope') and np.ndim(self.slope)>0 and len(self.slope)>60: #if more than 30: CSM
+      pInput = pInput-pInput[0]
+    if len(slopeInput)>60: #if more than 30: CSM
       self.method = Method.CSM
+    hInput, pInput, tInput, validClean = self._removeTooCloseInputPoints(hInput, pInput, tInput, validInput)
+    if validClean is not None:
+      validInput = validClean
+    self.setRawData(hInput, pInput, tInput, validInput, slopeInput if len(slopeInput)>0 else None,
+                    phaseInput if len(phaseInput)>0 else None, getProv(self.vendor.name),
+                    keepFileData=keepFileData)
     if self.output['plotLoadHoldUnload']:
       self.plotTestingMethod()
-    self.h, self.p, self.t, validClean = self._removeTooCloseInputPoints(self.h, self.p, self.t, self.valid)
-    if validClean is not None:
-      self.valid = validClean
-    source = self.vendor.name
-    self.setRawData(self.h, self.p, self.t, self.valid,
-                     self.slope if isinstance(self.slope, np.ndarray) else None,
-                     self.phase if isinstance(self.phase, np.ndarray) else None, {
-      'h': {'source': f'{source}_loaded_depth', 'surface': False, 'drift': False, 'frameCompliance': False},
-      'p': {'source': f'{source}_loaded_load', 'tare': False},
-      'slope': {'source': f'{source}_loaded_stiffness', 'frameCompliance': False}
-    }, preserveReadResults=preserveReadResults)
     return True
 
 

@@ -121,11 +121,16 @@ class IndentationTheoryMixin:
   def unloadingPowerFunc(h:np.ndarray, B:float, hf:float, m:float) -> np.ndarray:
     """
     internal function describing the unloading regime
-
     - function: p = B*(h-hf)^m
-    - B:  scaling factor (no physical meaning)
-    - m:  exponent       (no physical meaning)
-    - hf: final depth = depth where force becomes 0
+
+    Args:
+        h (np.ndarray): depth values.
+        B (float): power-law scaling factor (no physical meaning)
+        hf (float): final depth where force becomes zero.
+        m (float): power-law exponent (no physical meaning)
+
+    Returns:
+        np.ndarray: modeled unloading force values.
     """
     value = B*np.power(h-hf,m)
     return value

@@ -8,7 +8,12 @@ if TYPE_CHECKING:
   from .core import Indentation
 
 def showWithTimeout(timeout:float=1) -> None:
-  """Show the current matplotlib figure for a limited time."""
+  """
+  Show the current matplotlib figure for a limited time.
+
+  Args:
+    timeout (float): number of seconds to keep the figure open.
+  """
   plt.show(block=False)
   plt.pause(timeout)
   plt.close()
