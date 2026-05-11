@@ -63,7 +63,7 @@ class IndentationMainMixin:
         continue
       if value.shape != rawValue.shape:
         return True
-      if value.dtype == bool or rawValue.dtype == bool:
+      if bool in (value.dtype, rawValue.dtype):
         if not np.array_equal(value, rawValue):
           return True
       elif not np.allclose(value, rawValue, equal_nan=True):
@@ -386,19 +386,19 @@ class IndentationMainMixin:
     if self.method == Method.CSM:
       if self.model['cropSlopeToLoading'] and len(self.iLHU)>0 and len(self.iLHU[0])>=2 and len(self.slope)==len(self.h[self.valid]):
         iSurface, iLoad = self.iLHU[0][0], self.iLHU[0][1]
-        slope = np.zeros_like(self.h)
-        slope[self.valid] = self.slope
+        slopeFull = np.zeros_like(self.h)
+        slopeFull[self.valid] = self.slope
         self.valid = np.zeros_like(self.h, dtype=bool)
         self.valid[iSurface:iLoad] = True
-        self.slope = slope[self.valid]
+        self.slope = slopeFull[self.valid]
     else:
-      slope, valid, _, _ , _= self.stiffnessFromUnloading(self.p, self.h)
-      if slope is None or valid is None:
+      unloadingSlope, unloadingValid, _, _ , _= self.stiffnessFromUnloading(self.p, self.h)
+      if unloadingSlope is None or unloadingValid is None:
         self.slope = np.array([])
         self.valid = np.zeros_like(self.p, dtype=bool)
         return
-      self.slope = np.array(slope)
-      self.valid = valid
+      self.slope = np.array(unloadingSlope)
+      self.valid = unloadingValid
     # verify in one location that the length of valid makes sense
     if len(self.slope) != len(self.h[self.valid]):
       print('**ERROR**: length of slope and valid do not match.')

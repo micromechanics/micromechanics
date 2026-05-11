@@ -60,7 +60,7 @@ class IndentationCalibrationMixin:
     ## re-create data-frame of all files
     self.restartFile()
     self.tip.compliance = frameCompliance
-    slope, h, p = np.array([], dtype=np.float64), np.array([],dtype=np.float64), np.array([],dtype=np.float64)
+    slope, h, p = np.array([], dtype=float), np.array([],dtype=float), np.array([],dtype=float)
     if self.method==Method.CSM:
       self.nextTest(newTest=False)  #rerun to ensure that onlyLoadingSegment used
       while True:

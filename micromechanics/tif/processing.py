@@ -159,7 +159,7 @@ class TifProcessingMixin:
        save (bool): only save once set true; allows to test varios settings before saving
     """
     background = ndimage.gaussian_filter(np.array(self.image), level)
-    imArray = np.array(self.image).astype(np.float64) - background
+    imArray = np.array(self.image).astype(float) - background
     imArray -= np.min(imArray)
     imArray *= 255.0/np.max(imArray)
     imArray = imArray.astype(np.uint8)

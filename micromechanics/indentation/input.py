@@ -58,7 +58,7 @@ class IndentationInputMixin:
       self.provenance = provenance
     self.provenance.setdefault('raw', {})['state'] = 'loaded'
     self._restoreRaw()
-    self.iLHU = []
+    self.iLHU:list[list[int]] = []
     self.iDrift = [-1,-1]
     if not preserveReadResults:
       for name in ('k2p', 'hc', 'Ac', 'modulus', 'modulusRed', 'hardness'):
@@ -287,7 +287,7 @@ class IndentationInputMixin:
         #read approach data
         line = inFile.readline() #Time_s  MotorDisp_mm    Piezo Extension_nm"
         data = ""
-        for idx in range(int(value)):
+        for _ in range(int(value)):
           data +=inFile.readline()
 
         #read drift data

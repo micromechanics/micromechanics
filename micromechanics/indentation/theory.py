@@ -203,14 +203,14 @@ class IndentationTheoryMixin:
       #   hf0    = h[mask][-1]/2.0
       #   m0     = 2
       #   B0     = max(abs(p[mask][0] / np.power(h[mask][0]-hf0,m0)), 0.001)  #prevent neg. or zero
-      xFit = np.asarray(h[mask], dtype=np.float64)
-      yFit = np.asarray(p[mask], dtype=np.float64)
-      bounds = (np.array([0.0, 0.0, 0.8], dtype=np.float64),
-                np.array([np.inf, max(np.min(xFit), hf0), 10.0], dtype=np.float64))
+      xFit = np.asarray(h[mask], dtype=float)
+      yFit = np.asarray(p[mask], dtype=float)
+      bounds = (np.array([0.0, 0.0, 0.8], dtype=float),
+                np.array([np.inf, max(np.min(xFit), hf0), 10.0], dtype=float))
       B0  = min( max(B0,  bounds[0][0]), bounds[1][0])  #ensure parameters are in bounds
       hf0 = min( max(hf0, bounds[0][1]), bounds[1][1])  #ensure parameters are in bounds
       m0  = min( max(m0,  bounds[0][2]), bounds[1][2])  #ensure parameters are in bounds
-      p0 = np.array([B0, hf0, m0], dtype=np.float64)
+      p0 = np.array([B0, hf0, m0], dtype=float)
       if self.output['verbose']>2:
         print("Initial fitting values B,hf,m", B0,hf0,m0)
         print("  Bounds", bounds)
