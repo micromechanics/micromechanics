@@ -121,11 +121,16 @@ class IndentationTheoryMixin:
   def unloadingPowerFunc(h:np.ndarray, B:float, hf:float, m:float) -> np.ndarray:
     """
     internal function describing the unloading regime
-
     - function: p = B*(h-hf)^m
-    - B:  scaling factor (no physical meaning)
-    - m:  exponent       (no physical meaning)
-    - hf: final depth = depth where force becomes 0
+
+    Args:
+        h (np.ndarray): depth values.
+        B (float): power-law scaling factor (no physical meaning)
+        hf (float): final depth where force becomes zero.
+        m (float): power-law exponent (no physical meaning)
+
+    Returns:
+        np.ndarray: modeled unloading force values.
     """
     value = B*np.power(h-hf,m)
     return value
@@ -163,7 +168,7 @@ class IndentationTheoryMixin:
     for cycleNum, cycle in enumerate(self.iLHU):
       loadStart, loadEnd, unloadStart, unloadEnd = cycle
       if loadStart>loadEnd or loadEnd>unloadStart or unloadStart>unloadEnd:
-        print('**ERROR** stiffnessFromUnloading: indicies not in order:',cycle)
+        print('**ERROR** stiffnessFromUnloading: indices not in order:',cycle)
       maskSegment = np.zeros_like(h, dtype=bool)
       maskSegment[unloadStart:unloadEnd+1] = True
       unloadPMax = _dictToFloat(self.model['unloadPMax'], 0.99)
@@ -203,14 +208,14 @@ class IndentationTheoryMixin:
       #   hf0    = h[mask][-1]/2.0
       #   m0     = 2
       #   B0     = max(abs(p[mask][0] / np.power(h[mask][0]-hf0,m0)), 0.001)  #prevent neg. or zero
-      xFit = np.asarray(h[mask], dtype=np.float64)
-      yFit = np.asarray(p[mask], dtype=np.float64)
-      bounds = (np.array([0.0, 0.0, 0.8], dtype=np.float64),
-                np.array([np.inf, max(np.min(xFit), hf0), 10.0], dtype=np.float64))
+      xFit = np.asarray(h[mask], dtype=float)
+      yFit = np.asarray(p[mask], dtype=float)
+      bounds = (np.array([0.0, 0.0, 0.8], dtype=float),
+                np.array([np.inf, max(np.min(xFit), hf0), 10.0], dtype=float))
       B0  = min( max(B0,  bounds[0][0]), bounds[1][0])  #ensure parameters are in bounds
       hf0 = min( max(hf0, bounds[0][1]), bounds[1][1])  #ensure parameters are in bounds
       m0  = min( max(m0,  bounds[0][2]), bounds[1][2])  #ensure parameters are in bounds
-      p0 = np.array([B0, hf0, m0], dtype=np.float64)
+      p0 = np.array([B0, hf0, m0], dtype=float)
       if self.output['verbose']>2:
         print("Initial fitting values B,hf,m", B0,hf0,m0)
         print("  Bounds", bounds)

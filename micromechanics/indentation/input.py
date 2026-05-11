@@ -13,10 +13,98 @@ if TYPE_CHECKING:
   from .core import Indentation
 
 
+def getProv(source:str, slopeSource:str|None=None) -> dict[str, dict[str, Any]]:
+  """
+  Build provenance for package-unit loaded data with no analysis corrections.
+
+  Args:
+    source (str): instrument/source prefix for loaded depth and load arrays.
+    slopeSource (str | None): explicit stiffness source, or None to derive it from ``source``.
+
+  Returns:
+    dict[str, dict[str, Any]]: provenance entries for depth, load, and stiffness arrays.
+  """
+  return {
+    'h': {'surface': False, 'drift': False, 'frameCompliance': False, 'source': f'{source}_loaded_depth'},
+    'p': {'tare': False, 'source': f'{source}_loaded_load'},
+    'slope': {'frameCompliance': False, 'source': f'{source}_loaded_stiffness' if slopeSource is None else slopeSource}
+  }
+
+
 class IndentationInputMixin:
   """
   File loading and file iteration methods for :class:`Indentation`.
   """
+
+  def _removeTooCloseInputPoints(self:'Indentation', h:np.ndarray, p:np.ndarray, t:np.ndarray, # type: ignore[misc]
+                                 valid:np.ndarray|None=None) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray|None]:
+    """
+    Remove nearly duplicate time points from package-unit input arrays.
+
+    Args:
+      h (np.ndarray): depth array.
+      p (np.ndarray): load array.
+      t (np.ndarray): time array.
+      valid (np.ndarray | None): optional valid mask with the same length as ``t``.
+
+    Returns:
+      tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray | None]: cleaned depth, load, time, and valid arrays.
+    """
+    if self.method == Method.CSM or len(t)<2:
+      return h, p, t, valid
+    gradTime = np.diff(t)
+    maskTooClose = gradTime < np.percentile(gradTime,80)/1.e3
+    t = t[1:][~maskTooClose]
+    p = p[1:][~maskTooClose]
+    h = h[1:][~maskTooClose]
+    valid = None if valid is None else valid[1:][~maskTooClose]
+    return h, p, t, valid
+
+
+  def setRawData(self:'Indentation', h:np.ndarray, p:np.ndarray, t:np.ndarray, valid:np.ndarray|None=None, # type: ignore[misc]
+                 slope:np.ndarray|None=None, phase:np.ndarray|None=None,
+                 provenance:dict[str, dict[str, Any]]|None=None, keepFileData:bool=False) -> None:
+    """
+    Store package-unit input arrays as raw data and expose a working copy on self.
+
+    Args:
+      h (np.ndarray): depth array in package units.
+      p (np.ndarray): load array in package units.
+      t (np.ndarray): time array in package units.
+      valid (np.ndarray | None): optional valid mask; defaults to all True.
+      slope (np.ndarray | None): optional stiffness array in package units.
+      phase (np.ndarray | None): optional phase array.
+      provenance (dict[str, dict[str, Any]] | None): optional provenance metadata.
+      keepFileData (bool): flag - keep vendor-supplied results such as hc and modulus.
+                            - True means “these result arrays came from the file; keep them.” (Agilent, HDF5)
+                            - False means “these result arrays would be stale analysis outputs; clear them.”  (Hysitron, Micromaterial, manual setting)
+
+    """
+    if valid is None:
+      valid = np.ones_like(t, dtype=bool)
+    self.raw.h = h.copy()
+    self.raw.p = p.copy()
+    self.raw.t = t.copy()
+    self.raw.valid = valid.copy()
+    self.raw.slope = np.array([], dtype=float) if slope is None else slope.copy()
+    self.raw.phase = np.array([], dtype=float) if phase is None else phase.copy()
+    if provenance is None:
+      provenance = {
+        'raw': {'state': 'manual_snapshot'},
+        'h': {'source': 'manual_depth', 'surface': False, 'drift': False, 'frameCompliance': False},
+        'p': {'source': 'manual_load', 'tare': False},
+        'slope': {'source': 'manual_stiffness' if slope is not None else 'not_provided', 'frameCompliance': False}
+      }
+    self.provenance = provenance
+    if 'raw' not in self.provenance:
+      self.provenance['raw'] = {'state': 'loaded'}
+    self._restoreRaw()
+    self.iLHU:list[list[int]] = []
+    if not keepFileData:
+      for name in ('k2p', 'hc', 'Ac', 'modulus', 'modulusRed', 'hardness'):
+        setattr(self, name, np.array([], dtype=float))
+    return
+
 
   def loadAgilent(self:'Indentation', fileName:str) -> bool: # type: ignore[misc]
     """
@@ -124,40 +212,52 @@ class IndentationInputMixin:
 
     #read data and identify valid data points
     df     = self.datafile.get(self.testName)
-    h       = np.array(df[self.indicies['h'    ]][1:-1], dtype=np.float64)
+    h       = np.array(df[self.indicies['h'    ]][1:-1], dtype=float)
     validFull = np.isfinite(h)
     if 'slope' in self.indicies:
-      slope   = np.array(df[self.indicies['slope']][1:-1], dtype=np.float64)
+      slope   = np.array(df[self.indicies['slope']][1:-1], dtype=float)
       self.valid =  np.isfinite(slope)
       self.valid[self.valid] = slope[self.valid] > 0.0  #only valid points if stiffness is positiv
     else:
       self.valid = validFull
     for value in self.indicies.values():
-      data = np.array(df[value][1:-1], dtype=np.float64)
+      data = np.array(df[value][1:-1], dtype=float)
       mask = np.isfinite(data)
       mask[mask] = data[mask]<1e99
       self.valid = np.logical_and(self.valid, mask)                       #adopt/reduce mask continously
 
     #Run through all items again and crop to only valid data
+    parsed:dict[str, np.ndarray] = {}
     for index, value in self.indicies.items():
-      data = np.array(df[value][1:-1], dtype=np.float64)
+      data = np.array(df[value][1:-1], dtype=float)
       if not index in self.fullData:
         data = data[self.valid]
       else:
         data = data[validFull]
+      parsed[index] = data
       setattr(self, index, data)
-
-    self.valid = self.valid[validFull]
+    validInput = self.valid[validFull]
     #  now all fields (incl. p) are full and defined
 
     #correct data and evaluate missing
-    self.h /= 1.e3 #from nm in um
+    hInput = parsed['h']/1.e3 #from nm in um
+    pInput = parsed['p']
+    tInput = parsed['t']
+    slopeInput = parsed['slope']/1.e3 if 'slope' in parsed else np.array([], dtype=float) #from N/m in mN/um
+    phaseInput = parsed['phase']/1.e3 if 'phase' in parsed else np.array([], dtype=float)
     if "Ac" in self.indicies         : self.Ac /= 1.e6  #from nm in um
-    if "slope" in self.indicies       : self.slope /= 1.e3 #from N/m in mN/um
+    if "slope" in self.indicies       : self.slope = slopeInput.copy()
     if 'hc' in self.indicies         : self.hc /= 1.e3  #from nm in um
     if 'hRaw' in self.indicies        : self.hRaw /= 1.e3  #from nm in um
+    self.h, self.p, self.t, self.valid = hInput.copy(), pInput.copy(), tInput.copy(), validInput.copy()
     if "k2p" not in self.indicies and 'slope' in self.indicies:
-      self.k2p = self.slope * self.slope / self.p[self.valid]
+      self.k2p = slopeInput * slopeInput / pInput[validInput]
+    self.h, self.p, self.t, validClean = self._removeTooCloseInputPoints(self.h, self.p, self.t, self.valid)
+    if validClean is not None:
+      self.valid = validClean
+    keepFileData = any(name in parsed for name in ('k2p', 'hc', 'Ac', 'modulus', 'modulusRed', 'hardness'))
+    self.setRawData(self.h, self.p, self.t, self.valid, slopeInput if len(slopeInput)>0 else None,
+                    phaseInput if len(phaseInput)>0 else None, getProv('Agilent'), keepFileData=keepFileData)
     return True
 
 
@@ -205,14 +305,17 @@ class IndentationInputMixin:
             continue
           #pylint: disable=multiple-statements
           if label == "Sample Approach Data Points": break
-          if label == "Machine Comp": self.compliance = value #assume nm/uN = um/mN
+          if label == "Machine Comp":
+            self.tip.compliance = value #assume nm/uN = um/mN
+            self.metaVendor['machine_compliance'] = value
           if label == "Tip C0":       prefact[0] = value #nm^2/nm^2
           if label == "Tip C1":       prefact[1] = value #nm^2/nm
           if label == "Tip C2":       prefact[2] = value #nm^2/nm^0.5
           if label == "Tip C3":       prefact[3] = value #nm^2/nm^0.25
           if label == "Tip C4":       prefact[4] = value #nm^2/nm^0.125
           if label == "Tip C5":       prefact[5] = value #nm^2/nm^0.0625
-          if label == "Contact Threshold": forceTreshold = value/1.e3 #uN
+          if label == "Contact Threshold":
+            print(f'**INFO** The vendor uses contact threshold {value/1.e3} mN.') #uN
           if label == "Drift Rate":   self.metaVendor['drift_rate'] = value/1.e3 #um/s
           if label == "Number of Segments"  : numSegments  = int(value)
           if label == "Segment Begin Time"  : segmentTime.append(value)
@@ -223,20 +326,17 @@ class IndentationInputMixin:
         self.tip.prefactors = prefact+['iso']
         if (numSegments!=len(segmentTime)) or (numSegments!=len(segmentDeltaP)):
           print("**ERROR**", numSegments,len(segmentTime),len(segmentDeltaP ) )
-        segmentDeltaPArray = np.array(segmentDeltaP)
-        segmentPointsArray = np.array(segmentPoints)
-
         #read approach data
         line = inFile.readline() #Time_s  MotorDisp_mm    Piezo Extension_nm"
         data = ""
-        for idx in range(int(value)):
+        for _ in range(int(value)):
           data +=inFile.readline()
 
         #read drift data
         numDrift = int(inFile.readline().split(":")[1])
         line = inFile.readline()  #Time_s	Disp_nm",value
         data = ""
-        for idx in range(numDrift):
+        for _ in range(numDrift):
           data +=inFile.readline()
         if len(data)>1:
           self.dataDrift = np.loadtxt( StringIO(str(data))  )
@@ -247,7 +347,7 @@ class IndentationInputMixin:
         numTest = int(inFile.readline().split(":")[1])
         line = inFile.readline()
         data = ""
-        for idx in range(numTest):
+        for _ in range(numTest):
           data +=inFile.readline()
         dataTest = np.loadtxt( StringIO(str(data))  )
         #store data
@@ -255,22 +355,6 @@ class IndentationInputMixin:
         self.h = dataTest[:,1]/1.e3
         self.p = dataTest[:,2]/1.e3
         self.valid=np.ones_like(self.h, dtype=bool)
-
-        # create loading-holding-unloading cycles
-        #since the first / last point of each segment are double in both segments
-        listLoading = np.where(segmentDeltaPArray>0.1 )[0]
-        listUnload  = np.where(segmentDeltaPArray<-0.1)[0]
-        segmentPointsArray  -= 1
-        segmentPointsArray[0]+=1
-        segPnts   = np.cumsum(segmentPointsArray)
-        #don't use identifyLoadHoldUnload since those points are known
-        self.iLHU = []
-        for idxLoad, idxUnload in zip(listLoading, listUnload):
-          iSurface = segPnts[idxLoad-1]+1
-          iLoad    = segPnts[idxLoad]
-          iHold    = segPnts[idxUnload-1]+1
-          iUnload  = segPnts[idxUnload]
-          self.iLHU.append( [iSurface,iLoad,iHold,iUnload] )
 
       #### TXT FILE ###
       if self.fileName.endswith('.txt'):
@@ -288,62 +372,12 @@ class IndentationInputMixin:
         self.h = dataTest[:,0]/1.e3
         self.p = dataTest[:,1]/1.e3
         #set unknown values
-        self.valid = np.ones_like(self.h)
-        forceTreshold = 0.25 #250uN
-        self.identifyLoadHoldUnload()
-
-      #correct data
-      #flatten intial section of retraction
-      idxMinH  = np.argmin(self.h)
-      self.p[:idxMinH] = self.p[idxMinH]
-      self.h[:idxMinH] = self.h[idxMinH]
-      idxMask = int( np.where(self.p>forceTreshold)[0][0])
-      fractionMinH = 0.5
-      hFraction    = (1.-fractionMinH)*self.h[idxMinH]+fractionMinH*self.h[idxMask]
-      idxMask = int(np.argmin(np.abs(self.h-hFraction)))
-      if idxMask>2:
-        mask     = np.zeros_like(self.h, dtype=bool)
-        mask[:idxMask] = True
-        fit = np.polyfit(self.h[mask],self.p[mask],1)
-        self.p -= np.polyval(fit,self.h)
-
-        #use force signal and its threshold to identify surface
-        #Option: use lowpass-filter and then evaluate slope: accurate surface identifaction possible,
-        #    however complicated
-        #Option: use lowpass-filter and then use force-threshold: accurate surface identifaction,
-        #    however complicated
-        #Best: use medfilter or wiener on force signal and then use force-threshold: accurate and easy
-        #see also Bernado_Hysitron/FirstTests/PhillipRWTH/testSignal.py
-        pZero    = np.average(self.p[mask])
-        pNoise   = max(pZero-np.min(self.p[mask]), np.max(self.p[mask])-pZero )
-        #from initial loading: back-extrapolate to zero force
-        maskInitLoad = np.logical_and(self.p>pZero+pNoise*2. , self.p<forceTreshold)
-        maskInitLoad[np.argmax(self.p):] = False
-        fitInitLoad  = np.polyfit(self.p[maskInitLoad],self.h[maskInitLoad],2)#inverse h-p -> next line easier
-        hZero        = float(np.polyval(fitInitLoad, pZero))
-        ## idx = np.where(  self.p>(pZero+pNoise)  )[0][0] OLD SYSTEM NOT AS ACCURATE, better fitInitLoad
-        if plotContact:
-          plt.axhline(pZero,c='g', label='pZero')
-          plt.axhline(pZero+pNoise,c='g',linestyle='dashed', label='pNoise')
-          plt.axvline(self.h[idxMinH],c='k')
-          plt.axvline(self.h[idxMask],c='k')
-          plt.plot(self.h,self.p)
-          plt.plot(self.h[mask],self.p[mask], label='used for pNoise')
-          plt.plot(self.h[maskInitLoad],self.p[maskInitLoad], label='used for backfit')
-          plt.axvline(hZero,c='r',linestyle='dashed',label='Start')
-          plt.plot(hZero,pZero, "ro", label="Start")
-          plt.legend(loc=0)
-          plt.ylim(np.min(self.p), self.p[idx]+forceTreshold )
-          plt.xlim(-0.1,self.h[idx]+0.05)
-          plt.show()
-          print ("Debug pZero and pNoise:",pZero,pNoise)
-      else:
-        print("**ERROR**", forceTreshold,np.where(self.p>forceTreshold)[0][:10])
-        pZero = 0
-        idx   = 0
-      ## self.t -= self.t[idx] #do not offset time since segment times are given
-      self.h -= hZero
-      self.p -= pZero
+        self.valid = np.ones_like(self.h, dtype=bool)
+    self.h, self.p, self.t, validClean = self._removeTooCloseInputPoints(self.h, self.p, self.t, self.valid)
+    if validClean is not None:
+      self.valid = validClean
+    self.setRawData(self.h, self.p, self.t, self.valid, None, self.phase if self.phase is not None else None,
+                    getProv('Hysitron', 'not_provided'))
     return True
 
 
@@ -370,11 +404,12 @@ class IndentationInputMixin:
         if self.output['verbose']>1:
           print("Is not a Micromaterials file")
         return False
-      self.t = dataTest[:,0]
-      self.h = dataTest[:,1]/1.e3
-      self.p = dataTest[:,2]
-      self.valid = np.ones_like(self.t, dtype=bool)
-      self.identifyLoadHoldUnload()
+      t = dataTest[:,0]
+      h = dataTest[:,1]/1.e3
+      p = dataTest[:,2]
+      h, p, t, _ = self._removeTooCloseInputPoints(h, p, t)
+      valid = np.ones_like(t, dtype=bool)
+      self.setRawData(h, p, t, valid, provenance=getProv('Micromaterials', 'not_provided'))
     elif fileName.endswith('.zip'):
       #if zip-archive of multilpe files: datafile has to remain open
       #    next pylint statement for github actions
@@ -512,10 +547,12 @@ class IndentationInputMixin:
     """
     df = self.workbook.pop(0)
     self.testName = self.testList.pop(0)
-    self.t = np.array(df['t'])
-    self.h = np.array(df['h'])
-    self.p = np.array(df['F'])
-    self.valid = np.ones_like(self.t, dtype=bool)
+    t = np.array(df['t'])
+    h = np.array(df['h'])
+    p = np.array(df['F'])
+    h, p, t, _ = self._removeTooCloseInputPoints(h, p, t)
+    valid = np.ones_like(t, dtype=bool)
+    self.setRawData(h, p, t, valid, provenance=getProv('FischerScope', 'not_provided'))
     return True
 
 
@@ -625,7 +662,7 @@ class IndentationInputMixin:
         continue
       for name, _ in nameDict[key]:
         if name in branch:
-          data = np.array(branch[name], dtype=np.float64)
+          data = np.array(branch[name], dtype=float)
           mask = np.logical_and(np.isfinite(data), data<1e99)
           if valid is None:
             valid = mask
@@ -634,7 +671,7 @@ class IndentationInputMixin:
           if key=='slope':
             valid = np.logical_and(valid, data>0.0)
           if key=='h':
-            validFull = np.isfinite(np.array(branch[name], dtype=np.float64))
+            validFull = np.isfinite(np.array(branch[name], dtype=float))
           break
 
     if valid is None or validFull is None:
@@ -643,27 +680,35 @@ class IndentationInputMixin:
       return False
 
     #Run through all items again and crop to only valid data
+    parsed:dict[str, np.ndarray] = {}
     for key in nameDict:
       if key in ['__ignore__','__note__']:
         continue
       for name, multiplyer in nameDict[key]:
         if name in branch:
-          data = np.array(branch[name], dtype=np.float64)
+          data = np.array(branch[name], dtype=float)
           if key in ['h','p','t']:
             data = data[validFull]
           else:
             data = data[valid]
+          parsed[key] = data*multiplyer
           setattr(self, key, data*multiplyer)
           inFile.remove(name)
           break
 
     # Test if essential items exist
     for attrib in ['h','t','p']:
-      if not hasattr(self, attrib) or len(getattr(self, attrib))==0:
+      if attrib not in parsed or len(parsed[attrib])==0:
         print('**ERROR** Missing information for',measurementType.split()[0],': ',attrib)
         print('Keys exist',inFile)
         return False
-    self.valid = valid[validFull]
+    validInput = valid[validFull]
+    hInput = parsed['h']
+    pInput = parsed['p']
+    tInput = parsed['t']
+    slopeInput = parsed['slope'] if 'slope' in parsed else np.array([], dtype=float)
+    phaseInput = parsed['phase'] if 'phase' in parsed else np.array([], dtype=float)
+    keepFileData = any(name in parsed for name in ('k2p', 'hc', 'Ac', 'modulus', 'modulusRed', 'hardness'))
 
     #cleaning
     converter = self.datafile.attrs['uri']
@@ -672,24 +717,25 @@ class IndentationInputMixin:
     if converter == 'hap2hdf.py':
       ## Old and correct approach
       #Fischer-Scope reset the time multiple times
-      resetPoints = np.where((self.t[1:]-self.t[:-1])<0)[0]
+      resetPoints = np.where((tInput[1:]-tInput[:-1])<0)[0]
       if len(resetPoints)>0:
-        self.t = self.t[resetPoints[-1]:]
-        self.h = self.h[resetPoints[-1]:]
-        self.p = self.p[resetPoints[-1]:]
-        self.valid = np.ones_like(self.t, dtype=bool)
-      ##Wrong approach: crop off neg. depth
-      # mask = np.array(self.h)>=0
-      # self.h = np.array(self.h)[mask]
-      # self.p = np.array(self.p)[mask]
-      # self.t = np.array(self.t)[mask]
-      # self.valid = self.valid[mask]
+        start = resetPoints[-1]
+        hInput, pInput, tInput = hInput[start:], pInput[start:], tInput[start:]
+        validInput = np.ones_like(tInput, dtype=bool)
+        if len(slopeInput)==len(parsed['t']):
+          slopeInput = slopeInput[start:]
+        if len(phaseInput)==len(parsed['t']):
+          phaseInput = phaseInput[start:]
     else:
-      self.p -= self.p[0]
-    self.iLHU   = []
-    self.iDrift = [-1,-1]
-    if hasattr(self, 'slope') and np.ndim(self.slope)>0 and len(self.slope)>60: #if more than 30: CSM
+      pInput = pInput-pInput[0]
+    if len(slopeInput)>60: #if more than 30: CSM
       self.method = Method.CSM
+    hInput, pInput, tInput, validClean = self._removeTooCloseInputPoints(hInput, pInput, tInput, validInput)
+    if validClean is not None:
+      validInput = validClean
+    self.setRawData(hInput, pInput, tInput, validInput, slopeInput if len(slopeInput)>0 else None,
+                    phaseInput if len(phaseInput)>0 else None, getProv(self.vendor.name),
+                    keepFileData=keepFileData)
     if self.output['plotLoadHoldUnload']:
       self.plotTestingMethod()
     return True

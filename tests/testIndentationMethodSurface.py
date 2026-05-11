@@ -23,7 +23,7 @@ from micromechanics.indentation.definitions import FileType, Vendor
 ATTACHED_METHODS = [
   'loadAgilent', 'nextAgilentTest', 'loadHysitron', 'loadMicromaterials',
   'nextMicromaterialsTest', 'loadFischerScope', 'nextFischerScopeTest',
-  'loadHDF5', 'nextHDF5Test', 'restartFile',
+  'loadHDF5', 'nextHDF5Test', 'restartFile', 'setRawData',
   'calcYoungsModulus', 'calcHardness', 'calcStiffness2Force', 'analyse',
   'identifyLoadHoldUnload', 'identifyLoadHoldUnloadCSM', 'nextTest',
   'saveToUserMeta',

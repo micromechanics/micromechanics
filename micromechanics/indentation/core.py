@@ -23,6 +23,7 @@ import os
 import copy
 from pathlib import Path
 from collections.abc import Callable
+from types import SimpleNamespace
 from typing import cast, Any
 from typing_extensions import TypedDict
 import numpy as np
@@ -56,10 +57,10 @@ class Indentation(IndentationInputMixin, IndentationMainMixin, IndentationTheory
        tip (tip):  tip class to use; None=perfect
        surface (dict): dictionary describing the surface find
        model (dict): numerical parameters that determine the evaluation
-       output (dict): links that descripe the output (graphs and print-to-screen)
+       output (dict): links that describe the output (graphs and print-to-screen)
     """
     np.seterr(divide='ignore', invalid='ignore')
-    self.nuMat   = nuMat                            # nuMat: material's Posson ratio
+    self.nuMat   = nuMat                            # nuMat: material's Poisson ratio
     self.method  = Method.ISO                       # iso default: csm uses different methods
     self.vendor:Vendor
     self.fileType:FileType
@@ -73,29 +74,36 @@ class Indentation(IndentationInputMixin, IndentationMainMixin, IndentationTheory
                                                      copy.deepcopy(_DefaultOutput)|output
 
     self.newFileRead               = True                # file was just loaded
-    self.iLHU:list[list[int]]      = [ [-1,-1,-1,-1] ]   # indicies of Load-Hold-Unload cycles
-                                                         # (StartLoad-StartHold-StartUnload-EndLoad)
-    self.iDrift:list[int]          = [-1,-1]             # start and end indicies of drift segment
+    self.iLHU:list[list[int]]      = []                  # indices of Load-Hold-Unload cycles
+                                                         # (start load, start hold, start unload, end unload)
     self.metaVendor:dict[str, Any] = {}                  # some results come from input file
     self.metaUser: dict[str, float|list[float]|str] = {} # type: ignore[assignment]  #metadata added by analysis
+    self.raw = SimpleNamespace(                          # loaded/prepared input arrays in package units
+      h=np.array([], dtype=float),
+      p=np.array([], dtype=float),
+      t=np.array([], dtype=float),
+      valid=np.array([], dtype=bool),
+      slope=np.array([], dtype=float),
+      phase=np.array([], dtype=float))
+    self.provenance:dict[str, dict[str, Any]] = {}       # raw and working array source/correction state
 
     # define all attributes
     self.testName              = ''
     self.testList:list[str]    = []
     self.allTestList:list[str] = []
-    self.h         :np.ndarray = np.array([], dtype=np.float64)
-    self.t         :np.ndarray = np.array([], dtype=np.float64)
-    self.p         :np.ndarray = np.array([], dtype=np.float64)
+    self.h         :np.ndarray = np.array([], dtype=float)
+    self.t         :np.ndarray = np.array([], dtype=float)
+    self.p         :np.ndarray = np.array([], dtype=float)
     self.valid     :np.ndarray = np.array([], dtype=bool)
-    self.hRaw      :np.ndarray = np.array([], dtype=np.float64)
-    self.slope     :np.ndarray = np.array([], dtype=np.float64)
-    self.phase     :np.ndarray = np.array([], dtype=np.float64)
-    self.k2p       :np.ndarray = np.array([], dtype=np.float64)
-    self.hc        :np.ndarray = np.array([], dtype=np.float64)
-    self.Ac        :np.ndarray = np.array([], dtype=np.float64)
-    self.modulus   :np.ndarray = np.array([], dtype=np.float64)
-    self.modulusRed:np.ndarray = np.array([], dtype=np.float64)
-    self.hardness  :np.ndarray = np.array([], dtype=np.float64)
+    self.hRaw      :np.ndarray = np.array([], dtype=float)
+    self.slope     :np.ndarray = np.array([], dtype=float)
+    self.phase     :np.ndarray = np.array([], dtype=float)
+    self.k2p       :np.ndarray = np.array([], dtype=float)
+    self.hc        :np.ndarray = np.array([], dtype=float)
+    self.Ac        :np.ndarray = np.array([], dtype=float)
+    self.modulus   :np.ndarray = np.array([], dtype=float)
+    self.modulusRed:np.ndarray = np.array([], dtype=float)
+    self.hardness  :np.ndarray = np.array([], dtype=float)
 
     #initialize and load first data set
     #set default parameters

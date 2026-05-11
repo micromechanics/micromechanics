@@ -16,12 +16,13 @@ class TestSyntheticIndentationBranches(unittest.TestCase):
 
   def make_indentation(self):
     indentation = Indentation("")
-    indentation.h = np.array([0.05, 0.15, 0.30, 0.45, 0.60])
+    h = np.array([0.05, 0.15, 0.30, 0.45, 0.60])
+    p = np.array([0.10, 0.40, 0.90, 1.30, 1.60])
+    t = np.linspace(0, 4, 5)
+    valid = np.array([True, True, True, True, True])
+    slope = np.array([6.0, 8.0, 10.0, 12.0, 14.0])
+    indentation.setRawData(h, p, t, valid, slope=slope)
     indentation.hRaw = indentation.h.copy()
-    indentation.p = np.array([0.10, 0.40, 0.90, 1.30, 1.60])
-    indentation.t = np.linspace(0, 4, 5)
-    indentation.valid = np.array([True, True, True, True, True])
-    indentation.slope = np.array([6.0, 8.0, 10.0, 12.0, 14.0])
     indentation.sRaw = indentation.slope.copy()
     indentation.modulus = np.linspace(60.0, 80.0, 5)
     indentation.hardness = np.linspace(4.0, 8.0, 5)
@@ -39,10 +40,24 @@ class TestSyntheticIndentationBranches(unittest.TestCase):
   def test_analyse_returns_when_unloading_fit_fails(self):
     indentation = self.make_indentation()
     indentation.method = Method.ISO
+    indentation.identifyLoadHoldUnload = lambda: True
     indentation.stiffnessFromUnloading = lambda _p, _h: (None, None, None, None, None)
     indentation.analyse()
     self.assertEqual(len(indentation.slope), 0)
     self.assertFalse(np.any(indentation.valid))
+
+  def test_analyse_restarts_from_raw_data(self):
+    indentation = self.make_indentation()
+    indentation.method = Method.CSM
+    indentation.tip.compliance = 0.01
+    indentation.model["driftRate"] = 0.001
+    indentation.analyse()
+    h_once = indentation.h.copy()
+    slope_once = indentation.slope.copy()
+
+    indentation.analyse()
+    np.testing.assert_allclose(indentation.h, h_once)
+    np.testing.assert_allclose(indentation.slope, slope_once)
 
   def test_save_to_user_meta_csm_empty_slope(self):
     indentation = self.make_indentation()
