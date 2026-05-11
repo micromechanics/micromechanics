@@ -34,7 +34,29 @@ class IndentationMainMixin:
     """
     Apply configured thermal drift correction to working depth.
     """
-    self.h -= _dictToFloat(self.model['driftRate'], 0.0) * self.t
+    driftRate = 0.0
+    driftSource = 'none'
+    if 'driftRate' in self.modelUserChoice:
+      driftRate = _dictToFloat(self.model['driftRate'], 0.0)
+      driftSource = 'model'
+    elif 'drift_rate' in self.metaVendor:
+      try:
+        driftRate = float(self.metaVendor['drift_rate'])
+        driftSource = 'vendor'
+      except (TypeError, ValueError):
+        pass
+    else:
+      driftData = getattr(self, 'dataDrift', None)
+      if isinstance(driftData, np.ndarray) and len(driftData)>1:
+        try:
+          driftRate = float(np.polyfit(driftData[:,0], driftData[:,1], 1)[0])
+          driftSource = 'drift_data'
+        except (TypeError, ValueError, IndexError, np.linalg.LinAlgError):
+          pass
+    self.h -= driftRate * self.t
+    self.provenance.setdefault('h', {})['drift'] = driftRate != 0.0
+    self.provenance['h']['driftRate'] = driftRate
+    self.provenance['h']['driftSource'] = driftSource
     return
 
 
@@ -333,7 +355,7 @@ class IndentationMainMixin:
 
     if self.method == Method.CSM:
       if self.model['cropSlopeToLoading'] and len(self.iLHU)>0 and len(self.iLHU[0])>=2 and len(self.slope)==len(self.h[self.valid]):
-        slopeFull = np.zeros_like(self.h)
+        slopeFull = np.zeros_like(self.h)  # is corrected
         slopeFull[self.valid] = self.slope
         self.valid = np.zeros_like(self.h, dtype=bool)
         self.valid[self.iLHU[0][0]: self.iLHU[0][1]] = True
@@ -483,15 +505,6 @@ class IndentationMainMixin:
       self.iLHU = []
     if len(self.iLHU)>1:
       self.method=Method.MULTI
-    #drift segments: only add if it makes sense
-    try:
-      iDriftS = unloadIdx[1::2][-1]+1
-      iDriftE = len(self.p)-1
-      if iDriftS+1>iDriftE:
-        iDriftS=iDriftE-1
-      self.iDrift = [iDriftS,iDriftE]
-    except:
-      self.iDrift = [-1,-1]
     return True
 
 
@@ -518,41 +531,39 @@ class IndentationMainMixin:
       except:
         print('**ERROR** identifyLoadHoldUnloadCSM: 1')
         self.iLHU = []
-        self.iDrift = []
         return False
       pDrift   = bins[np.argmax(hist)+1]
       pCloseToDrift = np.logical_and(self.p>pDrift*unloadPMax, self.p<pDrift/unloadPMax)
       pCloseToDrift[:iHold] = False
       if len(pCloseToDrift[pCloseToDrift])>3:
-        iDriftS  = int(np.min(np.where( pCloseToDrift )))
-        iDriftE  = int(np.max(np.where( pCloseToDrift )))
+        iTailStart = int(np.min(np.where( pCloseToDrift )))
+        iTailEnd   = int(np.max(np.where( pCloseToDrift )))
       else:
-        iDriftS   = len(self.p)-2
-        iDriftE   = len(self.p)-1
-      if not iSurface < iLoad < iHold < iDriftS < iDriftE < len(self.h):
+        iTailStart = len(self.p)-2
+        iTailEnd   = len(self.p)-1
+      if not iSurface < iLoad < iHold < iTailStart < iTailEnd < len(self.h):
         if self.output['verbose']>1:
           print("Warning: identifyLoadHoldUnloadCSM could not identify load-hold-unloading cycle. Only loading?")
-          print(iSurface,iLoad,iHold,iDriftS,iDriftE, len(self.h))
+          print(iSurface,iLoad,iHold,iTailStart,iTailEnd, len(self.h))
         iLoad     = len(self.p)-4
         iHold     = len(self.p)-3
-        iDriftS   = len(self.p)-2
-        iDriftE   = len(self.p)-1
+        iTailStart = len(self.p)-2
+        iTailEnd   = len(self.p)-1
     else:  #This part is required
       if self.method != Method.CSM:
         print("*WARNING*: no hold or unloading segments in data")
       iHold     = len(self.p)-3
-      iDriftS   = len(self.p)-2
-      iDriftE   = len(self.p)-1
-    self.iLHU   = [[iSurface,iLoad,iHold,iDriftS]]
-    self.iDrift = [iDriftS,iDriftE]
+      iTailStart = len(self.p)-2
+      iTailEnd   = len(self.p)-1
+    self.iLHU   = [[iSurface,iLoad,iHold,iTailStart]]
 
     if plot or self.output['plotLoadHoldUnload']:
       plt.plot(self.h, self.p)
       plt.plot(self.h[iSurface], self.p[iSurface], 'o', markersize=10, label='surface')
       plt.plot(self.h[iLoad], self.p[iLoad], 'o', markersize=10, label='load')
       plt.plot(self.h[iHold], self.p[iHold], 'o', markersize=10, label='hold')
-      plt.plot(self.h[iDriftS], self.p[iDriftS], 'o', markersize=10, label='drift start')
-      plt.plot(self.h[iDriftE], self.p[iDriftE], 'o', markersize=10, label='drift end')
+      plt.plot(self.h[iTailStart], self.p[iTailStart], 'o', markersize=10, label='tail start')
+      plt.plot(self.h[iTailEnd], self.p[iTailEnd], 'o', markersize=10, label='tail end')
       plt.legend(loc=0)
       plt.title('Identify Load, Hold, Unload for CSM measurements')
       plt.show()
@@ -592,7 +603,6 @@ class IndentationMainMixin:
     self._restoreRaw()
     if not newTest:
       self.iLHU = []
-      self.iDrift = [-1,-1]
       for name in ('k2p', 'hc', 'Ac', 'modulus', 'modulusRed', 'hardness'):
         setattr(self, name, np.array([], dtype=float))
     if plotSurface or 'plot' in self.surface:

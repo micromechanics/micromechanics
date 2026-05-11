@@ -27,7 +27,6 @@ def synthetic_indentation():
   indentation.hc = np.array([0.08, 0.16, 0.28])
   indentation.Ac = np.array([0.03, 0.08, 0.16])
   indentation.iLHU = [[1, 2, 4, 6]]
-  indentation.iDrift = [5, 6]
   indentation.output["verbose"] = 2
   return indentation
 

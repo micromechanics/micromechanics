@@ -40,7 +40,6 @@ class IndentationPlotMixin:
         ax1.plot(self.t[mask][1], self.p[mask][1], 'C0x')
         ax1.plot(self.t[mask][2], self.p[mask][2], 'C0+')
         ax1.plot(self.t[mask][3], self.p[mask][3], 'C0o')
-      ax1.plot(self.t[self.iDrift], self.p[self.iDrift], 'k.')
     else:
       print('Run analyse() to show the full data.')
     ax1.axhline(0,color='C0', linestyle='dashed')

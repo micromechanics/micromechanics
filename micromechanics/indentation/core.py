@@ -76,7 +76,6 @@ class Indentation(IndentationInputMixin, IndentationMainMixin, IndentationTheory
     self.newFileRead               = True                # file was just loaded
     self.iLHU:list[list[int]]      = []                  # indicies of Load-Hold-Unload cycles
                                                          # (StartLoad-StartHold-StartUnload-EndLoad)
-    self.iDrift:list[int]          = [-1,-1]             # start and end indicies of drift segment
     self.metaVendor:dict[str, Any] = {}                  # some results come from input file
     self.metaUser: dict[str, float|list[float]|str] = {} # type: ignore[assignment]  #metadata added by analysis
     self.raw = SimpleNamespace(                          # loaded/prepared input arrays in package units

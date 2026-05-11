@@ -117,7 +117,6 @@ class TestCoverageBranchTargets(unittest.TestCase):
     indentation.model["cropSlopeToLoading"] = False
     def identify():
       indentation.iLHU = [[0, 2, 5, 6]]
-      indentation.iDrift = [6, 7]
       return True
     indentation.identifyLoadHoldUnload = identify
     return indentation
@@ -205,7 +204,6 @@ class TestCoverageBranchTargets(unittest.TestCase):
     indentation.slope = np.array([4.0, 5.0, 6.0])
     indentation.phase = np.array([0.1, 0.2, 0.3])
     indentation.iLHU = [[0, 1, 3, 4]]
-    indentation.iDrift = [3, 4]
     indentation.hc = np.array([0.1])
     indentation.Ac = np.array([0.2])
     indentation.modulus = np.array([70.0])

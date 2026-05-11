@@ -100,7 +100,6 @@ class IndentationInputMixin:
       self.provenance['raw'] = {'state': 'loaded'}
     self._restoreRaw()
     self.iLHU:list[list[int]] = []
-    self.iDrift = [-1,-1]
     if not keepFileData:
       for name in ('k2p', 'hc', 'Ac', 'modulus', 'modulusRed', 'hardness'):
         setattr(self, name, np.array([], dtype=float))
