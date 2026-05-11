@@ -18,6 +18,221 @@ class IndentationMainMixin:
   """
   Main analysis workflow methods for :class:`Indentation`.
   """
+  def _restoreRaw(self:'Indentation') -> None: # type: ignore[misc]
+    """
+    Restore working arrays from the raw package-unit snapshot.
+    """
+    for name in ('h', 'p', 't', 'valid', 'slope', 'phase'):
+      value = getattr(self.raw, name)
+      if isinstance(value, np.ndarray) and len(value)>0:
+        setattr(self, name, value.copy())
+    self._setWorkingProvenance('raw')
+    return
+
+
+  def _setWorkingProvenance(self:'Indentation', state:str) -> None: # type: ignore[misc]
+    """
+    Record whether working arrays are raw or analysis-derived.
+    """
+    self.provenance.setdefault('working', {})['state'] = state
+    return
+
+
+  def _workingIsAnalysisResult(self:'Indentation') -> bool: # type: ignore[misc]
+    """
+    Check whether working arrays currently contain analyse()-derived changes.
+    """
+    return self.provenance.get('working', {}).get('state') == 'analysed'
+
+
+  def _rawIsEmpty(self:'Indentation') -> bool: # type: ignore[misc]
+    """
+    Check if no input path has populated raw data yet.
+    """
+    return len(self.raw.h)==0 and len(self.raw.p)==0 and len(self.raw.t)==0
+
+
+  def _workingDataDiffersFromRaw(self:'Indentation') -> bool: # type: ignore[misc]
+    """
+    Check whether direct assignments on self have replaced the raw snapshot.
+    """
+    for name in ('h', 'p', 't', 'valid'):
+      value = getattr(self, name)
+      rawValue = getattr(self.raw, name)
+      if not isinstance(value, np.ndarray) or not isinstance(rawValue, np.ndarray):
+        continue
+      if value.shape != rawValue.shape:
+        return True
+      if value.dtype == bool or rawValue.dtype == bool:
+        if not np.array_equal(value, rawValue):
+          return True
+      elif not np.allclose(value, rawValue, equal_nan=True):
+        return True
+    if isinstance(self.slope, np.ndarray) and len(self.raw.slope)>0:
+      if self.slope.shape != self.raw.slope.shape:
+        return True
+      if not np.allclose(self.slope, self.raw.slope, equal_nan=True):
+        return True
+    return False
+
+
+  def _snapshotWorkingAsRaw(self:'Indentation', source:str='manual_self') -> None: # type: ignore[misc]
+    """
+    Store the current working arrays as raw data for manual/synthetic objects.
+    """
+    self.raw.h = self.h.copy()
+    self.raw.p = self.p.copy()
+    self.raw.t = self.t.copy()
+    self.raw.valid = self.valid.copy()
+    self.raw.slope = self.slope.copy()
+    self.raw.phase = self.phase.copy()
+    self.provenance = {
+      'raw': {'state': 'manual_snapshot'},
+      'working': {'state': 'raw'},
+      'h': {'source': f'{source}_h', 'surface': False, 'drift': False, 'frameCompliance': False},
+      'p': {'source': f'{source}_p', 'tare': False},
+      'slope': {'source': f'{source}_slope', 'frameCompliance': False}
+    }
+    return
+
+
+  def correctThermalDrift(self:'Indentation') -> None: # type: ignore[misc]
+    """
+    Apply configured thermal drift correction to working depth.
+    """
+    self.h -= _dictToFloat(self.model['driftRate'], 0.0) * self.t
+    return
+
+
+  def correctStiffness(self:'Indentation') -> None: # type: ignore[misc]
+    """
+    Apply frame compliance correction to working depth and CSM stiffness.
+    """
+    self.h -= self.tip.compliance * self.p
+    if self.method == Method.CSM and len(self.slope)>0:
+      self.slope = 1./(1./self.slope-self.tip.compliance)
+    return
+
+
+  def applySurfaceCorrection(self:'Indentation', surfaceIndex:int, usesValid:bool=False, tareLoad:bool=False) -> bool: # type: ignore[misc]
+    """
+    Apply the selected surface offset to the working arrays.
+    """
+    if surfaceIndex < 0:
+      return True
+    if usesValid:
+      if surfaceIndex >= len(self.h[self.valid]):
+        print('**ERROR** surface index out of bounds for valid data:', surfaceIndex)
+        return False
+      depthOffset = self.h[self.valid][surfaceIndex]
+      loadOffset = self.p[self.valid][surfaceIndex]
+    else:
+      if surfaceIndex >= len(self.h):
+        print('**ERROR** surface index out of bounds:', surfaceIndex)
+        return False
+      depthOffset = self.h[surfaceIndex]
+      loadOffset = self.p[surfaceIndex]
+    self.h -= depthOffset
+    if tareLoad:
+      self.p -= loadOffset
+    return True
+
+
+  def findAndApplySurfaceCorrection(self:'Indentation', plotSurface:bool=False) -> bool: # type: ignore[misc]
+    """
+    Find and apply surface correction on the current working arrays.
+    """
+    thresValue:float|None = None
+    thresValues:np.ndarray|None = None
+    surface = -1
+
+    if self.testName in self.surface:
+      surfaceConfig = self.surface[self.testName]
+      if 'surfaceIdx' in surfaceConfig:
+        return self.applySurfaceCorrection(int(surfaceConfig['surfaceIdx']))
+
+    found = False
+    if 'load' in self.surface:
+      surfaceValue = self.surface['load']
+      if isinstance(surfaceValue, (int, float)):
+        thresValues = self.p.copy()
+        thresValue  = float(surfaceValue)
+        found = True
+    elif 'stiffness' in self.surface:
+      surfaceValue = self.surface['stiffness']
+      if isinstance(surfaceValue, (int, float)):
+        thresValues = self.slope.copy()
+        thresValue  = float(surfaceValue)
+        found = True
+    elif 'phase angle' in self.surface:
+      surfaceValue = self.surface['phase angle']
+      if isinstance(surfaceValue, (int, float)):
+        thresValues = self.phase.copy()
+        thresValue  = float(surfaceValue)
+        found = True
+    elif 'abs(dp/dh)' in self.surface:
+      surfaceValue = self.surface['abs(dp/dh)']
+      if isinstance(surfaceValue, (int, float)):
+        thresValues = np.abs(np.gradient(self.p,self.h))
+        thresValue  = float(surfaceValue)
+        found = True
+    elif 'dp/dt' in self.surface:
+      surfaceValue = self.surface['dp/dt']
+      if isinstance(surfaceValue, (int, float)):
+        thresValues = np.gradient(self.p,self.t)
+        thresValue  = float(surfaceValue)
+        found = True
+
+    if found:
+      if thresValues is None or thresValue is None:
+        print('**ERROR** invalid surface threshold configuration')
+        return False
+      nans = np.isnan(thresValues)
+      if np.any(nans):
+        def tempX(z:np.ndarray) -> np.ndarray:
+          return z.nonzero()[0]
+        thresValues[nans]= np.interp(tempX(nans), tempX(~nans), thresValues[~nans])
+
+      if 'median filter' in self.surface:
+        thresValues = signal.medfilt(thresValues, self.surface['median filter']) # type: ignore[call-overload]
+      elif 'gauss filter' in self.surface:
+        thresValues = gaussian_filter1d(thresValues, self.surface['gauss filter']) # type: ignore[call-overload]
+      elif 'butterfilter' in self.surface:
+        valueB, valueA = signal.butter(*self.surface['butterfilter']) # type: ignore[call-overload]
+        thresValues = signal.filtfilt(valueB, valueA, thresValues)
+      if 'phase angle' in self.surface:
+        surfaceMatches = np.where(thresValues<thresValue)[0]
+      else:
+        surfaceMatches = np.where(thresValues>thresValue)[0]
+      if len(surfaceMatches)==0:
+        print('**ERROR** could not identify surface for threshold', thresValue)
+        return False
+
+      # APPLY SURFACE CORRECTION AFTER IDENTIFICATION
+      surface = int(surfaceMatches[0])
+      if not self.applySurfaceCorrection(surface, usesValid=not 'load' in self.surface, tareLoad='tare load' in self.surface):
+        return False
+
+    if plotSurface or 'plot' in self.surface:
+      _, ax1 = plt.subplots()
+      if thresValues is None:
+        ax1.plot(self.h,self.p, 'C0o-')
+      elif 'load' in self.surface:
+        ax1.plot(self.h,thresValues, 'C0o-')
+        if surface >= 0:
+          ax1.plot(self.h[surface], thresValues[surface], 'C9o', markersize=14)
+      else:
+        ax1.plot(self.h[self.valid],thresValues, 'C0o-')
+        if surface >= 0:
+          ax1.plot(self.h[self.valid][surface], thresValues[surface], 'C9o', markersize=14)
+      ax1.axhline(0,linestyle='dashed')
+      if thresValue is not None:
+        ax1.set_ylim(bottom=0, top=thresValue*5)
+      ax1.set_xlabel(r'depth [$\mu m$]')
+      ax1.set_ylabel(r'threshold value [different units]', color='C0')
+      ax1.grid()
+      plt.show()
+    return True
 
   def calcYoungsModulus(self:'Indentation', minDepth:float=-1, plot:bool=False) -> float: # type: ignore[misc]
     """
@@ -119,7 +334,7 @@ class IndentationMainMixin:
       print("*WARNING*: too short vector",len(h_))
       return 9999999.
     if calibrate:
-      result = fmin_l_bfgs_b(errorFunction, np.array([compliance0], dtype=np.float64), bounds=[(-0.1,0.1)], \
+      result = fmin_l_bfgs_b(errorFunction, np.array([compliance0], dtype=float), bounds=[(-0.1,0.1)], \
                               approx_grad=True, epsilon=0.000001, factr=1e11)
       print("  Best values   ",result[0], "\tOptimum residual:",np.round(result[1],3))
       print('  Number of function evaluations~size of globalData',result[2]['funcalls'])
@@ -147,14 +362,35 @@ class IndentationMainMixin:
     - drift correction
     - compliance change
 
-    ONLY DO ONCE AFTER LOADING FILE: if this causes issues introduce flag analysed
-      which is toggled during loading and analysing
+    The correction step is repeatable because it restores the loaded/prepared raw
+    arrays before applying drift and compliance corrections.
     """
-    self.h -= _dictToFloat(self.model['driftRate'], 0.0) * self.t
-    self.h -= self.tip.compliance * self.p
+    if self._rawIsEmpty() or (not self._workingIsAnalysisResult() and len(self.iLHU)==0 and self._workingDataDiffersFromRaw()):
+      # Backward compatibility for synthetic/manual objects that assign arrays
+      # directly on self instead of going through an input reader.
+      self._snapshotWorkingAsRaw()
+    self._restoreRaw()
+    self._setWorkingProvenance('analysed')
+    self.correctThermalDrift()
+    self.correctStiffness()
+    if not self.findAndApplySurfaceCorrection():
+      return
+    try:
+      if not self.identifyLoadHoldUnload():
+        return
+    except:
+      print('**ERROR** could not identify load-hold-unload. Suggestion: try next test')
+      print(traceback.format_exc())
+      return
 
     if self.method == Method.CSM:
-      self.slope = 1./(1./self.slope-self.tip.compliance)
+      if self.model['cropSlopeToLoading'] and len(self.iLHU)>0 and len(self.iLHU[0])>=2 and len(self.slope)==len(self.h[self.valid]):
+        iSurface, iLoad = self.iLHU[0][0], self.iLHU[0][1]
+        slope = np.zeros_like(self.h)
+        slope[self.valid] = self.slope
+        self.valid = np.zeros_like(self.h, dtype=bool)
+        self.valid[iSurface:iLoad] = True
+        self.slope = slope[self.valid]
     else:
       slope, valid, _, _ , _= self.stiffnessFromUnloading(self.p, self.h)
       if slope is None or valid is None:
@@ -362,13 +598,6 @@ class IndentationMainMixin:
       iDriftE   = len(self.p)-1
     self.iLHU   = [[iSurface,iLoad,iHold,iDriftS]]
     self.iDrift = [iDriftS,iDriftE]
-    if self.model['cropSlopeToLoading']:
-      # constrain valid part to section between surface and maximum load
-      slope = np.zeros_like(self.h)  #rebuild a large self.slope
-      slope[self.valid] = self.slope #  and add current data to it
-      self.valid  = np.zeros_like(self.h, dtype=bool)
-      self.valid[iSurface:iLoad]  = True
-      self.slope  = slope[self.valid]
 
     if plot or self.output['plotLoadHoldUnload']:
       plt.plot(self.h, self.p)
@@ -411,122 +640,16 @@ class IndentationMainMixin:
     if not success:
       return success
 
-    # CLEANING ALL
-    # identify point in time, which are too close (~0) to eachother
-    if self.method != Method.CSM:
-      gradTime = np.diff(self.t)
-      maskTooClose = gradTime < np.percentile(gradTime,80)/1.e3
-      self.t     = self.t[1:][~maskTooClose]
-      self.p     = self.p[1:][~maskTooClose]
-      self.h     = self.h[1:][~maskTooClose]
-      self.valid = self.valid[1:][~maskTooClose]
-
-    # SURFACE FIND
-    thresValue:float|None = None
-    thresValues:np.ndarray|None = None
-    if self.testName in self.surface:
-      surface = self.surface[self.testName]['surfaceIdx']
-      self.h -= self.h[surface]  #only change surface, not force
-    else:
-      found = False
-      if 'load' in self.surface:
-        surfaceValue = self.surface['load']
-        if isinstance(surfaceValue, (int, float)):
-          thresValues = self.p
-          thresValue  = float(surfaceValue)
-          found = True
-      elif 'stiffness' in self.surface:
-        surfaceValue = self.surface['stiffness']
-        if isinstance(surfaceValue, (int, float)):
-          thresValues = self.slope
-          thresValue  = float(surfaceValue)
-          found = True
-      elif 'phase angle' in self.surface:
-        surfaceValue = self.surface['phase angle']
-        if isinstance(surfaceValue, (int, float)):
-          thresValues = self.phase
-          thresValue  = float(surfaceValue)
-          found = True
-      elif 'abs(dp/dh)' in self.surface:
-        surfaceValue = self.surface['abs(dp/dh)']
-        if isinstance(surfaceValue, (int, float)):
-          thresValues = np.abs(np.gradient(self.p,self.h))
-          thresValue  = float(surfaceValue)
-          found = True
-      elif 'dp/dt' in self.surface:
-        surfaceValue = self.surface['dp/dt']
-        if isinstance(surfaceValue, (int, float)):
-          thresValues = np.gradient(self.p,self.t)
-          thresValue  = float(surfaceValue)
-          found = True
-
-      if found:
-        if thresValues is None or thresValue is None:
-          print('**ERROR** invalid surface threshold configuration')
-          return False
-        #interpolate nan with neighboring values
-        nans = np.isnan(thresValues)
-
-        def tempX(z:np.ndarray) -> np.ndarray:
-          """
-          Temporary function
-
-          Args:
-            z (numpy.array): input
-
-          Returns:
-            numpy.array: output
-          """
-          return z.nonzero()[0]
-        thresValues[nans]= np.interp(tempX(nans), tempX(~nans), thresValues[~nans])
-
-        #filter this data
-        if 'median filter' in self.surface:
-          thresValues = signal.medfilt(thresValues, self.surface['median filter']) # type: ignore[call-overload]
-        elif 'gauss filter' in self.surface:
-          thresValues = gaussian_filter1d(thresValues, self.surface['gauss filter']) # type: ignore[call-overload]
-        elif 'butterfilter' in self.surface:
-          valueB, valueA = signal.butter(*self.surface['butterfilter']) # type: ignore[call-overload]
-          thresValues = signal.filtfilt(valueB, valueA, thresValues)
-        if 'phase angle' in self.surface:
-          surfaceMatches = np.where(thresValues<thresValue)[0]
-        else:
-          surfaceMatches = np.where(thresValues>thresValue)[0]
-        if len(surfaceMatches)==0:
-          print('**ERROR** could not identify surface for threshold', thresValue)
-          return False
-        surface = surfaceMatches[0]
-        # ONLY CHANGE SURFACE, NOT LOAD (only if explicitly stated)
-        if 'load' in self.surface:
-          self.h -= self.h[surface]
-          if 'tare load' in self.surface:
-            self.p -= self.p[surface]
-        else:
-          self.h -= self.h[self.valid][surface]
-          if 'tare load' in self.surface:
-            self.p -= self.p[self.valid][surface]
-      if plotSurface or 'plot' in self.surface:
-        _, ax1 = plt.subplots()
-        if thresValues is None:
-          ax1.plot(self.h,self.p, 'C0o-')
-        elif 'load' in self.surface:
-          ax1.plot(self.h,thresValues, 'C0o-')
-          ax1.plot(self.h[surface], thresValues[surface], 'C9o', markersize=14)
-        else:
-          ax1.plot(self.h[self.valid],thresValues, 'C0o-')
-          ax1.plot(self.h[self.valid][surface], thresValues[surface], 'C9o', markersize=14)
-        ax1.axhline(0,linestyle='dashed')
-        if thresValue is not None:
-          ax1.set_ylim(bottom=0, top=thresValue*5)
-        ax1.set_xlabel(r'depth [$\mu m$]')
-        ax1.set_ylabel(r'threshold value [different units]', color='C0')
-        ax1.grid()
-        plt.show()
-    try:
-      self.identifyLoadHoldUnload()
-    except:
-      print('**ERROR** could not identify load-hold-unload. Suggestion: try next test')
-      print(traceback.format_exc())
+    if self._rawIsEmpty() or (not self._workingIsAnalysisResult() and len(self.iLHU)==0 and self._workingDataDiffersFromRaw()):
+      self._snapshotWorkingAsRaw()
+    self._restoreRaw()
+    if not newTest:
+      self.iLHU = []
+      self.iDrift = [-1,-1]
+      for name in ('k2p', 'hc', 'Ac', 'modulus', 'modulusRed', 'hardness'):
+        setattr(self, name, np.array([], dtype=float))
+    if plotSurface or 'plot' in self.surface:
+      print('Run analyse() to show the full data.')
     return success
 
 

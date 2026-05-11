@@ -39,10 +39,24 @@ class TestSyntheticIndentationBranches(unittest.TestCase):
   def test_analyse_returns_when_unloading_fit_fails(self):
     indentation = self.make_indentation()
     indentation.method = Method.ISO
+    indentation.identifyLoadHoldUnload = lambda: True
     indentation.stiffnessFromUnloading = lambda _p, _h: (None, None, None, None, None)
     indentation.analyse()
     self.assertEqual(len(indentation.slope), 0)
     self.assertFalse(np.any(indentation.valid))
+
+  def test_analyse_restarts_from_raw_data(self):
+    indentation = self.make_indentation()
+    indentation.method = Method.CSM
+    indentation.tip.compliance = 0.01
+    indentation.model["driftRate"] = 0.001
+    indentation.analyse()
+    h_once = indentation.h.copy()
+    slope_once = indentation.slope.copy()
+
+    indentation.analyse()
+    np.testing.assert_allclose(indentation.h, h_once)
+    np.testing.assert_allclose(indentation.slope, slope_once)
 
   def test_save_to_user_meta_csm_empty_slope(self):
     indentation = self.make_indentation()

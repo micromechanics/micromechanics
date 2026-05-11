@@ -114,7 +114,12 @@ class TestCoverageBranchTargets(unittest.TestCase):
     indentation.valid = np.ones(8, dtype=bool)
     indentation.slope = np.linspace(0.01, 0.8, 8)
     indentation.phase = np.linspace(0.8, 0.01, 8)
-    indentation.identifyLoadHoldUnload = lambda: True
+    indentation.model["cropSlopeToLoading"] = False
+    def identify():
+      indentation.iLHU = [[0, 2, 5, 6]]
+      indentation.iDrift = [6, 7]
+      return True
+    indentation.identifyLoadHoldUnload = identify
     return indentation
 
   def test_surface_criteria_filters_and_plot_branches(self):
@@ -131,14 +136,24 @@ class TestCoverageBranchTargets(unittest.TestCase):
     for surface in cases:
       with self.subTest(surface=surface):
         indentation = self.make_surface_indentation(surface)
-        self.assertTrue(indentation.nextTest(newTest=False, plotSurface=True))
+        original_h = indentation.h.copy()
+        with redirect_stdout(StringIO()) as out:
+          self.assertTrue(indentation.nextTest(newTest=False, plotSurface=True))
+        np.testing.assert_allclose(indentation.h, original_h)
+        self.assertEqual(indentation.iLHU, [])
+        self.assertIn("Run analyse() to show the full data.", out.getvalue())
+        indentation.analyse()
 
     indexed = self.make_surface_indentation({"test": {"surfaceIdx": 2}})
     self.assertTrue(indexed.nextTest(newTest=False))
+    self.assertNotAlmostEqual(indexed.h[2], 0.0)
+    indexed.analyse()
     self.assertAlmostEqual(indexed.h[2], 0.0)
 
     no_criterion = self.make_surface_indentation({})
-    self.assertTrue(no_criterion.nextTest(newTest=False, plotSurface=True))
+    with redirect_stdout(StringIO()) as out:
+      self.assertTrue(no_criterion.nextTest(newTest=False, plotSurface=True))
+    self.assertIn("Run analyse() to show the full data.", out.getvalue())
 
   def test_calibration_control_flow_variants(self):
     indentation = Indentation("")
