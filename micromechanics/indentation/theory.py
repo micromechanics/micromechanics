@@ -168,7 +168,7 @@ class IndentationTheoryMixin:
     for cycleNum, cycle in enumerate(self.iLHU):
       loadStart, loadEnd, unloadStart, unloadEnd = cycle
       if loadStart>loadEnd or loadEnd>unloadStart or unloadStart>unloadEnd:
-        print('**ERROR** stiffnessFromUnloading: indicies not in order:',cycle)
+        print('**ERROR** stiffnessFromUnloading: indices not in order:',cycle)
       maskSegment = np.zeros_like(h, dtype=bool)
       maskSegment[unloadStart:unloadEnd+1] = True
       unloadPMax = _dictToFloat(self.model['unloadPMax'], 0.99)

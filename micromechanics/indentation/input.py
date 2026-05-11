@@ -305,7 +305,9 @@ class IndentationInputMixin:
             continue
           #pylint: disable=multiple-statements
           if label == "Sample Approach Data Points": break
-          if label == "Machine Comp": self.compliance = value #assume nm/uN = um/mN
+          if label == "Machine Comp":
+            self.tip.compliance = value #assume nm/uN = um/mN
+            self.metaVendor['machine_compliance'] = value
           if label == "Tip C0":       prefact[0] = value #nm^2/nm^2
           if label == "Tip C1":       prefact[1] = value #nm^2/nm
           if label == "Tip C2":       prefact[2] = value #nm^2/nm^0.5

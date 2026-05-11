@@ -1,21 +1,21 @@
 """Nanoindenter tip: shape / area-function and the compliance"""
 import math
+from collections.abc import Callable, Sized
 from typing import Any
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import newton
-from scipy.interpolate import interp1d
 
 
 class Tip:
   """The main class to define indenter shape and other default values."""
-  def __init__(self, shape:Any="perfect", interpFunction:interp1d|None=None, compliance:float=0.0, plot:bool=False, verbose:int=0):
+  def __init__(self, shape:Any="perfect", interpFunction:Callable[[np.ndarray], Any]|None=None, compliance:float=0.0, plot:bool=False, verbose:int=0):
     """
     Initialize indenter shape
 
     Args:
-      shape (list): list of prefactors (defualt = "perfect")
-      interpFunction (function): tip-shape function Ac = f(hc), when it is given, other information are superseeded
+      shape (list): list of prefactors (default = "perfect")
+      interpFunction (function): tip-shape function Ac = f(hc), when it is given, other information is superseded
       compliance (float): additional compliance in test [um/mN] (sensible values: 0.0001..0.01)
       plot (bool): plot indenter shape
       verbose (bool): output
@@ -23,7 +23,7 @@ class Tip:
     #define indenter shape: could be overwritten
     self.shape = 'perfect'
     self.areaPrefactors = []
-    self.interpFunction = None
+    self.interpFunction:Callable[[np.ndarray], Any]|None = None
     if callable(interpFunction):
       self.shape = 'interpolation'
       self.interpFunction = interpFunction
@@ -58,7 +58,7 @@ class Tip:
     Returns:
       list[Any] | None: area-function prefactors followed by the shape name, or None for interpolation tips.
     """
-    print('**DEPRICATION** For backward compatibility, use tip.areaPrefactors instead.')
+    print('**DEPRECATION** For backward compatibility, use tip.areaPrefactors instead.')
     if self.shape == 'interpolation':
       return None
     return self.areaPrefactors+[self.shape]
@@ -66,7 +66,7 @@ class Tip:
 
   @prefactors.setter
   def prefactors(self, prefactors:list[Any]|None) -> None:
-    print('**DEPRICATION** For backward compatibility, use tip.areaPrefactors instead.')
+    print('**DEPRECATION** For backward compatibility, use tip.areaPrefactors instead.')
     if prefactors is None:
       self.shape = 'interpolation'
       self.areaPrefactors = []
@@ -87,21 +87,26 @@ class Tip:
     outString = 'compliance: '+str(self.compliance)+';   '
     if self.shape == 'interpolation':
       assert self.interpFunction is not None
-      outString+= 'with interpolation function with '+str(len(self.interpFunction.x))+' points'
+      interpPoints = getattr(self.interpFunction, 'x', None)
+      if isinstance(interpPoints, Sized):
+        outString+= 'with interpolation function with '+str(len(interpPoints))+' points'
+      else:
+        outString+= 'with interpolation function'
     else:
       outString+= f'shape {self.shape} with prefactors: {self.areaPrefactors}'
     return outString
 
 
-  def setInterpolationFunction(self, interpFunction:interp1d) -> None:
+  def setInterpolationFunction(self, interpFunction:Callable[[np.ndarray], Any]) -> None:
     """
     The interpolation of tip-shape function Ac = f(hc)
 
     - From Oliver-Pharr Method, projected area of contact Ac can be obtained by measuring contact depth hc.
-    - When the interpolation function is given, other information are superseeded.
+    - When the interpolation function is given, other information is superseded.
+    - The interpolation function takes contact depth in um and returns projected area in um^2.
 
     Args:
-       interpFunction (function): numpy interpolation function
+       interpFunction (function): interpolation function from contact depth [um] to projected area [um^2].
     """
     self.shape = 'interpolation'
     self.interpFunction = interpFunction
@@ -112,8 +117,9 @@ class Tip:
   def areaFunction(self, h:np.ndarray) -> np.ndarray:
     """
     AREA FUNCTION: from contact depth hc calculate area |br|
-    all functions inside are using [nm]; the outside of this function uses [um]|br|
-    hence at the start and end there is conversion
+    analytical functions inside are using [nm]; the outside of this function uses [um]|br|
+    hence at the start and end there is conversion. Interpolation functions use
+    the outside units directly: contact depth [um] and projected area [um^2].
 
     prefactors:
 
@@ -135,9 +141,13 @@ class Tip:
     area = np.zeros_like(h)
     if self.shape == 'interpolation':
       assert self.interpFunction is not None
-      self.interpFunction.bounds_error=False
-      self.interpFunction.fill_value='extrapolate'
-      return self.interpFunction(h/1000.)
+      if hasattr(self.interpFunction, 'bounds_error'):
+        self.interpFunction.bounds_error=False
+      if hasattr(self.interpFunction, 'fill_value'):
+        self.interpFunction.fill_value='extrapolate'
+      area = np.asarray(self.interpFunction(h/1000.), dtype=float)
+      area[area<0] = 0.0
+      return area
     if self.shape =='iso':
       for idx, pref in enumerate(self.areaPrefactors):
         exponent = 2./math.pow(2,idx)
@@ -163,7 +173,7 @@ class Tip:
       rArea[~mask] = deltaY - tan*deltaX
       area = math.pi * rArea * rArea
     else:
-      print("**ERROR** shape is unkown:", self.shape)
+      print("**ERROR** shape is unknown:", self.shape)
     area[area<0] = 0.0
     return area/1.e6 # conversion of unit from nm^2 to um^2
 
@@ -175,8 +185,8 @@ class Tip:
 
     prefactors:
 
-    -  "iso" type area function A=ax^2+bx^1+cx^0.5..., [nm]
-    -  "perfect" type area function of a perfect Berkovich A=3*sqrt(3)*tan(65.27)^2 hc^2 = 24.494 hc^2
+    - "perfect" type area function uses the direct inverse of a perfect Berkovich tip
+    - other monotonic area functions are inverted numerically
 
     Args:
        area (numpy.array): projected contact area
@@ -185,18 +195,20 @@ class Tip:
     Returns:
        numpy.array: h = total penetration depth
     """
+    area = np.asarray(area, dtype=float)
+    area[area<0.0] = 0.0
+    if self.shape=="perfect":
+      return np.sqrt(area / 24.494)
     if hc0 is None:
-      hc0 = np.full_like(area, 70.0, dtype=float)
+      hc0 = np.sqrt(area / 24.494)
     ## define function in form f(x)-y=0
     def function(height:Any) -> Any:
       return self.areaFunction(height)-area
     ## solve
-    if self.shape=="iso":
+    try:
       h = newton(function, hc0)
-    elif self.shape=="perfect":
-      h = np.sqrt(area / 24.494)
-    else:
-      print("**ERROR** prefactors last value does not contain type")
+    except (RuntimeError, OverflowError, ValueError):
+      print("**ERROR** could not invert area function for shape:", self.shape)
       return None
     return h
 

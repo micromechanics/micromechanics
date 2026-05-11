@@ -24,7 +24,7 @@ class IndentationCalibrationMixin:
   """
 
 
-  def calibration(self:'Indentation', eTarget:float=72.0, numPolynomial:int=3,critDepthStiffness:float=1.0, # type: ignore[misc]
+  def calibration(self:'Indentation', eTarget:float=72.0, numPolynomial:int|None=3,critDepthStiffness:float=1.0, # type: ignore[misc]
                   critForce:float=1.0, critDepthTip:float=0.0, plotStiffness:bool=False, plotTip:bool=False,
                   **kwargs: Unpack[CalibrationKwargs]) -> bool|tuple[np.ndarray, np.ndarray]:
     """
@@ -32,7 +32,7 @@ class IndentationCalibrationMixin:
 
     Args:
         eTarget (float): target Young's modulus (not reduced), nu is known
-        numPolynomial (int): number of area function polynomial; if None: return interpolation function
+        numPolynomial (int | None): number of area function polynomial; if None: create and store an interpolation area function on ``self.tip``
         critDepthStiffness (float): what is the minimum depth of data used
         critDepthTip (float): area function what is the minimum depth of data used
         critForce (float): frame stiffness: what is the minimum force used for fitting
@@ -45,7 +45,7 @@ class IndentationCalibrationMixin:
           - frameCompliance (float): frame compliance (if not given, determine)
 
     Returns:
-      bool: success
+      bool | tuple[np.ndarray, np.ndarray]: success flag, or contact depth and area when ``returnArea=True``.
     """
     constantTerm = kwargs.get('constantTerm', False)
     if 'frameCompliance' in kwargs:
@@ -105,18 +105,35 @@ class IndentationCalibrationMixin:
     hc = np.array( h - beta*p/slope )
     #calculate shape function as interpolation of 30 points (log-spacing)
     #  first calculate the  savgol-average using a adaptive window-size
-    if numPolynomial is None:
-      # use interpolation function using random points
-      mask = np.logical_and(np.isfinite(hc), np.isfinite(Ac))
+    if numPolynomial is None:  # use interpolation function using random points
+      # create a 2xn data-array of valid values
+      mask = np.logical_and.reduce((np.isfinite(hc), np.isfinite(Ac), hc>0, Ac>0))
+      if np.count_nonzero(mask)<5:
+        print('**ERROR** calibration interpolation needs at least five finite, positive data points.')
+        return False
       data = np.vstack((hc[mask],Ac[mask]))
-      data = data[:, data[0].argsort()]
-      windowSize = int(len(Ac)/20) if int(len(Ac)/20)%2==1 else int(len(Ac)/20)-1
-      output = savgol_filter(data,windowSize,3)
+      data = data[:, data[0].argsort()] # sorts the two-row data array by contact depth
+      _, uniqueIdx = np.unique(data[0], return_index=True) # remove duplicate contact-depth values in next line
+      data = data[:, np.sort(uniqueIdx)]
+      if data.shape[1]<5:
+        print('**ERROR** calibration interpolation needs at least five unique contact depths.')
+        return False
+      maxWindowSize = data.shape[1] if data.shape[1]%2==1 else data.shape[1]-1
+      windowSize = min(maxWindowSize, max(5, data.shape[1]//20|1))
+      output = np.asarray(savgol_filter(data, windowSize,3), dtype=float)
+      output = output[:, np.logical_and.reduce((np.isfinite(output[0,:]), np.isfinite(output[1,:]), output[0,:]>0, output[1,:]>0))]
+      output = output[:, np.unique(output[0], return_index=True)[1]]
+      if output.shape[1]<2:
+        print('**ERROR** calibration interpolation needs at least two filtered contact depths.')
+        return False
+      minDepth = max(0.0001, float(np.min(output[0,:]))+0.0001)
+      maxDepth = float(np.max(output[0,:]))-0.0001
+      if maxDepth<=minDepth:
+        print('**ERROR** calibration interpolation depth range is invalid.')
+        return False
       interpolationFunct = interpolate.interp1d(output[0,:],output[1,:])
-      hc_ = np.logspace(np.log(max(0.0001,np.min(output[0,:])+0.0001)),
-                        np.log(np.max(output[0,:])-0.0001),
-                        num=50, base=np.exp(1))
-      Ac_ = interpolationFunct(hc_)
+      hc_ = np.logspace(np.log(minDepth), np.log(maxDepth), num=50, base=np.exp(1))
+      Ac_ = np.asarray(interpolationFunct(hc_), dtype=float)
       interpolationFunct = interpolate.interp1d(hc_, Ac_)
       self.tip.setInterpolationFunction(interpolationFunct)
       del output, data

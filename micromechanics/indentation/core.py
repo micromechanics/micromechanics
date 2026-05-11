@@ -57,10 +57,10 @@ class Indentation(IndentationInputMixin, IndentationMainMixin, IndentationTheory
        tip (tip):  tip class to use; None=perfect
        surface (dict): dictionary describing the surface find
        model (dict): numerical parameters that determine the evaluation
-       output (dict): links that descripe the output (graphs and print-to-screen)
+       output (dict): links that describe the output (graphs and print-to-screen)
     """
     np.seterr(divide='ignore', invalid='ignore')
-    self.nuMat   = nuMat                            # nuMat: material's Posson ratio
+    self.nuMat   = nuMat                            # nuMat: material's Poisson ratio
     self.method  = Method.ISO                       # iso default: csm uses different methods
     self.vendor:Vendor
     self.fileType:FileType
@@ -74,8 +74,8 @@ class Indentation(IndentationInputMixin, IndentationMainMixin, IndentationTheory
                                                      copy.deepcopy(_DefaultOutput)|output
 
     self.newFileRead               = True                # file was just loaded
-    self.iLHU:list[list[int]]      = []                  # indicies of Load-Hold-Unload cycles
-                                                         # (StartLoad-StartHold-StartUnload-EndLoad)
+    self.iLHU:list[list[int]]      = []                  # indices of Load-Hold-Unload cycles
+                                                         # (start load, start hold, start unload, end unload)
     self.metaVendor:dict[str, Any] = {}                  # some results come from input file
     self.metaUser: dict[str, float|list[float]|str] = {} # type: ignore[assignment]  #metadata added by analysis
     self.raw = SimpleNamespace(                          # loaded/prepared input arrays in package units
