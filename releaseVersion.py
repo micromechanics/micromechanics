@@ -71,6 +71,10 @@ def createRequirementsFile():
 
 
 if __name__=='__main__':
+  print('Make sure you:\n- pushed to github and checked the actions (https://github.com/micromechanics/micromechanics/actions)\n- ran all internal tests')
+  res = input('Continue? (only "y" does) ')
+  if res != 'y':
+    exit()
   createRequirementsFile()
   if len(sys.argv)==1:
     print("**Require more arguments for creating new version 'message' 'level (optionally)' ")
