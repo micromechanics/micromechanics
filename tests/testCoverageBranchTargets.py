@@ -232,7 +232,8 @@ class TestCoverageBranchTargets(unittest.TestCase):
       indentation.fileName = str(Path(tmp) / "all.xls")
       indentation.plotAll(saveFig=True, show=1)
 
-  def create_kla_hdf5(self, file_name, include_depth=True):
+  def create_kla_hdf5(self, file_name, include_depth=True, names=None):
+    names = {} if names is None else names
     with h5py.File(file_name, "w") as h5:
       h5.attrs["version"] = "2.0"
       h5.attrs["uri"] = "https://example.org/nmd2hdf.py"
@@ -241,11 +242,11 @@ class TestCoverageBranchTargets(unittest.TestCase):
       data = h5.create_group("test_1").create_group("data")
       values = np.linspace(1.0, 2.0, 70)
       if include_depth:
-        data.create_dataset("depth", data=values*1e-6)
-      data.create_dataset("load", data=values*1e-3)
-      data.create_dataset("time", data=np.linspace(0.0, 1.0, 70))
-      data.create_dataset("show_stiffness", data=values*1e3)
-      data.create_dataset("dynamic_phase", data=np.linspace(0.0, 1.0, 70))
+        data.create_dataset(names.get("h", "depth"), data=values*1e-6)
+      data.create_dataset(names.get("p", "load"), data=values*1e-3)
+      data.create_dataset(names.get("t", "time"), data=np.linspace(0.0, 1.0, 70))
+      data.create_dataset(names.get("slope", "show_stiffness"), data=values*1e3)
+      data.create_dataset(names.get("phase", "dynamic_phase"), data=np.linspace(0.0, 1.0, 70))
 
   def test_hdf5_metadata_and_missing_data_paths(self):
     with tempfile.TemporaryDirectory() as tmp:
@@ -264,6 +265,25 @@ class TestCoverageBranchTargets(unittest.TestCase):
       with redirect_stdout(StringIO()) as out:
         self.assertTrue(bad.loadHDF5(str(missing)))
       self.assertIn("Missing information", out.getvalue())
+
+  def test_hdf5_terms_can_replace_vendor_block(self):
+    terms = {
+      "KLA": {
+        "h": [["custom_depth", 1.0e6]],
+        "p": [["custom_load", 1.0e3]],
+        "t": [["custom_time", 1.0]],
+        "slope": [["custom_stiffness", 1.0e-3]],
+        "phase": [["custom_phase", 1.0]]
+      }
+    }
+    names = {"h": "custom_depth", "p": "custom_load", "t": "custom_time", "slope": "custom_stiffness", "phase": "custom_phase"}
+    with tempfile.TemporaryDirectory() as tmp:
+      custom = Path(tmp) / "custom.hdf5"
+      self.create_kla_hdf5(custom, names=names)
+      indentation = Indentation(str(custom), output={"verbose": 0}, terms=terms)
+      np.testing.assert_allclose(indentation.h[:2], np.array([1.0, 1.0144927536231885]))
+      np.testing.assert_allclose(indentation.p[:2], np.array([1.0, 1.0144927536231885]))
+      np.testing.assert_allclose(indentation.slope[:2], np.array([1.0, 1.0144927536231885]))
 
 
 if __name__ == "__main__":

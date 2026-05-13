@@ -47,7 +47,8 @@ class Indentation(IndentationInputMixin, IndentationMainMixin, IndentationTheory
   Main class of indentation
   """
   def __init__(self, fileName:str='', nuMat:float= 0.3, tip:Tip|None=None, surface:dict[str, dict[str, Any]]|None=None,
-               model:dict[str, float|bool|str]|None=None, output:dict[str, Any]|None=None) -> None:
+               model:dict[str, float|bool|str]|None=None, output:dict[str, Any]|None=None,
+               terms:dict[str, Any]|None=None) -> None:
     """
     Initialize indentation experiment data
 
@@ -58,6 +59,7 @@ class Indentation(IndentationInputMixin, IndentationMainMixin, IndentationTheory
        surface (dict): dictionary describing the surface find
        model (dict): numerical parameters that determine the evaluation
        output (dict): links that describe the output (graphs and print-to-screen)
+       terms (dict): optional HDF5 term definitions replacing matching entries from ``terms.json``.
     """
     np.seterr(divide='ignore', invalid='ignore')
     self.nuMat   = nuMat                            # nuMat: material's Poisson ratio
@@ -72,6 +74,7 @@ class Indentation(IndentationInputMixin, IndentationMainMixin, IndentationTheory
                                                      copy.deepcopy(_DefaultModel)|model
     self.output:dict[str, Any]                     = copy.deepcopy(_DefaultOutput) if output is None else \
                                                      copy.deepcopy(_DefaultOutput)|output
+    self.termsUser:dict[str, Any]                  = {} if terms is None else copy.deepcopy(terms)
 
     self.newFileRead               = True                # file was just loaded
     self.iLHU:list[list[int]]      = []                  # indices of Load-Hold-Unload cycles

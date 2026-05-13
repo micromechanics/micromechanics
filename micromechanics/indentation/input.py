@@ -1,5 +1,5 @@
 """All instrument specific input functions"""
-import io, re, json
+import copy, io, re, json
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 from zipfile import ZipFile
@@ -35,6 +35,19 @@ class IndentationInputMixin:
   """
   File loading and file iteration methods for :class:`Indentation`.
   """
+  def _hdf5TermNames(self:'Indentation') -> dict[str, Any]: # type: ignore[misc]
+    """
+    Load packaged HDF5 term names and apply optional user replacements.
+
+    Returns:
+        dict: instrument term mapping
+    """
+    with open(Path(__file__).parent/'terms.json', encoding='utf-8') as fIn:
+      nameDict = json.load(fIn)
+    if self.termsUser:
+      nameDict.update(copy.deepcopy(self.termsUser))
+    return nameDict
+
 
   def _removeTooCloseInputPoints(self:'Indentation', h:np.ndarray, p:np.ndarray, t:np.ndarray, # type: ignore[misc]
                                  valid:np.ndarray|None=None) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray|None]:
@@ -644,8 +657,7 @@ class IndentationInputMixin:
     inFile = list(branch.keys())
     for attrib in ['slope', 'k2p', 'hc', 'Ac', 'modulus', 'modulusRed', 'hardness', 'phase']:
       setattr(self, attrib, [])
-    with open(Path(__file__).parent/'terms.json', encoding='utf-8') as fIn:
-      nameDict   = json.load(fIn)
+    nameDict = self._hdf5TermNames()
     measurementType = self.metaUser['measurementType'] if isinstance(self.metaUser['measurementType'], str) else '__ERRORR__'
     if measurementType.split()[0] in nameDict:
       nameDict = nameDict[measurementType.split()[0]]
@@ -726,7 +738,7 @@ class IndentationInputMixin:
           slopeInput = slopeInput[start:]
         if len(phaseInput)==len(parsed['t']):
           phaseInput = phaseInput[start:]
-    else:
+    elif converter ==  'Micromaterials2hdf.py':
       pInput = pInput-pInput[0]
     if len(slopeInput)>60: #if more than 30: CSM
       self.method = Method.CSM
