@@ -23,7 +23,7 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 class Tif(TifInputMixin, TifScaleBarMixin, TifDisplayMixin, TifProcessingMixin, TifTransformMixin):
   """Tif class to read SEM images"""
 
-  def __init__(self, fileName:str, fileType:str='', pixelSize:float=1):
+  def __init__(self, fileName:str='', fileType:str='', pixelSize:float=1):
     """
     Read input file, initialize things
 
@@ -52,6 +52,10 @@ class Tif(TifInputMixin, TifScaleBarMixin, TifDisplayMixin, TifProcessingMixin, 
     self.barPixel:int          = -1
 
     #read input file and identify the type
+    if not fileName:
+      self.producer = "Default"
+      self.initDefault(pixelSize)
+      return
     self.producer = "Else"
     if not fileType:
       with open(self.fileName,'r', encoding='iso-8859-1') as fileHandle:

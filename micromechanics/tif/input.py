@@ -8,6 +8,7 @@ import re
 import warnings
 from xml.etree import ElementTree
 
+import numpy as np
 from PIL import Image
 
 if TYPE_CHECKING:
@@ -17,6 +18,40 @@ class TifInputMixin:
   """
   File loading helpers for :class:`Tif`.
   """
+
+  def initDefault(self:'Tif', pixelSize:float=1, size:tuple[int, int]=(1024, 800)) -> None:  # type: ignore[misc]
+    """
+    Init default generated image.
+
+    Args:
+       pixelSize (float): pixel size in um
+       size (tuple): image size in pixels
+    """
+    x = np.linspace(0, 2*np.pi, size[0], endpoint=False)
+    y = np.linspace(0, 2*np.pi, size[1], endpoint=False)
+    xGrid, yGrid = np.meshgrid(x, y)
+    # create large scale waves
+    imageArray = np.sin(xGrid)+np.sin(yGrid)+1
+    imageArray[imageArray < 0] = 0
+    imageArray = np.rint(imageArray*255/3).astype(np.uint8)
+    # add noise
+    saltPepperCount = 1000
+    saltPepperSize = 3
+    random = np.random.default_rng()
+    yNoise = random.integers(0, size[1]-saltPepperSize+1, saltPepperCount)
+    xNoise = random.integers(0, size[0]-saltPepperSize+1, saltPepperCount)
+    noiseValues = random.choice(np.array([0, 255], dtype=np.uint8), saltPepperCount)
+    for y, x, value in zip(yNoise, xNoise, noiseValues):
+      imageArray[y:y+saltPepperSize, x:x+saltPepperSize] = value
+    # setup data structure
+    self.origImage = Image.fromarray(imageArray).convert("P")
+    self.image = self.origImage.copy()
+    self.pixelSize = pixelSize
+    self.width = self.pixelSize * size[0]
+    logging.info("Pixel size "+str(self.pixelSize)+' [um]')
+    logging.info("Picture width "+str(self.width)+'[um]')
+    return
+
 
   def initZeiss(self:'Tif') -> None:  # type: ignore[misc]
     """

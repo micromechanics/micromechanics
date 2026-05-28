@@ -20,6 +20,18 @@ class TestTifConventionalAndTransforms(unittest.TestCase):
       return Image.fromarray(np.dstack([data, 255-data, data//2]), mode="RGB")
     return Image.fromarray(data, mode=mode)
 
+  def test_default_generated_image(self):
+    image = Tif()
+    data = np.array(image.image)
+    self.assertEqual(image.producer, "Default")
+    self.assertEqual(image.image.size, (1024, 800))
+    self.assertEqual(image.pixelSize, 1)
+    self.assertEqual(image.width, 1024)
+    self.assertEqual(data.min(), 0)
+    self.assertEqual(data.max(), 255)
+    self.assertGreater(np.count_nonzero(data == 0), 1000)
+    self.assertGreater(np.count_nonzero(data == 255), 1000)
+
   def test_conventional_file_type_and_set_data_copy(self):
     with tempfile.TemporaryDirectory() as tmp:
       file_name = tmp + "/conventional.tif"

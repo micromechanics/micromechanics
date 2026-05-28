@@ -9,6 +9,7 @@ docs/source/sg_execution_times.rst
 
 *.pyc
 *__pycache__*
+micromechanics.egg-info/
 
 .coverage
 coverage.txt
