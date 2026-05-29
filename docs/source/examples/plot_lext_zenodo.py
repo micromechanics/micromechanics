@@ -35,7 +35,8 @@ from micromechanics.tif import Tif
 
 
 DATA_URL = "https://zenodo.org/api/records/17814735/files/Files%20CLSM.zip/content"
-DATA_DIR = Path(__file__).resolve().parent / "_downloads" / "lext_zenodo_17814735"
+EXAMPLE_DIR = Path(__file__).resolve().parent if "__file__" in globals() else Path.cwd().resolve()
+DATA_DIR = EXAMPLE_DIR / "_downloads" / "lext_zenodo_17814735"
 ZIP_PATH = DATA_DIR / "Files CLSM.zip"
 LEXT_DIR = DATA_DIR / "Files CLSM"
 
