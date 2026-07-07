@@ -45,7 +45,7 @@ class Tif(TifInputMixin, TifScaleBarMixin, TifDisplayMixin, TifProcessingMixin, 
     #set default values
     self.meta:dict[str,str]    = {}
     self.image:Image.Image
-    self.origImage:Image.Image|None = None
+    self.origImage:Image.Image
     self.pixelSize:float       = -1
     self.width:float           = -1
     self.bestLength:float      = -1
@@ -79,7 +79,7 @@ class Tif(TifInputMixin, TifScaleBarMixin, TifDisplayMixin, TifProcessingMixin, 
         if fIn.read(16).hex()=='49492a0010c000005448554d42313238':
           self.producer = 'TEM'
 
-    logging.info("Open file: "+fileName+' producer '+self.producer)    #all other types
+    logging.info("Open file: %s producer %s", fileName, self.producer)    #all other types
     if self.producer == "Zeiss":
       self.initZeiss()
     elif self.producer == "NPVE":

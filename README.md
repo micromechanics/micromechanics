@@ -38,7 +38,6 @@ If you want to contribute to the development, we develop at [github](https://git
 Open issues are tracked in the [GitHub issue tracker](https://github.com/micromechanics/micromechanics/issues).
 
 Current known issues:
-- Feature Request: Tif allow to create an empty image, then user can setData to fill it.
 
 
 # Contributors

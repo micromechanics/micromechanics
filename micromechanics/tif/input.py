@@ -48,8 +48,8 @@ class TifInputMixin:
     self.image = self.origImage.copy()
     self.pixelSize = pixelSize
     self.width = self.pixelSize * size[0]
-    logging.info("Pixel size "+str(self.pixelSize)+' [um]')
-    logging.info("Picture width "+str(self.width)+'[um]')
+    logging.info("Pixel size %s [um]", self.pixelSize)
+    logging.info("Picture width %s[um]", self.width)
     return
 
 
@@ -60,7 +60,7 @@ class TifInputMixin:
     with warnings.catch_warnings():
       warnings.filterwarnings('ignore',category=ResourceWarning)  #Image open sometimes triggers "ResourceWarning"
       self.image     = Image.open(self.fileName).convert("L").convert("P")
-    self.origImage:Image.Image|None = self.image.copy()
+    self.origImage = self.image.copy()
     #parse for information
     self.meta['measurementType'] = 'Zeiss SEM TIF-Image'
     with open(self.fileName,'r', encoding='iso-8859-1') as fIn:
@@ -88,9 +88,9 @@ class TifInputMixin:
       return
     valueArray = self.meta['Store_resolution'].split()
     widthPixel  = int(valueArray[0])
-    logging.info("  Picture width "+str(self.width)+"[um], pixel size: "+str(self.pixelSize)+" [um], widthPixel "+str(widthPixel))
+    logging.info("  Picture width %s[um], pixel size: %s [um], widthPixel %s", self.width, self.pixelSize, widthPixel)
     if abs(widthPixel*self.pixelSize-self.width)/self.width > 0.01:
-      logging.error("**ERROR** Width, PixelSize, Width "+str(widthPixel)+' '+str(self.pixelSize)+' '+str(self.width))
+      logging.error("**ERROR** Width, PixelSize, Width %s %s %s", widthPixel, self.pixelSize, self.width)
       logging.error("**ERROR** Data keys error")
     return
 
@@ -104,7 +104,7 @@ class TifInputMixin:
       warnings.filterwarnings('ignore',category=ResourceWarning)  #Image open sometimes triggers "ResourceWarning"
       image = Image.open(self.fileName).convert("L").convert("P")
     self.image = image
-    self.origImage = None #do not save, since files rather large
+    self.origImage = Image.new('RGB', [0,0]) #do not save, since files rather large
     widthPixel = image.size[0]
 
     #parse the xml line in the file
@@ -119,7 +119,7 @@ class TifInputMixin:
     requiredKeys = ['Width', 'Height', 'FOV_X', 'Ux', 'Vy']
     optionalKeys = ['Contrast', 'Brightness']
     for key in requiredKeys + optionalKeys:
-      element = xmlObject.find('.//'+key)
+      element = xmlObject.find(f'.//{key}')
       if element is not None and element.text is not None:
         self.meta[key.lower()] = element.text
 
@@ -165,11 +165,11 @@ class TifInputMixin:
 
     # metadata handling
     self.width = float(self.meta['HorFieldsize'])*1.e6  #uses SI unit m
-    logging.info("  Picture width "+str(self.width)+'[um]')
+    logging.info("  Picture width %s[um]", self.width)
     self.pixelSize = float(self.meta['PixelWidth'])*1.e6  #uses SI unit m
-    logging.info("  Pixel size "+str(self.pixelSize)+'[um]')
+    logging.info("  Pixel size %s[um]", self.pixelSize)
     widthPixel = int(self.meta['ResolutionX'])
-    logging.info("  widthPixel "+str(widthPixel))
+    logging.info("  widthPixel %s", widthPixel)
     return
 
 
@@ -184,11 +184,11 @@ class TifInputMixin:
     self.origImage = Image.open(self.fileName)
     self.image     = self.origImage.copy()
     widthPixel = self.image.size[0]
-    logging.info("widthPixel "+str(widthPixel))
+    logging.info("widthPixel %s", widthPixel)
     self.pixelSize = pixelSize
-    logging.info("Pixel size "+str(self.pixelSize)+' [um]')
+    logging.info("Pixel size %s [um]", self.pixelSize)
     self.width = self.pixelSize * widthPixel
-    logging.info("Picture width "+str(self.width)+'[um]')
+    logging.info("Picture width %s[um]", self.width)
     return
 
 
