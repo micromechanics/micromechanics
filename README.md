@@ -15,6 +15,8 @@ Install by
 pip install micromechanics
 ```
 
+Micromechanics supports Python 3.9 and newer.
+
 Run test using the default data
 ``` python
 from micromechanics.indentation import Indentation
@@ -30,6 +32,13 @@ from micromechanics.tif import Tif
 More information as well as tutorials can be found at: [Read the docs](https://micromechanics.github.io/micromechanics/)
 
 If you want to contribute to the development, we develop at [github](https://github.com/micromechanics/micromechanics)
+
+## Issue tracking
+
+Open issues are tracked in the [GitHub issue tracker](https://github.com/micromechanics/micromechanics/issues).
+
+Current known issues:
+- Feature Request: Tif allow to create an empty image, then user can setData to fill it.
 
 
 # Contributors

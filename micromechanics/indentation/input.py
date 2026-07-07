@@ -67,6 +67,7 @@ class IndentationInputMixin:
       return h, p, t, valid
     gradTime = np.diff(t)
     maskTooClose = gradTime < np.percentile(gradTime,80)/1.e3
+    # Desired behavior: discard the first non-CSM point because it simplifies code
     t = t[1:][~maskTooClose]
     p = p[1:][~maskTooClose]
     h = h[1:][~maskTooClose]
@@ -633,8 +634,7 @@ class IndentationInputMixin:
           self.method = Method.CSM
     self.fillVendorDefaults()
     self.allTestList = list(self.testList)
-    self.nextTest()
-    return True
+    return self.nextTest()
 
 
   def nextHDF5Test(self:'Indentation') -> bool: # type: ignore[misc]

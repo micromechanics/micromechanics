@@ -263,7 +263,7 @@ class TestCoverageBranchTargets(unittest.TestCase):
       bad.fileType = 2
       bad.output["verbose"] = 0
       with redirect_stdout(StringIO()) as out:
-        self.assertTrue(bad.loadHDF5(str(missing)))
+        self.assertFalse(bad.loadHDF5(str(missing)))
       self.assertIn("Missing information", out.getvalue())
 
   def test_hdf5_terms_can_replace_vendor_block(self):

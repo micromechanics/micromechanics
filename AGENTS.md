@@ -4,6 +4,10 @@
 
 This is a Python package for nanoindentation and SEM image analysis. Core package code lives in `micromechanics/`. The `micromechanics/indentation/` package contains indentation file readers, calibration, plotting, and analysis routines; `micromechanics/tif/` handles TIF image support and includes bundled font assets. Tests are in `tests/` and use example instrument data from `examples/`. Documentation sources are in `docs/source/`, with images in `docs/source/img/`.
 
+## Documentation Expectations
+
+`README.md` is a concise project entry point for purpose, installation, basic use, development commands, and issue tracking. It is deliberately not the full user manual; detailed user documentation and tutorials live  on Read the Docs.
+
 ## Build, Test, and Development Commands
 
 Create a development environment from the repository root:
