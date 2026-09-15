@@ -2,6 +2,8 @@
 .codex/
 .venv/
 
+presentations/
+
 dist/
 docs/build/
 docs/source/auto_examples/
