@@ -33,12 +33,13 @@ More information as well as tutorials can be found at: [Read the docs](https://m
 
 If you want to contribute to the development, we develop at [github](https://github.com/micromechanics/micromechanics)
 
-## Open issues
+## Issues
 
 Open issues are tracked in the [GitHub issue tracker](https://github.com/micromechanics/micromechanics/issues).
 
 Current known issues:
 
+## Notes
 
 # Contributors
 - Steffen Brinckmann
