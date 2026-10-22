@@ -28,7 +28,8 @@ class IndentationVerificationMixin:
     Test one data set to ensure everything still working: OliverPharrMethod and area functions
     (normal and inverse)
     """
-    self.tip.prefactors = [32.9049, -6418.303798, 288484.8518, -989287.0625, 103588.5588, 675977.3345, "iso"]
+    self.tip.areaPrefactors = [32.9049, -6418.303798, 288484.8518, -989287.0625, 103588.5588, 675977.3345]
+    self.tip.shape = "iso"
     print("Test CSM method, and area functions (normal and inverse)")
     #values from time=78.47sec of Cu_500muN_Creep_Vergleich
     harmStiff   = 159111.704268288/1000.   #  159111.704268288N/m
@@ -68,7 +69,8 @@ class IndentationVerificationMixin:
     """
     Test one data set to ensure everything still working: OliverPharrMethod and area functions (normal and inverse)
     """
-    self.tip.prefactors = [24.8204,402.507,-3070.91,3699.87,"iso" ]
+    self.tip.areaPrefactors = [24.8204,402.507,-3070.91,3699.87]
+    self.tip.shape = "iso"
     self.tip.compliance = 1000.0/9.2358e6
     print("Test CSM method, and area functions (normal and inverse)")
     #values from time=78.47sec of FS.xls in 5Materials

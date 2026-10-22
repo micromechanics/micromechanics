@@ -337,7 +337,8 @@ class IndentationInputMixin:
           if label == "Segment End Demand"  : segmentDeltaP.append( (value-pStart)/1.e3 ) #to mN
           if label == "Segment Points"      : segmentPoints.append(int(value))
           #pylint: enable=multiple-statements
-        self.tip.prefactors = prefact+['iso']
+        self.tip.areaPrefactors = prefact
+        self.tip.shape = 'iso'
         if (numSegments!=len(segmentTime)) or (numSegments!=len(segmentDeltaP)):
           print("**ERROR**", numSegments,len(segmentTime),len(segmentDeltaP ) )
         #read approach data

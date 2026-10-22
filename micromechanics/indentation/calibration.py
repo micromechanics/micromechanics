@@ -147,7 +147,8 @@ class IndentationCalibrationMixin:
         appendix = 'iso'
 
       def fitFunct(params:lmfit.Parameters) -> np.ndarray:     #error function
-        self.tip.prefactors = [params[x].value for x in params]+[appendix]
+        self.tip.areaPrefactors = [params[x].value for x in params]
+        self.tip.shape = appendix
         tempArea = self.tip.areaFunction(hc)          #use all datapoints as critDepth is for compliance plot
         residual     = np.abs(Ac-tempArea)/len(Ac)    #normalize by number of points
         return residual
@@ -162,9 +163,10 @@ class IndentationCalibrationMixin:
         params.add('c',  value= 20, min=0.5, max=300.0) ##all prefactors are in nm, this has to be too
       # do fit, here with leastsq model; args=(hc, Ac)
       result = lmfit.minimize(fitFunct, params, max_nfev=10000, nan_policy='omit')
-      self.tip.prefactors = [result.params[x].value for x in result.params]+[appendix]
+      self.tip.areaPrefactors = [result.params[x].value for x in result.params]
+      self.tip.shape = appendix
       print("\nTip shape:")
-      print("  iterated prefactors",[round(i,1) for i in self.tip.prefactors[:-1]])
+      print("  iterated prefactors",[round(i,1) for i in self.tip.areaPrefactors])
       stderr = [result.params[x].stderr for x in result.params]
       print("    standard error",['NaN' if x is None else round(x,2) for x in stderr])
 
