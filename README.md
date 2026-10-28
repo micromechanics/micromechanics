@@ -15,7 +15,7 @@ Install by
 pip install micromechanics
 ```
 
-Micromechanics supports Python 3.9 and newer.
+Micromechanics supports Python 3.10 and newer.
 
 Run test using the default data
 ``` python
