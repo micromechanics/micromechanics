@@ -1,0 +1,17 @@
+version: 2
+multi-ecosystem-groups:
+  all:
+    schedule:
+      interval: monthly
+    assignees: [SteffenBrinckmann]
+
+updates:
+  - package-ecosystem: pip
+    directory: /
+    patterns: ['*']
+    multi-ecosystem-group: all
+
+  - package-ecosystem: github-actions
+    directory: /
+    patterns: ['*']
+    multi-ecosystem-group: all
